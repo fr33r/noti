@@ -38,6 +38,8 @@ import infrastructure.SQLUnitOfWorkFactory;
 import infrastructure.ShortMessageService;
 import infrastructure.TwilioShortMessageService;
 import io.dropwizard.Application;
+import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
+import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import mappers.Mapper;
@@ -53,7 +55,12 @@ public class Noti extends Application<NotiConfiguration> {
 
 	@Override
 	public void initialize(Bootstrap<NotiConfiguration> bootstrap) {
-		// strapping...
+		bootstrap.setConfigurationSourceProvider(
+			new SubstitutingSourceProvider(
+				bootstrap.getConfigurationSourceProvider(),
+				new EnvironmentVariableSubstitutor()
+			)
+		);
 	}
 
 	private void initializeTracing(Configuration jaegerConfiguration, Environment environment) {
