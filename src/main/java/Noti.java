@@ -1,4 +1,5 @@
 import java.net.InetSocketAddress;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -11,6 +12,7 @@ import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.graphite.Graphite;
 import com.codahale.metrics.graphite.GraphiteReporter;
+import com.google.common.collect.ImmutableList;
 import com.uber.jaeger.dropwizard.Configuration;
 import com.uber.jaeger.dropwizard.JaegerFeature;
 
@@ -40,8 +42,12 @@ import infrastructure.TwilioShortMessageService;
 import io.dropwizard.Application;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
+import io.dropwizard.metrics.MetricsFactory;
+import io.dropwizard.metrics.ReporterFactory;
+import io.dropwizard.metrics.graphite.GraphiteReporterFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import io.dropwizard.util.Duration;
 import mappers.Mapper;
 import mappers.NotificationMapper;
 
@@ -75,18 +81,35 @@ public class Noti extends Application<NotiConfiguration> {
 			@Override
 			protected void configure() {
 				this.bind(graphiteMetricRegistry).to(MetricRegistry.class);
-			}		
+			}
 		});
-		
-		final Graphite graphite = new Graphite(new InetSocketAddress("localhost", 2003));
+
+		// read metrics configuration values.
+		MetricsFactory metricsFactory = configuration.getMetricsFactory();
+		ImmutableList<ReporterFactory> reporterFactories = metricsFactory.getReporters();
+		GraphiteReporterFactory graphiteReporterFactory =
+			(GraphiteReporterFactory)reporterFactories.get(0);
+		String graphiteHost = graphiteReporterFactory.getHost();
+		int graphitePort = graphiteReporterFactory.getPort();
+		TimeUnit rateTimeUnit = graphiteReporterFactory.getRateUnit();
+		TimeUnit durationTimeUnit = graphiteReporterFactory.getDurationUnit();
+		String prefix = graphiteReporterFactory.getPrefix();
+		Duration metricsFrequency = metricsFactory.getFrequency();
+		Optional<Duration> graphiteReporterFrequency =
+			graphiteReporterFactory.getFrequency();
+		Duration frequency =
+			graphiteReporterFrequency.isPresent() ? graphiteReporterFrequency.get() : metricsFrequency;
+
+		// build reporter.
+		final Graphite graphite = new Graphite(new InetSocketAddress(graphiteHost, graphitePort));
 		final GraphiteReporter reporter =
 			GraphiteReporter.forRegistry(graphiteMetricRegistry)
-				//.prefixedWith("web1.example.com")
-				.convertRatesTo(TimeUnit.SECONDS)
-				.convertDurationsTo(TimeUnit.MILLISECONDS)
+				.prefixedWith(prefix)
+				.convertRatesTo(rateTimeUnit)
+				.convertDurationsTo(durationTimeUnit)
 				.filter(MetricFilter.ALL)
 				.build(graphite);
-		reporter.start(1, TimeUnit.SECONDS);
+		reporter.start(frequency.getQuantity(), frequency.getUnit());
 	}
 
 	private void initializeDatabase(DatabaseConfiguration databaseConfiguration, Environment environment) throws FlywayException {
@@ -99,7 +122,7 @@ public class Noti extends Application<NotiConfiguration> {
 		final boolean useLegacyDatetimeCode = databaseConfiguration.getUseLegacyDatetimeCode();
 		final boolean useSSL = databaseConfiguration.getUseSSL();
 		final String urlf = "jdbc:mysql://%s:%s/%s?useLegacyDatetimeCode=%b&useSSL=%b";
-		final String url = 
+		final String url =
 			String.format(urlf, host, port, databaseName, useLegacyDatetimeCode, useSSL);
 
 		Flyway flyway = new Flyway();
@@ -111,7 +134,7 @@ public class Noti extends Application<NotiConfiguration> {
 			flyway.repair();
 			flyway.migrate();
 		}
-		
+
 		environment.jersey().register(new AbstractBinder() {
 
 			@Override
@@ -119,35 +142,35 @@ public class Noti extends Application<NotiConfiguration> {
 				this.bind(url).to(String.class).named("JDBC_URL");
 				this.bind(username).to(String.class).named("JDBC_USERNAME");
 				this.bind(password).to(String.class).named("JDBC_PASSWORD");
-			}		
+			}
 		});
 	}
 
 	private void initializeShortMessageService(SMSConfiguration smsConfiguration, Environment environment){
 		final String smsAccountSID = smsConfiguration.getAccountSID();
 		final String smsAuthToken = smsConfiguration.getAuthToken();
-		
+
 		environment.jersey().register(new AbstractBinder() {
 
 			@Override
 			protected void configure() {
 				this.bind(smsAccountSID).to(String.class).named("SMS_ACCOUNT_SID");
 				this.bind(smsAuthToken).to(String.class).named("SMS_AUTH_TOKEN");
-			}		
+			}
 		});
 		environment.jersey().register(new AbstractBinder() {
 
 			@Override
 			protected void configure() {
 				this.bind(TwilioShortMessageService.class).to(ShortMessageService.class);
-			}		
+			}
 		});
 	}
 
 	private void initializeResources(NotiConfiguration configuration, Environment environment){
-		environment.jersey().register(NotificationResource.class);		
+		environment.jersey().register(NotificationResource.class);
 	}
-	
+
 	private void initializeFilters(NotiConfiguration configuration, Environment environment) {
 		environment.jersey().register(CacheControlFilter.class);
 		environment.jersey().register(ConditionalGetFilter.class);
@@ -163,23 +186,23 @@ public class Noti extends Application<NotiConfiguration> {
 		this.initializeShortMessageService(configuration.getSMSConfiguration(), environment);
 		this.initializeDatabase(configuration.getDatabaseConfiguration(), environment);
 		this.initializeGraphiteReporter(configuration, environment);
-		
+
 		environment.jersey().register(new AbstractBinder() {
 
 			@Override
 			protected void configure() {
 				this.bind(NotificationService.class).to(application.NotificationService.class);
-			}		
+			}
 		});
-		
+
 		environment.jersey().register(new AbstractBinder() {
 
 			@Override
 			protected void configure() {
 				this.bind(SQLRepositoryFactory.class).to(RepositoryFactory.class);
-			}		
+			}
 		});
-		
+
 		environment.jersey().register(new AbstractBinder() {
 
 			@Override
@@ -187,52 +210,52 @@ public class Noti extends Application<NotiConfiguration> {
 				this.bind(NotificationSQLFactory.class)
 					.named("NotificationSQLFactory")
 					.to(new TypeLiteral<EntitySQLFactory<Notification, UUID>>(){});
-				
+
 				this.bind(TargetSQLFactory.class)
 					.named("TargetSQLFactory")
 					.to(new TypeLiteral<EntitySQLFactory<Target, UUID>>(){});
-			}		
+			}
 		});
-		
+
 		environment.jersey().register(new AbstractBinder() {
 
 			@Override
 			protected void configure() {
 				this.bind(MySQLUnitOfWorkFactory.class).to(SQLUnitOfWorkFactory.class);
-			}		
+			}
 		});
-		
+
 		environment.jersey().register(new AbstractBinder() {
 
 			@Override
 			protected void configure() {
 				this.bind(infrastructure.services.ResourceMetadataService.class).to(ResourceMetadataService.class);
-			}		
+			}
 		});
-		
+
 		environment.jersey().register(new AbstractBinder() {
 
 			@Override
 			protected void configure() {
 				this.bind(infrastructure.services.EntityTagService.class).to(EntityTagService.class);
-			}		
+			}
 		});
-		
+
 		environment.jersey().register(new AbstractBinder() {
 
 			@Override
 			protected void configure() {
 				this.bind(NotificationMapper.class)
 					.to(new TypeLiteral<Mapper<domain.Notification, api.representations.Notification>>(){});
-			}		
+			}
 		});
-		
+
 		environment.jersey().register(new AbstractBinder() {
 
 			@Override
 			protected void configure() {
 				this.bindAsContract(NotificationFactory.class);
-			}		
+			}
 		});
 	}
 

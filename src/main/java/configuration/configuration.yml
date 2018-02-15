@@ -18,9 +18,11 @@ logging:
   level: INFO
 
 metrics:
-  frequency: 1 second
+  frequency: ${METRICS_FREQUENCY:-1 second}
   reporters:
     - type: graphite
-      host: localhost
-      port: 2003
-      #prefix: <prefix>
+      host: ${GRAPHITE_REPORTER_HOST:-localhost}
+      port: ${GRAPHITE_REPORTER_PORT:-2003}
+      prefix: noti
+      durationUnit: ${GRAPHITE_REPORTER_DURATION_UNIT:-milliseconds}
+      rateUnit: ${GRAPHITE_REPORTER_RATE_UNIT:-seconds}
