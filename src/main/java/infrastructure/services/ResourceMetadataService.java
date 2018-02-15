@@ -52,6 +52,7 @@ public class ResourceMetadataService implements infrastructure.ResourceMetadataS
 				"SELECT RM.* FROM RESOURCE_METADATA AS RM WHERE RM.URI = ? AND RM.CONTENT_TYPE = ?"
 			);
 		ResultSet results = null;
+		ResourceMetadata resourceMetadata = null;
 
 		try {
 			statement.setString(1, uri.toString());
@@ -64,17 +65,16 @@ public class ResourceMetadataService implements infrastructure.ResourceMetadataS
 				Timestamp lastModified = results.getTimestamp(3, Calendar.getInstance(TimeZone.getTimeZone("UTC")));
 				String entityTag = results.getString(4);
 				entityTag = entityTag.replace("\"", "");
-				unitOfWork.save();
 
-				ResourceMetadata resourceMetadata = 
+				resourceMetadata = 
 					new ResourceMetadata(
 						URI.create(matchingUri),
 						MediaType.valueOf(contentTypeString),
 						lastModified,
 						new EntityTag(entityTag)
 					);
-				return resourceMetadata;
 			}
+			unitOfWork.save();
 		} catch (SQLException sqlException) {
 			sqlException.printStackTrace();
 			unitOfWork.undo();
@@ -93,7 +93,7 @@ public class ResourceMetadataService implements infrastructure.ResourceMetadataS
 			}
 		}
 
-		return null;
+		return resourceMetadata;
 	}
 
 	/**
