@@ -33,10 +33,17 @@ public interface ResourceMetadataService {
      * @param resourceMetadata The desired state for the resource metadata.
      */
     void updateResourceMetaData(ResourceMetadata resourceMetadata);
-
+    
     /**
      * Deletes the resource metadata for a resource.
      * @param uri The URI of the resource to delete metadata for.
+     * @param contentType The media type used to specify which metadata to delete.
      */
     void deleteResourceMetaData(URI uri, MediaType contentType);
+
+    /**
+     * Deletes the resource metadata for a resource.
+     * @param uri The URI of the resource to delete all metadata for.
+     */
+    void deleteResourceMetaData(URI uri);
 }

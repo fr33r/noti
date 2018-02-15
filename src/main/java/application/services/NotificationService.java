@@ -103,7 +103,7 @@ public final class NotificationService implements application.NotificationServic
 		Notification noti_dm = null;
 
 		try {
-			Repository<Notification, UUID> notificationRepository = 
+			Repository<Notification, UUID> notificationRepository =
 				this.repositoryFactory.createNotificationRepository(unitOfWork);
 			noti_dm = notificationRepository.get(uuid);
 			unitOfWork.save();

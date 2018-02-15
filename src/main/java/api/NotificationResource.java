@@ -8,6 +8,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
@@ -31,7 +32,7 @@ public interface NotificationResource {
 	@GET
 	@Path("{uuid}")
 	@Produces({MediaType.APPLICATION_JSON})
-	Response get(@PathParam("uuid") String uuid);
+	Response get(@Context HttpHeaders headers, @Context UriInfo uriInfo, @PathParam("uuid") String uuid);
 
 	/**
 	 * Handles HTTP POST requests for the collection of notification resources.
@@ -41,7 +42,7 @@ public interface NotificationResource {
 	 */
 	@POST
 	@Consumes({MediaType.APPLICATION_JSON})
-	Response createAndAppend(@Context UriInfo uriInfo, Notification notification);
+	Response createAndAppend(@Context HttpHeaders headers, @Context UriInfo uriInfo, Notification notification);
 
 	/**
 	 * Handles HTTP PUT requests for the notification with the unique identifier provided.
@@ -52,7 +53,7 @@ public interface NotificationResource {
 	@PUT
 	@Path("{uuid}")
 	@Consumes({MediaType.APPLICATION_JSON})
-	Response replace(@Context UriInfo uriInfo, Notification notification);
+	Response replace(@Context HttpHeaders headers, @Context UriInfo uriInfo, Notification notification);
 
 	/**
 	 * Handles HTTP DELETE requests for the notification with the unique identifier provided.
@@ -62,6 +63,6 @@ public interface NotificationResource {
 	@DELETE
 	@Path("{uuid}")
 	@Produces({MediaType.APPLICATION_JSON})
-	Response delete(@PathParam("uuid") String uuid);
+	Response delete(@Context UriInfo uriInfo, @PathParam("uuid") String uuid);
 }
 

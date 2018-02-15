@@ -180,10 +180,10 @@ public class ResourceMetadataService implements infrastructure.ResourceMetadataS
 	}
 
 	/**
-     * Deletes the resource metadata for a resource.
-     *
-     * @param uri The URI of the resource to delete metadata for.
-     */
+	 * Deletes the resource metadata for a resource.
+	 *
+	 * @param uri The URI of the resource to delete metadata for.
+	 */
 	@Override
 	public void deleteResourceMetaData(URI uri, MediaType contentType) {
 		
@@ -194,6 +194,36 @@ public class ResourceMetadataService implements infrastructure.ResourceMetadataS
 		try{
 			statement.setString(1, uri.toString());
 			statement.setString(2, contentType.toString());
+			statement.executeUpdate();
+			unitOfWork.save();
+		}catch (SQLException sqlException) {
+			sqlException.printStackTrace();
+			unitOfWork.undo();
+		} finally {
+			try{
+				if(statement != null && !statement.isClosed()){
+					statement.close();
+				}
+			}catch(SQLException anotherSqlException) {
+				anotherSqlException.printStackTrace();
+			}
+		}
+	}
+
+	/**
+	 * Deletes the resource metadata for a resource.
+	 *
+	 * @param uri The URI of the resource to delete metadata for.
+	 */
+	@Override
+	public void deleteResourceMetaData(URI uri) {
+		
+		SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();		
+		PreparedStatement statement =
+			unitOfWork.createCallableStatement("DELETE FROM RESOURCE_METADATA WHERE URI = ?;");
+		
+		try{
+			statement.setString(1, uri.toString());
 			statement.executeUpdate();
 			unitOfWork.save();
 		}catch (SQLException sqlException) {

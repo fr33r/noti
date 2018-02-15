@@ -1,14 +1,25 @@
 package api.resources;
 
+import javax.ws.rs.core.EntityTag;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
+
+import infrastructure.ResourceMetadata;
 
 import api.representations.Notification;
 import javax.inject.Inject;
 import application.NotificationService;
+import infrastructure.ResourceMetadataService;
+import infrastructure.EntityTagService;
 
 import java.net.URI;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.TimeZone;
 import java.util.UUID;
 
 /**
@@ -17,7 +28,9 @@ import java.util.UUID;
  */
 public class NotificationResource implements api.NotificationResource{
 
-	private NotificationService notificationService;
+	private final NotificationService notificationService;
+	private final ResourceMetadataService resourceMetadataService;
+	private final EntityTagService entityTagService;
 
 	/**
 	 * Construct a new {@link NotificationResource} instance.
@@ -25,9 +38,13 @@ public class NotificationResource implements api.NotificationResource{
 	 */
 	@Inject
 	public NotificationResource(
-		NotificationService notificationService
+		NotificationService notificationService,
+		ResourceMetadataService resourceMetadataService,
+		EntityTagService entityTagService
 	) {
 		this.notificationService = notificationService;
+		this.resourceMetadataService = resourceMetadataService;
+		this.entityTagService = entityTagService;
 	}
 
 	/**
@@ -37,9 +54,29 @@ public class NotificationResource implements api.NotificationResource{
 	 * the representation of requested notification resource.
 	 */
 	@Override
-	public Response get(String uuid) {
+	public Response get(HttpHeaders headers, UriInfo uriInfo, String uuid) {
 		Notification notification = 
 			this.notificationService.getNotification(UUID.fromString(uuid));
+
+		//search for matches; whole purpose is to see if metadata needs to be persisted. can this go in a filter?
+		ResourceMetadata resourceMetadata = null;
+		for(MediaType mediaType : headers.getAcceptableMediaTypes()) {
+			resourceMetadata =
+				this.resourceMetadataService.getResourceMetadata(uriInfo.getRequestUri(), mediaType);
+			if(resourceMetadata != null) break;
+		}
+
+		if(resourceMetadata == null) {
+			EntityTag entityTag = this.entityTagService.generateTag(notification);
+			Date lastModified = Calendar.getInstance(TimeZone.getTimeZone("UTC")).getTime();
+			for(MediaType mediaType : headers.getAcceptableMediaTypes()) {
+				//store resource metadata.
+				this.resourceMetadataService.insertResourceMetadata(
+					new ResourceMetadata(uriInfo.getRequestUri(), mediaType, lastModified, entityTag)
+				);
+			}	
+		}
+
 		return Response.ok(notification).build();
 	}
 
@@ -50,14 +87,23 @@ public class NotificationResource implements api.NotificationResource{
 	 * @return An instance of {@link Response} representing the HTTP response.
 	 */
 	@Override
-	public Response createAndAppend(UriInfo uriInfo, Notification notification) {
-		UUID uuid = this.notificationService.createNotification(notification);		
-		URI location = 
+	public Response createAndAppend(HttpHeaders headers, UriInfo uriInfo, Notification notification) {
+		UUID uuid = this.notificationService.createNotification(notification);
+		URI location =
 			UriBuilder
 				.fromUri(uriInfo.getRequestUri())
 				.path("/{uuid}/")
 				.build(uuid.toString());
-		
+
+		//store resource metadata.
+		Date lastModified = Calendar.getInstance(TimeZone.getTimeZone("UTC")).getTime();
+		Notification notiCreated = this.notificationService.getNotification(uuid);
+		EntityTag entityTag = this.entityTagService.generateTag(notiCreated);
+
+		this.resourceMetadataService.insertResourceMetadata(
+			new ResourceMetadata(location, headers.getMediaType(), lastModified, entityTag)
+		);
+
 		return Response.created(location).build();
 	}
 
@@ -68,9 +114,42 @@ public class NotificationResource implements api.NotificationResource{
 	 * @return An instance of {@link Response} representing the HTTP response.
 	 */
 	@Override
-	public Response replace(UriInfo uriInfo, Notification notification) {
-		this.notificationService.updateNotification(notification);				
-		return Response.noContent().build();
+	public Response replace(HttpHeaders headers, UriInfo uriInfo, Notification notification) {
+		this.notificationService.updateNotification(notification);
+		ResourceMetadata resourceMetadata = 
+			this.resourceMetadataService.getResourceMetadata(
+				uriInfo.getRequestUri(),
+				headers.getMediaType()
+			);
+
+		ResponseBuilder responseBuilder = Response.noContent();
+
+		if(resourceMetadata != null){
+
+			//update resource metadata.
+			Date lastModified = Calendar.getInstance(TimeZone.getTimeZone("UTC")).getTime();
+			EntityTag entityTag = this.entityTagService.generateTag(notification);
+
+			this.resourceMetadataService.updateResourceMetaData(
+				new ResourceMetadata(
+					uriInfo.getRequestUri(),
+					headers.getMediaType(),
+					lastModified,
+					entityTag
+				)
+			);
+
+			resourceMetadata =
+				this.resourceMetadataService.getResourceMetadata(
+					uriInfo.getRequestUri(),
+					headers.getMediaType()
+				);
+
+			responseBuilder
+				.header("Last-Modified", resourceMetadata.getLastModified())
+				.tag(resourceMetadata.getEntityTag());
+		}
+		return responseBuilder.build();
 	}
 
 	/**
@@ -79,8 +158,9 @@ public class NotificationResource implements api.NotificationResource{
 	 * @return An instance of {@link Response} representing the HTTP response.
 	 */
 	@Override
-	public Response delete(String uuid) {
-		this.notificationService.deleteNotification(UUID.fromString(uuid));		
+	public Response delete(UriInfo uriInfo, String uuid) {
+		this.notificationService.deleteNotification(UUID.fromString(uuid));
+		this.resourceMetadataService.deleteResourceMetaData(uriInfo.getRequestUri());
 		return Response.noContent().build();
 	}
 }
