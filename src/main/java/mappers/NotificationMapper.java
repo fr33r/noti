@@ -11,7 +11,7 @@ public class NotificationMapper implements Mapper<domain.Notification, api.repre
 	@Override
 	public api.representations.Notification map(domain.Notification from) {
 		Set<api.representations.Target> targets_sm = new HashSet<>();
-		for(Target target : from.getTargets()) {
+		for(Target target : from.directRecipients()) {
 			Set<api.representations.Tag> tags_sm = new HashSet<>();
 			for(Tag tag : target.getTags()) {
 				tags_sm.add(new api.representations.Tag(tag.getName()));
@@ -22,12 +22,12 @@ public class NotificationMapper implements Mapper<domain.Notification, api.repre
 		api.representations.Notification noti_sm = 
 			new api.representations.Notification(
 				from.getId().toString(),
-				from.getContent(),
+				from.content(),
 				api.representations.NotificationStatus.valueOf(
-					from.getStatus().toString()
+					from.status().toString()
 				),
-				from.getSendAt(),
-				from.getSentAt(),
+				from.sendAt(),
+				from.sentAt(),
 				targets_sm
 			);
 		return noti_sm;		

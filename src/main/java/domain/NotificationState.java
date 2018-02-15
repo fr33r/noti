@@ -4,10 +4,10 @@ public abstract class NotificationState {
 	abstract void changeStatus(final Notification notification);
 	
 	boolean changeToFailedState(final Notification notification) {
-		final int TOTAL_MESSAGE_COUNT = notification.getMessages().size();
+		final int TOTAL_MESSAGE_COUNT = notification.messages().size();
 		int failedCount = 0;
 		
-		for(Message message : notification.getMessages()) {
+		for(Message message : notification.messages()) {
 			if(message.getStatus() == MessageStatus.FAILED) {
 				failedCount++;
 			}
@@ -16,10 +16,10 @@ public abstract class NotificationState {
 	}
 	
 	boolean changeToSentState(final Notification notification) {
-		final int TOTAL_MESSAGE_COUNT = notification.getMessages().size();
+		final int TOTAL_MESSAGE_COUNT = notification.messages().size();
 		
 		int sentCount = 0, deliveredCount = 0;	
-		for(Message message : notification.getMessages()) {
+		for(Message message : notification.messages()) {
 			if (message.getStatus() == MessageStatus.SENT) {
 				sentCount++;
 			} else if (message.getStatus() == MessageStatus.DELIVERED) {
@@ -31,10 +31,10 @@ public abstract class NotificationState {
 	}
 	
 	boolean changeToSendingState(final Notification notification) {
-		final int TOTAL_MESSAGE_COUNT = notification.getMessages().size();
+		final int TOTAL_MESSAGE_COUNT = notification.messages().size();
 		
 		int sentCount = 0, deliveredCount = 0, pendingCount = 0;	
-		for(Message message : notification.getMessages()) {
+		for(Message message : notification.messages()) {
 			if (message.getStatus() == MessageStatus.SENT) {
 				sentCount++;
 			} else if (message.getStatus() == MessageStatus.DELIVERED) {

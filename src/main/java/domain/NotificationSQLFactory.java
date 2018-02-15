@@ -31,19 +31,19 @@ public class NotificationSQLFactory extends EntitySQLFactory<Notification, UUID>
 
 	private static final String uuidColumn			= "uuid";
 	private static final String messageColumn		= "message";
-	private static final String sentAtColumn		= "sent_at";
-	private static final String statusColumn		= "status";
-	private static final String sendAtColumn		= "send_at";
+	private static final String sentAtColumn			= "sent_at";
+	private static final String statusColumn			= "status";
+	private static final String sendAtColumn			= "send_at";
 	private static final String nameColumn			= "name";
 	private static final String phoneNumberColumn	= "phone_number";
-	private static final String targetUUIDColumn	= "target_uuid";
+	private static final String targetUUIDColumn		= "target_uuid";
 	private static final String idColumn				= "id";
 	private static final String fromColumn			= "from";
 	private static final String toColumn				= "to";
 	private static final String contentColumn		= "content";
 	private static final String externalIdColumn		= "external_id";
 	private static final Calendar utc				= 
-		Calendar.getInstance(TimeZone.getTimeZone("UTC"));	
+		Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 
 	@Inject
 	public NotificationSQLFactory(){}
@@ -62,13 +62,13 @@ public class NotificationSQLFactory extends EntitySQLFactory<Notification, UUID>
 			if(statement.getMoreResults()){
 				targets = this.extractTargets(statement.getResultSet());
 				for(Target target : targets){
-					notification.addTarget(target);
+					notification.includeRecipient(target);
 				}
 			}
 
 			if(statement.getMoreResults()){
 				tags = this.extractTags(statement.getResultSet());
-				for(Target target : notification.getTargets()){
+				for(Target target : notification.directRecipients()){
 					if(tags.containsKey(target.getId())){
 						for(Tag tag : tags.get(target.getId())) {
 							target.tag(tag);
@@ -111,30 +111,32 @@ public class NotificationSQLFactory extends EntitySQLFactory<Notification, UUID>
 	}
 
 	private Notification extractNotification(ResultSet results) throws SQLException {
-			Notification notification = null;
+		Notification notification = null;
 
-			//notification results.
-			if(results.next()){
-				String uuid = results.getString(uuidColumn);
-				String message = results.getString(messageColumn);
-				Timestamp sentAtTimestamp = results.getTimestamp(sentAtColumn, utc);
-				Date sentAt = null;
-				if(sentAtTimestamp != null) {
-					sentAt = new Date(sentAtTimestamp.getTime());
-				}
-				String status = results.getString(statusColumn);
-				Timestamp sendAtTimestamp = results.getTimestamp(sendAtColumn, utc);
-				Date sendAt = null;
-				if(sendAtTimestamp != null) {
-					sendAt = new Date(sendAtTimestamp.getTime());
-				}
-
-				NotificationStatus statusEnum = NotificationStatus.valueOf(status);
-				notification = 
-					new Notification(UUID.fromString(uuid), message, statusEnum, sendAt, sentAt);
+		//notification results.
+		if(results.next()){
+			String uuid = results.getString(uuidColumn);
+			String content = results.getString(messageColumn);
+			Timestamp sentAtTimestamp = results.getTimestamp(sentAtColumn, utc);
+			Date sentAt = null;
+			if(sentAtTimestamp != null) {
+				sentAt = new Date(sentAtTimestamp.getTime());
+			}
+			String status = results.getString(statusColumn);
+			Timestamp sendAtTimestamp = results.getTimestamp(sendAtColumn, utc);
+			Date sendAt = null;
+			if(sendAtTimestamp != null) {
+				sendAt = new Date(sendAtTimestamp.getTime());
 			}
 
-			return notification;
+			//compare persisted state with computed state. log error and adopt computed.
+			NotificationStatus statusEnum = NotificationStatus.valueOf(status);
+
+			NotificationBuilder builder = new NotificationBuilder();
+			return builder.identity(uuid).content(content).sendAt(sendAt).sentAt(sentAt).build();
+		}
+
+		return notification;
 	}
 	
 	private Set<Message> extractMessages(ResultSet results) throws SQLException {
@@ -180,7 +182,7 @@ public class NotificationSQLFactory extends EntitySQLFactory<Notification, UUID>
 			if(results.length > 1){
 				targets = this.extractTargets(results[1]);
 				for(Target target : targets){
-					notification.addTarget(target);
+					notification.includeRecipient(target);
 				}
 			}
 
@@ -197,7 +199,7 @@ public class NotificationSQLFactory extends EntitySQLFactory<Notification, UUID>
 			
 			if(results.length > 3){
 				messages = this.extractMessages(results[3]);
-				notification.setMessages(messages);
+				notification.messages(messages);
 			}
 
 		} catch (SQLException x){

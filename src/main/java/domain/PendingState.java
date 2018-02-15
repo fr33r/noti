@@ -11,10 +11,10 @@ public class PendingState extends NotificationState {
 		//	--> (NONE) PENDING.
 		
 		if(this.changeToFailedState(notification)) {
-			notification.setStatus(NotificationStatus.FAILED);
+			notification.status(NotificationStatus.FAILED);
 			notification.setState(new FailedState());
 		} else if (this.changeToSendingState(notification)){
-			notification.setStatus(NotificationStatus.SENDING);
+			notification.status(NotificationStatus.SENDING);
 			notification.setState(new SendingState());
 		}
 	}

@@ -57,7 +57,7 @@ public class Notification {
 	}
 
 	//@JsonProperty
-	public String getMessage() {
+	public String getContent() {
 		return this.message;
 	}
 

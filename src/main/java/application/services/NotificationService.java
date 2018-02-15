@@ -65,12 +65,12 @@ public final class NotificationService implements application.NotificationServic
 				this.repositoryFactory.createNotificationRepository(unitOfWork);
 
 			long timeUntilSend = 0;
-			if(noti_domain.getSendAt() != null) {
-				timeUntilSend = noti_domain.getSendAt().getTime() - now.getTime();
+			if(noti_domain.sendAt() != null) {
+				timeUntilSend = noti_domain.sendAt().getTime() - now.getTime();
 			}
 
 			if(timeUntilSend <= 0) {
-				for(Message message : noti_domain.getMessages()){
+				for(Message message : noti_domain.messages()){
 					message = this.shortMessageService.send(message);
 				}
 			} else {
