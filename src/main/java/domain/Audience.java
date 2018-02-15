@@ -16,8 +16,8 @@ public class Audience extends Entity<UUID> {
 	
 	public Audience(Audience toCopy) {
 		super(toCopy.getId());
-		this.name = toCopy.getName();
-		this.members = toCopy.getTargets();
+		this.name = toCopy.name();
+		this.members = toCopy.members();
 	}
 	
 	public String name() {

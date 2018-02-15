@@ -109,15 +109,27 @@ public class Notification extends Entity<UUID> {
 	}
 	
 	private void directRecipients(Set<Target> targets) {
-		this.targets = targets;
+		if(targets == null) {
+			this.targets = new HashSet<>();
+		} else {
+			this.targets = targets;
+		}
 	}
 	
 	private void audiences(Set<Audience> audiences) {
-		this.audiences = audiences;
+		if(audiences == null) {
+			this.audiences = new HashSet<>();
+		} else {
+			this.audiences = audiences;
+		}
 	}
 	
 	public void messages(Set<Message> messages) {
-		this.messages = messages;
+		if(messages == null) {
+			this.messages = new HashSet<>();
+		} else {
+			this.messages = messages;
+		}
 	}
 }
 
