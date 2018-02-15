@@ -41,9 +41,9 @@ public class PhoneNumber extends ValueObject {
 	}
 	
 	private void parseFromString(String phoneNumberString) {
-		Pattern nanp = Pattern.compile("^(\\+\\d)?([2-9][0-9]{2})([2-9][0-9]{2})([0-9]{4})$");
+		Pattern nanp = Pattern.compile("^(\\+?\\d)?([2-9][0-9]{2})([2-9][0-9]{2})([0-9]{4})$");
 		Matcher matcher = nanp.matcher(phoneNumberString);
-		if (!matcher.matches()) { throw new IllegalStateException(); }
+		if (!matcher.matches()) { throw new IllegalStateException(String.format("The phone number '%s' is not in a valid format.", phoneNumberString)); }
 		if (matcher.group(1) == null) { throw new IllegalStateException(); }
 		
 		this.internationalCallingCode = matcher.group(1).replace("+", "");
