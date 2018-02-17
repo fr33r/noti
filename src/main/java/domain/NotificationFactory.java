@@ -33,13 +33,39 @@ public class NotificationFactory {
 				new Message(
 					sequenceNum,
 					from, 
-					target.getPhoneNumber(), 
-					notification.content(), 
-					MessageStatus.PENDING, 
+					target.getPhoneNumber(),
+					notification.content(),
+					MessageStatus.PENDING,
 					""
 				)
 			);
 			sequenceNum++;
+		}
+
+		for(Audience audience : notification.audiences()) {
+			for(Target member : audience.members()) {
+				boolean alreadyExists = false;
+				for(Message message : messages) {
+					if(message.getTo().toE164().equals(member.getPhoneNumber().toE164())){
+						alreadyExists = true;
+						break;
+					}
+				}
+
+				if(!alreadyExists){
+					messages.add(
+						new Message(
+							sequenceNum,
+							from, 
+							member.getPhoneNumber(),
+							notification.content(),
+							MessageStatus.PENDING,
+							""
+						)
+					);
+					sequenceNum++;
+				}
+			}
 		}
 		
 		return messages;
@@ -54,21 +80,26 @@ public class NotificationFactory {
 			}
 			targets.add(new Target(target.getUUID(), target.getName(), new PhoneNumber(target.getPhoneNumber()), tags));
 		}
+		Set<Audience> audiences = new HashSet<>();
+		for(api.representations.Audience audience : notification.getAudiences()) {
+			audiences.add(new Audience(audience.getUUID(), audience.getName(), null));
+		}
 		
 		NotificationBuilder builder = new NotificationBuilder();
-		UUID uuid = notification.getUUID() == null ? UUID.randomUUID() : UUID.fromString(notification.getUUID());
+		UUID uuid = notification.getUUID() == null ? UUID.randomUUID() : notification.getUUID();
 		
-		Notification domainNotification = 
+		Notification domainNotification =
 			builder
 			.identity(uuid)
 			.content(notification.getContent())
 			.targets(targets)
+			.audiences(audiences)
 			.sendAt(notification.getSendAt())
 			.sentAt(notification.getSentAt())
 			.build();
 		
 		//compare the persisted state with the state computed:
-		NotificationStatus desiredStatus = 
+		NotificationStatus desiredStatus =
 			NotificationStatus.valueOf(notification.getStatus().toString());
 		if(domainNotification.status() != desiredStatus) {
 			//throw.
