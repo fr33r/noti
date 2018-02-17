@@ -31,17 +31,18 @@ public class NotificationSQLFactory extends EntitySQLFactory<Notification, UUID>
 
 	private static final String uuidColumn			= "uuid";
 	private static final String messageColumn		= "message";
-	private static final String sentAtColumn			= "sent_at";
-	private static final String statusColumn			= "status";
-	private static final String sendAtColumn			= "send_at";
+	private static final String sentAtColumn		= "sent_at";
+	private static final String statusColumn		= "status";
+	private static final String sendAtColumn		= "send_at";
 	private static final String nameColumn			= "name";
 	private static final String phoneNumberColumn	= "phone_number";
-	private static final String targetUUIDColumn		= "target_uuid";
-	private static final String idColumn				= "id";
+	private static final String targetUUIDColumn	= "target_uuid";
+	private static final String idColumn			= "id";
 	private static final String fromColumn			= "from";
-	private static final String toColumn				= "to";
+	private static final String toColumn			= "to";
 	private static final String contentColumn		= "content";
-	private static final String externalIdColumn		= "external_id";
+	private static final String externalIdColumn	= "external_id";
+	private static final String audienceUUIDColumn	= "audience_uuid";
 	private static final Calendar utc				= 
 		Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 

@@ -17,6 +17,8 @@ import infrastructure.ShortMessageService;
 import mappers.Mapper;
 import domain.Message;
 
+//TODO: Do not return representations from this service; return generic response;
+// only layer that should be concerned with representations is API layer.
 public final class NotificationService implements application.NotificationService{
 
 	private SQLUnitOfWorkFactory unitOfWorkFactory;

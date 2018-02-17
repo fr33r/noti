@@ -12,7 +12,6 @@ import java.nio.charset.Charset;
 
 /**
  * @author jonfreer
- *
  */
 @Service
 public class EntityTagService implements infrastructure.EntityTagService {
@@ -27,6 +26,7 @@ public class EntityTagService implements infrastructure.EntityTagService {
 		MessageDigest digest;
 		try {
 			digest = MessageDigest.getInstance("MD5");
+			// need to switch this to not use .toString(); it doesn't do a robust enough job at detecting changes in object state.
 			byte[] bytesMD5 = digest.digest(entity.toString().getBytes(Charset.forName("UTF-8")));
 			String entityTagStringBase64Encoded = 
 				Base64.getEncoder().encodeToString(bytesMD5);
