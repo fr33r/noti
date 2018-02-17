@@ -83,6 +83,30 @@ public class NotificationSQLFactory extends EntitySQLFactory<Notification, UUID>
 		return notification;
 	}
 
+	private Map<UUID, Set<Target>> extractMembers(ResultSet results) throws SQLException {
+		Map<UUID, Set<Target>> membersForAudiences = new HashMap<>();
+		while(results.next()){
+			String audienceUUID = results.getString(audienceUUIDColumn);
+			Target member = this.extractTarget(results);
+			if(!membersForAudiences.containsKey(audienceUUID)) {
+				Set<Target> members = new HashSet<>();
+				members.add(member);
+				membersForAudiences.put(UUID.fromString(audienceUUID), members);
+			} else {
+				membersForAudiences.get(UUID.fromString(audienceUUID)).add(member);
+			}
+		}
+		return membersForAudiences;
+	}
+
+	private Target extractTarget(ResultSet results) throws SQLException {
+		String uuid = results.getString(uuidColumn);
+		String name = results.getString(nameColumn);
+		String phoneNumber = results.getString(phoneNumberColumn);
+
+		return new Target(new Target(UUID.fromString(uuid), name, new PhoneNumber(phoneNumber)));
+	}
+
 	private Map<UUID, Set<Tag>> extractTags(ResultSet results) throws SQLException {
 		Map<UUID, Set<Tag>> tagsForTargets = new HashMap<>();
 		while(results.next()){
@@ -102,10 +126,7 @@ public class NotificationSQLFactory extends EntitySQLFactory<Notification, UUID>
 	private Set<Target> extractTargets(ResultSet results) throws SQLException {
 		Set<Target> targets = new HashSet<>();
 		while(results.next()){
-			String uuid = results.getString(uuidColumn);
-			String name = results.getString(nameColumn);
-			String phoneNumber = results.getString(phoneNumberColumn);
-			targets.add(new Target(UUID.fromString(uuid), name, new PhoneNumber(phoneNumber)));
+			targets.add(this.extractTarget(results));
 		}
 		return targets;
 	}
@@ -165,6 +186,16 @@ public class NotificationSQLFactory extends EntitySQLFactory<Notification, UUID>
 		return messages;
 	}
 
+	private Set<Audience> extractAudiences(ResultSet results) throws SQLException {
+		Set<Audience> audiences = new HashSet<>();
+		while(results.next()) {
+			String uuid = results.getString(uuidColumn);
+			String name = results.getString(nameColumn);
+			audiences.add(new Audience(UUID.fromString(uuid), name, new HashSet<>()));
+		}
+		return audiences;
+	}
+
 	@Override
 	public Notification reconstitute(ResultSet... results) {
 		
@@ -176,6 +207,9 @@ public class NotificationSQLFactory extends EntitySQLFactory<Notification, UUID>
 		Set<Target> targets = null;
 		Map<UUID, Set<Tag>> tags = null;
 		Set<Message> messages = null;
+		Set<Audience> audiences = null;
+		Map<UUID, Set<Target>> members = null;
+
 		try{
 
 			notification = this.extractNotification(results[0]);
@@ -200,6 +234,22 @@ public class NotificationSQLFactory extends EntitySQLFactory<Notification, UUID>
 			if(results.length > 3){
 				messages = this.extractMessages(results[3]);
 				notification.messages(messages);
+			}
+
+			if(results.length > 4){
+				audiences = this.extractAudiences(results[4]);
+				notification.audiences(audiences);
+			}
+
+			if(results.length > 5){
+				members = this.extractMembers(results[5]);
+				for(Audience audience : audiences) {
+					if(members.containsKey(audience.getId())) {
+						for(Target member : members.get(audience.getId())) {
+							audience.include(member);
+						}
+					}
+				}
 			}
 
 		} catch (SQLException x){

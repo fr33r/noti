@@ -116,7 +116,7 @@ public class Notification extends Entity<UUID> {
 		}
 	}
 	
-	private void audiences(Set<Audience> audiences) {
+	public void audiences(Set<Audience> audiences) {
 		if(audiences == null) {
 			this.audiences = new HashSet<>();
 		} else {

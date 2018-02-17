@@ -7,6 +7,7 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.UUID;
 
+import domain.Audience;
 import domain.EntitySQLFactory;
 import domain.Message;
 import domain.Notification;
@@ -49,6 +50,10 @@ public final class NotificationRepository extends SQLRepository implements Repos
 			"SELECT TT.TARGET_UUID, TG.* FROM (" + targetSQL + ") AS TARGETS INNER JOIN TARGET_TAG AS TT ON TARGETS.UUID = TT.TARGET_UUID INNER JOIN TAG AS TG ON TT.TAG_UUID = TG.UUID;";
 		final String messageSQL =
 			"SELECT M.* FROM MESSAGE AS M WHERE M.NOTIFICATION_UUID = ?;";
+		final String audiencesSQL =
+			"SELECT A.* FROM AUDIENCE AS A INNER JOIN NOTIFICATION_AUDIENCE AS NA ON A.UUID = NA.AUDIENCE_UUID WHERE NA.NOTIFICATION_UUID = ?";
+		final String audienceMembersSQL =
+			"SELECT AT.AUDIENCE_UUID, T.* FROM (" + audiencesSQL + ") AS AUDIENCES INNER JOIN AUDIENCE_TARGET AS AT ON AUDIENCES.UUID = AT.AUDIENCE_UUID INNER JOIN TARGET AS T ON AT.TARGET_UUID = T.UUID;";
 		try (
 			final PreparedStatement getNotificationStatement = 
 				this.getUnitOfWork().createPreparedStatement(notificationSQL);
@@ -57,25 +62,35 @@ public final class NotificationRepository extends SQLRepository implements Repos
 			final PreparedStatement getTagsStatement = 
 				this.getUnitOfWork().createPreparedStatement(tagSQL);
 			final PreparedStatement getMessagesStatement = 
-				this.getUnitOfWork().createPreparedStatement(messageSQL)
+				this.getUnitOfWork().createPreparedStatement(messageSQL);
+			final PreparedStatement getAudiencesStatement =
+				this.getUnitOfWork().createPreparedStatement(audiencesSQL);
+			final PreparedStatement getAudienceMembersStatement =
+				this.getUnitOfWork().createPreparedStatement(audienceMembersSQL)
 		) {
 			getNotificationStatement.setString(1, uuid.toString());
 			getTargetsStatement.setString(1, uuid.toString());
 			getTagsStatement.setString(1, uuid.toString());
 			getMessagesStatement.setString(1, uuid.toString());
+			getAudiencesStatement.setString(1, uuid.toString());
+			getAudienceMembersStatement.setString(1, uuid.toString());
 
 			try (
 				final ResultSet notificationRS = getNotificationStatement.executeQuery();
 				final ResultSet targetsRS = getTargetsStatement.executeQuery();
 				final ResultSet tagsRS = getTagsStatement.executeQuery();
-				final ResultSet messagesRS = getMessagesStatement.executeQuery()
+				final ResultSet messagesRS = getMessagesStatement.executeQuery();
+				final ResultSet audiencesRS = getAudiencesStatement.executeQuery();
+				final ResultSet membersRS = getAudienceMembersStatement.executeQuery()
 			) {
 				notification =
 					this.notificationFactory.reconstitute(
 						notificationRS,
 						targetsRS,
 						tagsRS,
-						messagesRS
+						messagesRS,
+						audiencesRS,
+						membersRS
 					);
 			}
 
@@ -121,6 +136,9 @@ public final class NotificationRepository extends SQLRepository implements Repos
 			"INSERT INTO NOTIFICATION_TARGET (NOTIFICATION_UUID, TARGET_UUID) VALUES (?, ?);";
 		final String messageSQL =
 			"INSERT INTO MESSAGE (ID, `FROM`, `TO`, CONTENT, STATUS, NOTIFICATION_UUID, EXTERNAL_ID) VALUES (?, ?, ?, ?, ?, ?, ?);";
+		final String associateAudienceSQL =
+			"INSERT INTO NOTIFICATION_AUDIENCE (NOTIFICATION_UUID, AUDIENCE_UUID) VALUES (?, ?);";
+
 		try(
 			final PreparedStatement createNotificationStatement =
 				this.getUnitOfWork().createPreparedStatement(notificationSQL)
@@ -150,6 +168,16 @@ public final class NotificationRepository extends SQLRepository implements Repos
 					associateTargetStatement.setString(1, notification.getId().toString());
 					associateTargetStatement.setString(2, target.getId().toString());
 					associateTargetStatement.executeUpdate();
+				}
+			}
+
+			for(Audience audience : notification.audiences()) {
+				try(final PreparedStatement associateAudienceStatement =
+					this.getUnitOfWork().createPreparedStatement(associateAudienceSQL)
+				) {
+					associateAudienceStatement.setString(1, notification.getId().toString());
+					associateAudienceStatement.setString(2, audience.getId().toString());
+					associateAudienceStatement.executeUpdate();
 				}
 			}
 
