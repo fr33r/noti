@@ -18,15 +18,13 @@ import infrastructure.ResourceMetadata;
 @Provider
 public class ConditionalGetFilter implements ContainerRequestFilter {
 
-	private ResourceMetadataService resourceMetadataService;
-	
+	private final ResourceMetadataService resourceMetadataService;
+
 	@Inject
-	public ConditionalGetFilter(
-		ResourceMetadataService resourceMetadataService) {
-		
+	public ConditionalGetFilter(ResourceMetadataService resourceMetadataService) {
 		this.resourceMetadataService = resourceMetadataService;
 	}
-	
+
 	public void filter(ContainerRequestContext requestContext) throws IOException {
 
 		Request request = requestContext.getRequest();
@@ -35,12 +33,12 @@ public class ConditionalGetFilter implements ContainerRequestFilter {
 
 			List<MediaType> acceptHeader = requestContext.getAcceptableMediaTypes();
 			if (acceptHeader.size() < 1) { return; }
-			
+
 			// search for a match for all values of accept; use first match.
 			ResourceMetadata resourceMetadata = null;
 			for(MediaType mediaType : acceptHeader) {
 				resourceMetadata = 
-					this.resourceMetadataService.getResourceMetadata(
+					this.resourceMetadataService.get(
 						requestContext.getUriInfo().getRequestUri(),
 						mediaType
 					);
@@ -48,16 +46,19 @@ public class ConditionalGetFilter implements ContainerRequestFilter {
 					break;
 				}
 			}
-			
+
 			if(resourceMetadata != null){
 				ResponseBuilder responseBuilder = 
 					request.evaluatePreconditions(
-						resourceMetadata.getLastModified(), resourceMetadata.getEntityTag());
-				
+						resourceMetadata.getLastModified(),
+						resourceMetadata.getEntityTag()
+					);
+
 				if(responseBuilder != null){
-					//return entity tag as well?
-					responseBuilder.header("Last-Modified", resourceMetadata.getLastModified());
+					//https://tools.ietf.org/html/rfc7232#section-4.1
 					responseBuilder.header("Content-Type", resourceMetadata.getContentType().toString());
+					responseBuilder.tag(resourceMetadata.getEntityTag());
+					responseBuilder.lastModified(resourceMetadata.getLastModified());
 					Response response = responseBuilder.build();
 					
 					requestContext.abortWith(response);
@@ -65,5 +66,4 @@ public class ConditionalGetFilter implements ContainerRequestFilter {
 			}	
 		}
 	}
-
 }

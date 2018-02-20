@@ -1,6 +1,9 @@
 package infrastructure.services;
 
 import java.net.URI;
+import java.nio.charset.Charset;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -29,12 +32,12 @@ import infrastructure.ResourceMetadata;
 public class ResourceMetadataService implements infrastructure.ResourceMetadataService {
 
 	private final SQLUnitOfWorkFactory unitOfWorkFactory;
-	
+
 	@Inject
 	public ResourceMetadataService(SQLUnitOfWorkFactory unitOfWorkFactory){
 		this.unitOfWorkFactory = unitOfWorkFactory;
 	}
-	
+
 	/**
      * Retrieves resource metadata for a resource identified by
      * the provided URI.
@@ -44,53 +47,43 @@ public class ResourceMetadataService implements infrastructure.ResourceMetadataS
      * the provided URI.
      */
 	@Override
-	public ResourceMetadata getResourceMetadata(URI uri, MediaType contentType) {
+	public ResourceMetadata get(URI uri, MediaType contentType) {
 
 		SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
-		PreparedStatement statement =
-			unitOfWork.createPreparedStatement(
-				"SELECT RM.* FROM RESOURCE_METADATA AS RM WHERE RM.URI = ? AND RM.CONTENT_TYPE = ?"
-			);
-		ResultSet results = null;
+		final String sql =
+			"SELECT RM.URI, RM.CONTENT_TYPE, RM.NODE_NAME, RM.REVISION, RM.LAST_MODIFIED, RM.ENTITY_TAG FROM RESOURCE_METADATA AS RM WHERE RM.URI = ? AND RM.CONTENT_TYPE = ?";
 		ResourceMetadata resourceMetadata = null;
 
-		try {
+		try (PreparedStatement statement = unitOfWork.createPreparedStatement(sql)){
 			statement.setString(1, uri.toString());
 			statement.setString(2, contentType.toString());
-			results = statement.executeQuery();
+			try(ResultSet results = statement.executeQuery()){
+				if(results.next()){
+					String matchingUri = results.getString(1);
+					String contentTypeString = results.getString(2);
+					String nodeName = results.getString(3);
+					Long revision = results.getLong(4);
+					Timestamp lastModified =
+						results.getTimestamp(5, Calendar.getInstance(TimeZone.getTimeZone("UTC")));
+					String entityTag = results.getString(6);
+					entityTag = entityTag.replace("\"", "");
 
-			if(results.next()){
-				String matchingUri = results.getString(1);
-				String contentTypeString = results.getString(2);
-				Timestamp lastModified = results.getTimestamp(3, Calendar.getInstance(TimeZone.getTimeZone("UTC")));
-				String entityTag = results.getString(4);
-				entityTag = entityTag.replace("\"", "");
-
-				resourceMetadata = 
-					new ResourceMetadata(
-						URI.create(matchingUri),
-						MediaType.valueOf(contentTypeString),
-						lastModified,
-						new EntityTag(entityTag)
-					);
+					resourceMetadata =
+						new ResourceMetadata(
+							URI.create(matchingUri),
+							MediaType.valueOf(contentTypeString),
+							nodeName,
+							revision,
+							lastModified,
+							new EntityTag(entityTag)
+						);
+				}
+				unitOfWork.save();
 			}
-			unitOfWork.save();
-		} catch (SQLException sqlException) {
-			sqlException.printStackTrace();
+		} catch (SQLException x) {
+			//should log instead.
+			x.printStackTrace();
 			unitOfWork.undo();
-		}
-		finally{
-			try{
-				if(statement != null && !statement.isClosed()){
-					statement.close();
-				}
-				if(results != null && !results.isClosed()){
-					results.close();
-				}
-			}
-			catch(SQLException anotherSqlException){
-				anotherSqlException.printStackTrace();
-			}
 		}
 
 		return resourceMetadata;
@@ -103,38 +96,33 @@ public class ResourceMetadataService implements infrastructure.ResourceMetadataS
      * @param resourceMetadata The desired state for the new resource metadata.
      */
 	@Override
-	public void insertResourceMetadata(ResourceMetadata resourceMetadata) {
+	public void insert(ResourceMetadata resourceMetadata) {
 
-		SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();	
-		PreparedStatement statement =
-			unitOfWork.createPreparedStatement(
-				"INSERT INTO RESOURCE_METADATA VALUES (?, ?, ?, ?);"
-			);
+		SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+		final String sql = "INSERT INTO RESOURCE_METADATA (URI, URI_HASH, CONTENT_TYPE, NODE_NAME, REVISION, LAST_MODIFIED, ENTITY_TAG) VALUES (?, ?, ?, ?, ?, ?, ?);";
+		try (PreparedStatement statement = unitOfWork.createPreparedStatement(sql)){
+			MessageDigest digest = MessageDigest.getInstance("MD5");
+			byte[] bytesMD5 =
+				digest.digest(resourceMetadata.getUri().toString().getBytes(Charset.forName("UTF-8")));
 
-		try {
 			statement.setString(1, resourceMetadata.getUri().toString());
-			statement.setString(2, resourceMetadata.getContentType().toString());
+			statement.setString(2, new String(bytesMD5));
+			statement.setString(3, resourceMetadata.getContentType().toString());
+			statement.setString(4, resourceMetadata.getNodeName());
+			statement.setLong(5, resourceMetadata.getRevision());
 			statement.setTimestamp(
-				3, 
-				new Timestamp(resourceMetadata.getLastModified().getTime()), 
+				6, 
+				new Timestamp(resourceMetadata.getLastModified().getTime()),
 				Calendar.getInstance(TimeZone.getTimeZone("UTC"))
 			);
-            statement.setString(4, resourceMetadata.getEntityTag().toString());
-            statement.executeUpdate();
-            unitOfWork.save();
-        } catch (SQLException sqlException) {
-            sqlException.printStackTrace();
-            unitOfWork.undo();
-        } finally {
-            try{
-                if(statement != null && !statement.isClosed()){
-                    statement.close();
-                }
-            }
-            catch(SQLException anotherSqlException){
-                anotherSqlException.printStackTrace();
-            }
-        }
+			statement.setString(7, resourceMetadata.getEntityTag().toString());
+			statement.executeUpdate();
+			unitOfWork.save();
+		} catch (SQLException | NoSuchAlgorithmException x) {
+			//should log instead.
+			x.printStackTrace();
+			unitOfWork.undo();
+		}
 	}
 
 	/**
@@ -144,20 +132,18 @@ public class ResourceMetadataService implements infrastructure.ResourceMetadataS
      * @param resourceMetadata The desired state for the resource metadata.
      */
 	@Override
-	public void updateResourceMetaData(ResourceMetadata resourceMetadata) {
+	public void put(ResourceMetadata resourceMetadata) {
 
 		SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
-		PreparedStatement statement =
-			unitOfWork.createPreparedStatement(
-				"UPDATE RESOURCE_METADATA SET URI = ?, CONTENT_TYPE = ?, LAST_MODIFIED = ?, ENTITY_TAG = ? WHERE URI = ? AND CONTENT_TYPE = ?;"
-			);
+		final String sql =
+			"UPDATE RESOURCE_METADATA SET NODE_NAME = ?, REVISION = ?, LAST_MODIFIED = ?, ENTITY_TAG = ? WHERE URI = ? AND CONTENT_TYPE = ?;";
 
-		try {
-			statement.setString(1, resourceMetadata.getUri().toString());
-			statement.setString(2, resourceMetadata.getContentType().toString());
+		try (PreparedStatement statement = unitOfWork.createPreparedStatement(sql)){
+			statement.setString(1, resourceMetadata.getNodeName());
+			statement.setLong(2, resourceMetadata.getRevision());
 			statement.setTimestamp(
-				3, 
-				new Timestamp(resourceMetadata.getLastModified().getTime()), 
+				3,
+				new Timestamp(resourceMetadata.getLastModified().getTime()),
 				Calendar.getInstance(TimeZone.getTimeZone("UTC"))
 			);
 			statement.setString(4, resourceMetadata.getEntityTag().toString());
@@ -165,17 +151,10 @@ public class ResourceMetadataService implements infrastructure.ResourceMetadataS
 			statement.setString(6, resourceMetadata.getContentType().toString());
 			statement.executeUpdate();
 			unitOfWork.save();
-		} catch (SQLException sqlException) {
-			sqlException.printStackTrace();
+		} catch (SQLException x) {
+			//should log instead.
+			x.printStackTrace();
 			unitOfWork.undo();
-		} finally {
-			try{
-				if(statement != null && !statement.isClosed()){
-					statement.close();
-				}
-			} catch(SQLException anotherSqlException){
-				anotherSqlException.printStackTrace();
-			}
 		}
 	}
 
@@ -185,28 +164,20 @@ public class ResourceMetadataService implements infrastructure.ResourceMetadataS
 	 * @param uri The URI of the resource to delete metadata for.
 	 */
 	@Override
-	public void deleteResourceMetaData(URI uri, MediaType contentType) {
-		
-		SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();		
-		PreparedStatement statement =
-			unitOfWork.createCallableStatement("DELETE FROM RESOURCE_METADATA WHERE URI = ? AND CONTENT_TYPE = ?;");
-		
-		try{
+	public void remove(URI uri, MediaType contentType) {
+
+		SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+		final String sql = "DELETE FROM RESOURCE_METADATA WHERE URI = ? AND CONTENT_TYPE = ?;";
+
+		try(PreparedStatement statement = unitOfWork.createPreparedStatement(sql)){
 			statement.setString(1, uri.toString());
 			statement.setString(2, contentType.toString());
 			statement.executeUpdate();
 			unitOfWork.save();
-		}catch (SQLException sqlException) {
-			sqlException.printStackTrace();
+		}catch (SQLException x) {
+			//should log instead.
+			x.printStackTrace();
 			unitOfWork.undo();
-		} finally {
-			try{
-				if(statement != null && !statement.isClosed()){
-					statement.close();
-				}
-			}catch(SQLException anotherSqlException) {
-				anotherSqlException.printStackTrace();
-			}
 		}
 	}
 
@@ -216,27 +187,19 @@ public class ResourceMetadataService implements infrastructure.ResourceMetadataS
 	 * @param uri The URI of the resource to delete metadata for.
 	 */
 	@Override
-	public void deleteResourceMetaData(URI uri) {
-		
-		SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();		
-		PreparedStatement statement =
-			unitOfWork.createCallableStatement("DELETE FROM RESOURCE_METADATA WHERE URI = ?;");
-		
-		try{
+	public void removeAll(URI uri) {
+
+		SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+		final String sql = "DELETE FROM RESOURCE_METADATA WHERE URI = ?;";
+
+		try(PreparedStatement statement = unitOfWork.createPreparedStatement(sql)){
 			statement.setString(1, uri.toString());
 			statement.executeUpdate();
 			unitOfWork.save();
-		}catch (SQLException sqlException) {
-			sqlException.printStackTrace();
+		}catch (SQLException x) {
+			//should log instead.
+			x.printStackTrace();
 			unitOfWork.undo();
-		} finally {
-			try{
-				if(statement != null && !statement.isClosed()){
-					statement.close();
-				}
-			}catch(SQLException anotherSqlException) {
-				anotherSqlException.printStackTrace();
-			}
 		}
 	}
 }

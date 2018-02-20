@@ -19,6 +19,10 @@ import com.uber.jaeger.dropwizard.JaegerFeature;
 import api.filters.CacheControlFilter;
 import api.filters.ConditionalGetFilter;
 import api.filters.ConditionalPutFilter;
+import api.filters.MetadataDeleteFilter;
+import api.filters.MetadataGetFilter;
+import api.filters.MetadataPostFilter;
+import api.filters.MetadataPutFilter;
 import api.filters.VaryFilter;
 import api.resources.NotificationResource;
 import application.services.NotificationService;
@@ -176,6 +180,10 @@ public class Noti extends Application<NotiConfiguration> {
 		environment.jersey().register(ConditionalGetFilter.class);
 		environment.jersey().register(ConditionalPutFilter.class);
 		environment.jersey().register(VaryFilter.class);
+		environment.jersey().register(MetadataGetFilter.class);
+		environment.jersey().register(MetadataDeleteFilter.class);
+		environment.jersey().register(MetadataPostFilter.class);
+		environment.jersey().register(MetadataPutFilter.class);
 	}
 
 	@Override

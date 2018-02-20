@@ -18,6 +18,7 @@ public class EntityTagService implements infrastructure.EntityTagService {
 
 	/**
 	 * Calculates an entity tag based on the provided representation.
+	 *
 	 * @param entity The representation that the generated entity tag is based off of.
 	 * @return An instance of {@link EntityTag}, representing the entity tag generated.
 	 */
@@ -28,9 +29,27 @@ public class EntityTagService implements infrastructure.EntityTagService {
 			digest = MessageDigest.getInstance("MD5");
 			// need to switch this to not use .toString(); it doesn't do a robust enough job at detecting changes in object state.
 			byte[] bytesMD5 = digest.digest(entity.toString().getBytes(Charset.forName("UTF-8")));
-			String entityTagStringBase64Encoded = 
+			String entityTagStringBase64Encoded =
 				Base64.getEncoder().encodeToString(bytesMD5);
-			
+
+			return new EntityTag(entityTagStringBase64Encoded);
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
+	}
+
+	@Override
+	public EntityTag generateTag(String nodeName, Long revision) {
+		String input = nodeName + revision;
+		byte[] inputBytes = input.getBytes(Charset.forName("UTF-8"));
+		MessageDigest digest;
+		try {
+			digest = MessageDigest.getInstance("MD5");
+			byte[] bytesMD5 = digest.digest(inputBytes);
+			String entityTagStringBase64Encoded =
+				Base64.getEncoder().encodeToString(bytesMD5);
+
 			return new EntityTag(entityTagStringBase64Encoded);
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
