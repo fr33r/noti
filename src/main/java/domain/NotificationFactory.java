@@ -82,7 +82,7 @@ public class NotificationFactory {
 		}
 		Set<Audience> audiences = new HashSet<>();
 		for(api.representations.Audience audience : notification.getAudiences()) {
-			audiences.add(new Audience(audience.getUUID(), audience.getName(), null));
+			audiences.add(new Audience(audience.getUUID(), audience.getName(), new HashSet<>()));
 		}
 		
 		NotificationBuilder builder = new NotificationBuilder();
