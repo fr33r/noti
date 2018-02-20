@@ -8,7 +8,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.TimeZone;
 
 import javax.inject.Inject;
@@ -77,6 +79,48 @@ public class ResourceMetadataService implements infrastructure.ResourceMetadataS
 							lastModified,
 							new EntityTag(entityTag)
 						);
+				}
+				unitOfWork.save();
+			}
+		} catch (SQLException x) {
+			//should log instead.
+			x.printStackTrace();
+			unitOfWork.undo();
+		}
+
+		return resourceMetadata;
+	}
+
+	public List<ResourceMetadata> getAll(URI uri) {
+
+		SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+		final String sql =
+			"SELECT RM.URI, RM.CONTENT_TYPE, RM.NODE_NAME, RM.REVISION, RM.LAST_MODIFIED, RM.ENTITY_TAG FROM RESOURCE_METADATA AS RM WHERE RM.URI = ?;";
+		List<ResourceMetadata> resourceMetadata = new ArrayList<>();
+
+		try (PreparedStatement statement = unitOfWork.createPreparedStatement(sql)){
+			statement.setString(1, uri.toString());
+			try(ResultSet results = statement.executeQuery()){
+				while(results.next()){
+					String matchingUri = results.getString(1);
+					String contentTypeString = results.getString(2);
+					String nodeName = results.getString(3);
+					Long revision = results.getLong(4);
+					Timestamp lastModified =
+						results.getTimestamp(5, Calendar.getInstance(TimeZone.getTimeZone("UTC")));
+					String entityTag = results.getString(6);
+					entityTag = entityTag.replace("\"", "");
+
+					resourceMetadata.add(
+						new ResourceMetadata(
+							URI.create(matchingUri),
+							MediaType.valueOf(contentTypeString),
+							nodeName,
+							revision,
+							lastModified,
+							new EntityTag(entityTag)
+						)
+					);
 				}
 				unitOfWork.save();
 			}

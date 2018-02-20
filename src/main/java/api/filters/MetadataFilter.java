@@ -38,26 +38,7 @@ public abstract class MetadataFilter implements ContainerResponseFilter {
 	public abstract void filter(
 		ContainerRequestContext requestContext,
 		ContainerResponseContext responseContext
-	); /*{
-/*
-		//guard: don't proceed if response is an error or is a response to conditional request.
-		if(responseContext.getStatus() >= 400 || responseContext.getStatus() == 304) return;
-
-		if (this.isGetRequest(requestContext)) {
-			this.get(requestContext, responseContext);
-		} else if(this.isPostRequest(requestContext)) {
-			this.post(requestContext, responseContext);
-		} else if(this.isPutRequest(requestContext)) {
-			this.put(requestContext, responseContext);
-		} else if(this.isDeleteRequest(requestContext)) {
-			this.delete(requestContext, responseContext);
-		} else if(this.isPatchRequest(requestContext)) {
-			this.patch(requestContext, responseContext);
-		} else if(this.isHeadRequest(requestContext)) {
-			this.head(requestContext, responseContext);
-		}
-		
-	}*/
+	);
 
 	public boolean isPostRequest(ContainerRequestContext requestContext) {
 		return requestContext.getRequest().getMethod().equalsIgnoreCase("POST");
@@ -89,6 +70,10 @@ public abstract class MetadataFilter implements ContainerResponseFilter {
 	
 	public boolean isNotModifiedResponse(ContainerResponseContext responseContext) {
 		return responseContext.getStatus() == 304;
+	}
+
+	public boolean isPreconditionFailedResponse(ContainerResponseContext responseContext) {
+		return responseContext.getStatus() == 412;
 	}
 	
 	public URI getRequestUri(ContainerRequestContext requestContext) {
