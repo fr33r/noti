@@ -112,12 +112,28 @@ public final class NotificationRepository extends SQLRepository implements Repos
 		if(this.get(notification.getId()) == null) {
 			this.add(notification);
 		} else {
-			try(final PreparedStatement pStatement = this.getUnitOfWork().createPreparedStatement(sql)) {
-				pStatement.setString(1, notification.content());
-				pStatement.setString(2, notification.content().toString());
-				pStatement.setTimestamp(3, new Timestamp(notification.sentAt().getTime()));
-				pStatement.setTimestamp(4, new Timestamp(notification.sendAt().getTime()));
-				pStatement.executeUpdate();
+			try(
+				final PreparedStatement replaceNotificationStatement =
+					this.getUnitOfWork().createPreparedStatement(sql)
+			) {
+				replaceNotificationStatement.setString(1, notification.content());
+				replaceNotificationStatement.setString(2, notification.status().toString());
+
+				if(notification.sentAt() == null) {
+					replaceNotificationStatement.setNull(3, Types.TIMESTAMP);
+				} else {
+					replaceNotificationStatement.setTimestamp(3, new Timestamp(notification.sentAt().getTime()));
+				}
+
+				if(notification.sendAt() == null) {
+					replaceNotificationStatement.setNull(4, Types.TIMESTAMP);
+				} else {
+					replaceNotificationStatement.setTimestamp(4, new Timestamp(notification.sendAt().getTime()));
+				}
+
+				replaceNotificationStatement.setString(5, notification.getId().toString());
+
+				replaceNotificationStatement.executeUpdate();
 			} catch (SQLException x) {
 				throw new RuntimeException(x);
 			}
