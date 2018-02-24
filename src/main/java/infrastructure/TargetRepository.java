@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import domain.EntitySQLFactory;
-import domain.Tag;
 import domain.Target;
 
 /**
@@ -41,8 +40,6 @@ public final class TargetRepository extends SQLRepository implements Repository<
 		Target target = null;
 		final String targetSQL = 
 			"SELECT T.* FROM TARGET AS T WHERE T.UUID = ?;";
-		final String tagSQL = 
-			"SELECT T.* FROM TAG AS T INNER JOIN TARGET_TAG AS TT ON T.UUID = TT.TAG_UUID WHERE TT.TARGET_UUID = ?;";
 		try(
 			PreparedStatement getTargetStatement = 
 				this.getUnitOfWork().createPreparedStatement(targetSQL)
@@ -67,107 +64,10 @@ public final class TargetRepository extends SQLRepository implements Repository<
 		final String sql = 
 			"UPDATE TARGET SET NAME = ?, PHONE_NUMBER = ? WHERE UUID = ?;";
 		
-		//need to identify which tags are already associated to target.
-		//perform a diff between the incoming list of tags and current list of tags.
-		//add association to new tags. delete associations to missing tags.
-
 		Target existingTarget = this.get(target.getId());
 		if(existingTarget == null) {
 			this.add(target);
 		} else {
-			final String getTagSQL = 
-				"SELECT T.* FROM TAG AS T WHERE T.NAME = ?;";
-			final String createTagSQL = 
-				"INSERT INTO TAG (NAME) VALUES (?);";
-			final String associateTagSQL = 
-				"INSERT INTO TARGET_TAG (TARGET_UUID, TAG_UUID) VALUES (?, ?);";
-			final String disassociateTagSQL = 
-				"DELETE FROM TARGET_TAG WHERE TAG_UUID = ? AND TARGET_UUID = ?;";
-
-			Set<Tag> tagsToAdd = new HashSet<>();
-			Set<Tag> tagsToRemove = new HashSet<>();
-
-			//determine which tags to remove.
-			for(Tag tag : existingTarget.getTags()){
-				if(!target.getTags().contains(tag)) {
-					tagsToRemove.add(tag);
-				}
-			}
-
-			//determine which tags to add.
-			for(Tag tag : target.getTags()){
-				if(!existingTarget.getTags().contains(tag)){
-					tagsToAdd.add(tag);
-				}
-			}
-
-			//remove tags.
-			for(Tag tagToRemove : tagsToRemove){
-				try(PreparedStatement pStatement = 
-					this.getUnitOfWork().createPreparedStatement(disassociateTagSQL)){
-					pStatement.setString(1, tagToRemove.getName());
-					pStatement.setString(2, target.getId().toString());
-					pStatement.executeUpdate();
-				} catch (SQLException x) {
-					throw new RuntimeException(x);
-				}
-			}
-
-			//add tags.
-			for(Tag tagToAdd : tagsToAdd){
-				boolean isExistingTag = false;
-				String existingTagUUID = null;
-
-				//first see if the tag being added exists.
-				try(PreparedStatement pStatement = 
-					this.getUnitOfWork().createPreparedStatement(getTagSQL)){
-					pStatement.setString(1, tagToAdd.getName());
-					ResultSet results = pStatement.executeQuery();
-					isExistingTag = results.next();
-					existingTagUUID = results.getString("TAG_UUID");
-				} catch (SQLException x) {
-					throw new RuntimeException(x);
-				}
-
-				//if the tag being added doesn't exist...
-				if(!isExistingTag){
-
-					//create the tag.
-					try(PreparedStatement pStatement = 
-						this.getUnitOfWork().createPreparedStatement(createTagSQL)){
-						pStatement.setString(1, tagToAdd.getName());
-						pStatement.executeUpdate();
-					} catch (SQLException x) {
-						throw new RuntimeException(x);
-					}
-
-					//retrieve the tag just created.
-					try(
-						PreparedStatement getTagStatement =
-							this.getUnitOfWork().createPreparedStatement(getTagSQL)
-					){
-						getTagStatement.setString(1, tagToAdd.getName());
-						try(ResultSet results = getTagStatement.executeQuery()) {
-							isExistingTag = results.next();
-							existingTagUUID = results.getString("TAG_UUID");
-						}
-					} catch (SQLException x) {
-						throw new RuntimeException(x);
-					}
-				}
-
-				//associate the new tag to the target.
-				try(
-					PreparedStatement associateTagStatement = 
-						this.getUnitOfWork().createPreparedStatement(associateTagSQL)
-				){
-					associateTagStatement.setString(1, target.getId().toString());
-					associateTagStatement.setString(2, existingTagUUID);
-					associateTagStatement.executeUpdate();
-				} catch (SQLException x) {
-					throw new RuntimeException(x);
-				}
-			}
 
 			//update the target.
 			try(
@@ -193,14 +93,6 @@ public final class TargetRepository extends SQLRepository implements Repository<
 
 		final String createTargetSQL = 
 			"INSERT INTO TARGET (UUID, NAME, PHONE_NUMBER) VALUES (?, ?, ?);";
-		final String createTagSQL = 
-			"INSERT INTO TAG (UUID, NAME) VALUES (?, ?);";
-		final String associateTagSQL = 
-			"INSERT INTO TARGET_TAG(TARGET_UUID, TAG_UUID) VALUES(?, ?);";
-		final String getTagSQL = 
-			"SELECT T.* FROM TAG AS T WHERE T.UUID = ?;";
-		final String getTagByNameSQL = 
-			"SELECT T.* FROM TAG AS T WHERE T.NAME = ?;";
 
 		//create target.
 		try(PreparedStatement pStatement = 
@@ -211,57 +103,6 @@ public final class TargetRepository extends SQLRepository implements Repository<
 			pStatement.executeUpdate();
 		} catch (SQLException x) {
 			throw new RuntimeException(x);
-		}
-
-		for(Tag tag : target.getTags()){
-			boolean isExistingTag = false;
-			String existingTagUUID = null;
-
-			//check if tag already exists.
-			try(PreparedStatement pStatement = 
-				this.getUnitOfWork().createPreparedStatement(getTagByNameSQL)){
-				pStatement.setString(1, tag.getName());
-				ResultSet results = pStatement.executeQuery();
-				if(isExistingTag = results.next()){
-					existingTagUUID = results.getString("UUID");
-				}
-			} catch (SQLException x){
-				throw new RuntimeException(x);
-			}
-
-			//if the tag being added doesn't exist...
-			if(!isExistingTag){
-
-				//create the tag.
-				try(PreparedStatement pStatement = 
-					this.getUnitOfWork().createPreparedStatement(createTagSQL)){
-					pStatement.setString(1, tag.getName());
-					pStatement.executeUpdate();
-				} catch (SQLException x) {
-					throw new RuntimeException(x);
-				}
-
-				//retrieve the tag just created.
-				try(PreparedStatement pStatement = 
-					this.getUnitOfWork().createPreparedStatement(getTagSQL)){
-					pStatement.setString(1, tag.getName());
-					ResultSet results = pStatement.executeQuery();
-					isExistingTag = results.next();
-					existingTagUUID = results.getString("UUID");
-				} catch (SQLException x) {
-					throw new RuntimeException(x);
-				}
-			}
-
-			//associate the new tag to the target.
-			try(PreparedStatement pStatement = 
-				this.getUnitOfWork().createPreparedStatement(associateTagSQL)){
-				pStatement.setString(1, target.getId().toString());
-				pStatement.setString(2, existingTagUUID);
-				pStatement.executeUpdate();
-			} catch (SQLException x) {
-				throw new RuntimeException(x);
-			}
 		}
 	}
 

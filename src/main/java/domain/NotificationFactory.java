@@ -74,11 +74,13 @@ public class NotificationFactory {
 	private Notification create(api.representations.Notification notification) {
 		Set<Target> targets = new HashSet<>();
 		for(api.representations.Target target : notification.getTargets()) {
-			Set<Tag> tags = new HashSet<>();
-			for(api.representations.Tag tag : target.getTags()) {
-				tags.add(new Tag(tag.getName()));
-			}
-			targets.add(new Target(target.getUUID(), target.getName(), new PhoneNumber(target.getPhoneNumber()), tags));
+			targets.add(
+				new Target(
+					target.getUUID(),
+					target.getName(),
+					new PhoneNumber(target.getPhoneNumber())
+				)
+			);
 		}
 		Set<Audience> audiences = new HashSet<>();
 		for(api.representations.Audience audience : notification.getAudiences()) {

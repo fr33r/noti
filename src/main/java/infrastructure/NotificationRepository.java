@@ -46,8 +46,6 @@ public final class NotificationRepository extends SQLRepository implements Repos
 			"SELECT N.* FROM NOTIFICATION AS N WHERE N.UUID = ?;";
 		final String targetSQL =
 			"SELECT T.* FROM TARGET AS T INNER JOIN NOTIFICATION_TARGET AS NT ON T.UUID = NT.TARGET_UUID WHERE NT.NOTIFICATION_UUID = ?";
-		final String tagSQL =
-			"SELECT TT.TARGET_UUID, TG.* FROM (" + targetSQL + ") AS TARGETS INNER JOIN TARGET_TAG AS TT ON TARGETS.UUID = TT.TARGET_UUID INNER JOIN TAG AS TG ON TT.TAG_UUID = TG.UUID;";
 		final String messageSQL =
 			"SELECT M.* FROM MESSAGE AS M WHERE M.NOTIFICATION_UUID = ?;";
 		final String audiencesSQL =
@@ -59,8 +57,6 @@ public final class NotificationRepository extends SQLRepository implements Repos
 				this.getUnitOfWork().createPreparedStatement(notificationSQL);
 			final PreparedStatement getTargetsStatement = 
 				this.getUnitOfWork().createPreparedStatement(targetSQL);
-			final PreparedStatement getTagsStatement = 
-				this.getUnitOfWork().createPreparedStatement(tagSQL);
 			final PreparedStatement getMessagesStatement = 
 				this.getUnitOfWork().createPreparedStatement(messageSQL);
 			final PreparedStatement getAudiencesStatement =
@@ -70,7 +66,6 @@ public final class NotificationRepository extends SQLRepository implements Repos
 		) {
 			getNotificationStatement.setString(1, uuid.toString());
 			getTargetsStatement.setString(1, uuid.toString());
-			getTagsStatement.setString(1, uuid.toString());
 			getMessagesStatement.setString(1, uuid.toString());
 			getAudiencesStatement.setString(1, uuid.toString());
 			getAudienceMembersStatement.setString(1, uuid.toString());
@@ -78,7 +73,6 @@ public final class NotificationRepository extends SQLRepository implements Repos
 			try (
 				final ResultSet notificationRS = getNotificationStatement.executeQuery();
 				final ResultSet targetsRS = getTargetsStatement.executeQuery();
-				final ResultSet tagsRS = getTagsStatement.executeQuery();
 				final ResultSet messagesRS = getMessagesStatement.executeQuery();
 				final ResultSet audiencesRS = getAudiencesStatement.executeQuery();
 				final ResultSet membersRS = getAudienceMembersStatement.executeQuery()
@@ -87,7 +81,6 @@ public final class NotificationRepository extends SQLRepository implements Repos
 					this.notificationFactory.reconstitute(
 						notificationRS,
 						targetsRS,
-						tagsRS,
 						messagesRS,
 						audiencesRS,
 						membersRS
