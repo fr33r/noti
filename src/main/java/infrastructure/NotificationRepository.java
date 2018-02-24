@@ -216,13 +216,32 @@ public final class NotificationRepository extends SQLRepository implements Repos
 	@Override
 	public void remove(final UUID uuid) {
 
-		final String sql = "DELETE FROM NOTIFICATION WHERE UUID = ?;";
+		final String deleteNotificationSQL = "DELETE FROM NOTIFICATION WHERE UUID = ?;";
+		final String deleteMessagesSQL = "DELETE FROM MESSAGE WHERE NOTIFICATION_UUID = ?;";
+		final String deleteTargetAssociationsSQL = "DELETE FROM NOTIFICATION_TARGET WHERE NOTIFICATION_UUID = ?;";
+		final String deleteAudienceAssociationsSQL = "DELETE FROM NOTIFICATION_AUDIENCE WHERE NOTIFICATION_UUID = ?;";
 		try(
-			final PreparedStatement pStatement =
-				this.getUnitOfWork().createPreparedStatement(sql)
+			final PreparedStatement deleteMessagesStatement =
+				this.getUnitOfWork().createPreparedStatement(deleteMessagesSQL);
+			final PreparedStatement deleteNotificationStatement =
+				this.getUnitOfWork().createPreparedStatement(deleteNotificationSQL);
+			final PreparedStatement deleteTargetAssociationsStatement =
+				this.getUnitOfWork().createPreparedStatement(deleteTargetAssociationsSQL);
+			final PreparedStatement deleteAudienceAssociationsStatement =
+				this.getUnitOfWork().createPreparedStatement(deleteAudienceAssociationsSQL)
 		) {
-			pStatement.setString(1, uuid.toString());
-			pStatement.executeUpdate();
+			deleteMessagesStatement.setString(1, uuid.toString());
+			deleteMessagesStatement.executeUpdate();
+			
+			deleteTargetAssociationsStatement.setString(1, uuid.toString());
+			deleteTargetAssociationsStatement.executeUpdate();
+
+			deleteAudienceAssociationsStatement.setString(1, uuid.toString());
+			deleteAudienceAssociationsStatement.executeUpdate();
+			
+			deleteNotificationStatement.setString(1, uuid.toString());
+			deleteNotificationStatement.executeUpdate();
+			
 		} catch (SQLException x) {
 			throw new RuntimeException(x);
 		}
