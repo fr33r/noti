@@ -55,7 +55,6 @@ public class NotificationSQLFactory extends EntitySQLFactory<Notification, UUID>
 		
 		Notification notification = null;
 		Set<Target> targets = null;
-		Map<UUID, Set<Tag>> tags = null;
 		try{
 			if(statement.isClosed()) { return null; }
 
@@ -66,18 +65,6 @@ public class NotificationSQLFactory extends EntitySQLFactory<Notification, UUID>
 					notification.includeRecipient(target);
 				}
 			}
-
-			if(statement.getMoreResults()){
-				tags = this.extractTags(statement.getResultSet());
-				for(Target target : notification.directRecipients()){
-					if(tags.containsKey(target.getId())){
-						for(Tag tag : tags.get(target.getId())) {
-							target.tag(tag);
-						}
-					}
-				}	
-			}
-
 		} catch (SQLException x){
 			throw new RuntimeException(x);
 		} 
@@ -106,22 +93,6 @@ public class NotificationSQLFactory extends EntitySQLFactory<Notification, UUID>
 		String phoneNumber = results.getString(phoneNumberColumn);
 
 		return new Target(new Target(UUID.fromString(uuid), name, new PhoneNumber(phoneNumber)));
-	}
-
-	private Map<UUID, Set<Tag>> extractTags(ResultSet results) throws SQLException {
-		Map<UUID, Set<Tag>> tagsForTargets = new HashMap<>();
-		while(results.next()){
-			String targetUUID = results.getString(targetUUIDColumn);
-			String tagName = results.getString(nameColumn);
-			if(!tagsForTargets.containsKey(UUID.fromString(targetUUID))){
-				Set<Tag> tags = new HashSet<>();
-				tags.add(new Tag(tagName));
-				tagsForTargets.put(UUID.fromString(targetUUID), tags);
-			}else{
-				tagsForTargets.get(UUID.fromString(targetUUID)).add(new Tag(tagName));
-			}
-		}
-		return tagsForTargets;
 	}
 
 	private Set<Target> extractTargets(ResultSet results) throws SQLException {
@@ -206,7 +177,6 @@ public class NotificationSQLFactory extends EntitySQLFactory<Notification, UUID>
 
 		Notification notification = null;
 		Set<Target> targets = null;
-		Map<UUID, Set<Tag>> tags = null;
 		Set<Message> messages = null;
 		Set<Audience> audiences = null;
 		Map<UUID, Set<Target>> members = null;
@@ -222,28 +192,17 @@ public class NotificationSQLFactory extends EntitySQLFactory<Notification, UUID>
 			}
 
 			if(results.length > 2){
-				tags = this.extractTags(results[2]);
-				for(Target target : targets){
-					if(tags.containsKey(target.getId())){
-						for(Tag tag : tags.get(target.getId())) {
-							target.tag(tag);
-						}
-					}
-				}	
-			}
-			
-			if(results.length > 3){
-				messages = this.extractMessages(results[3]);
+				messages = this.extractMessages(results[2]);
 				notification.messages(messages);
 			}
 
-			if(results.length > 4){
-				audiences = this.extractAudiences(results[4]);
+			if(results.length > 3){
+				audiences = this.extractAudiences(results[3]);
 				notification.audiences(audiences);
 			}
 
-			if(results.length > 5){
-				members = this.extractMembers(results[5]);
+			if(results.length > 4){
+				members = this.extractMembers(results[4]);
 				for(Audience audience : audiences) {
 					if(members.containsKey(audience.getId())) {
 						for(Target member : members.get(audience.getId())) {
