@@ -17,7 +17,7 @@ import org.jvnet.hk2.annotations.Service;
 public class TargetSQLFactory extends EntitySQLFactory<Target, UUID> {
 
 	private static final String uuidColumn			= "uuid";
-	private static final String phoneNumberColumn	= "phoneNumber";
+	private static final String phoneNumberColumn	= "phone_number";
 	private static final String nameColumn			= "name";
 
 	@Inject

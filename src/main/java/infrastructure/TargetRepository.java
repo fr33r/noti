@@ -43,11 +43,15 @@ public final class TargetRepository extends SQLRepository implements Repository<
 			"SELECT T.* FROM TARGET AS T WHERE T.UUID = ?;";
 		final String tagSQL = 
 			"SELECT T.* FROM TAG AS T INNER JOIN TARGET_TAG AS TT ON T.UUID = TT.TAG_UUID WHERE TT.TARGET_UUID = ?;";
-		try(PreparedStatement pStatement = 
-			this.getUnitOfWork().createPreparedStatement(targetSQL + tagSQL)){
-			pStatement.setString(1, uuid.toString());
-			pStatement.setString(2, uuid.toString());
-			target = this.targetFactory.reconstitute(pStatement);
+		try(
+			PreparedStatement getTargetStatement = 
+				this.getUnitOfWork().createPreparedStatement(targetSQL)
+		){
+			getTargetStatement.setString(1, uuid.toString());
+
+			try(ResultSet targetRs = getTargetStatement.executeQuery()) {
+				target = this.targetFactory.reconstitute(targetRs);
+			}
 		} catch (SQLException x) {
 			throw new RuntimeException(x);
 		}
@@ -138,34 +142,42 @@ public final class TargetRepository extends SQLRepository implements Repository<
 					}
 
 					//retrieve the tag just created.
-					try(PreparedStatement pStatement = 
-						this.getUnitOfWork().createPreparedStatement(getTagSQL)){
-						pStatement.setString(1, tagToAdd.getName());
-						ResultSet results = pStatement.executeQuery();
-						isExistingTag = results.next();
-						existingTagUUID = results.getString("TAG_UUID");
+					try(
+						PreparedStatement getTagStatement =
+							this.getUnitOfWork().createPreparedStatement(getTagSQL)
+					){
+						getTagStatement.setString(1, tagToAdd.getName());
+						try(ResultSet results = getTagStatement.executeQuery()) {
+							isExistingTag = results.next();
+							existingTagUUID = results.getString("TAG_UUID");
+						}
 					} catch (SQLException x) {
 						throw new RuntimeException(x);
 					}
 				}
 
 				//associate the new tag to the target.
-				try(PreparedStatement pStatement = 
-					this.getUnitOfWork().createPreparedStatement(associateTagSQL)){
-					pStatement.setString(1, target.getId().toString());
-					pStatement.setString(2, existingTagUUID);
-					pStatement.executeUpdate();
+				try(
+					PreparedStatement associateTagStatement = 
+						this.getUnitOfWork().createPreparedStatement(associateTagSQL)
+				){
+					associateTagStatement.setString(1, target.getId().toString());
+					associateTagStatement.setString(2, existingTagUUID);
+					associateTagStatement.executeUpdate();
 				} catch (SQLException x) {
 					throw new RuntimeException(x);
 				}
 			}
 
 			//update the target.
-			try(PreparedStatement pStatement = 
-				this.getUnitOfWork().createPreparedStatement(sql)) {
-				pStatement.setString(1, target.getName());
-				pStatement.setString(2, target.getPhoneNumber().toE164());
-				pStatement.executeUpdate();
+			try(
+				PreparedStatement updateTargetStatement =
+					this.getUnitOfWork().createPreparedStatement(sql)
+			) {
+				updateTargetStatement.setString(1, target.getName());
+				updateTargetStatement.setString(2, target.getPhoneNumber().toE164());
+				updateTargetStatement.setString(3, target.getId().toString());
+				updateTargetStatement.executeUpdate();
 			} catch (SQLException x) {
 				throw new RuntimeException(x);
 			}
@@ -177,7 +189,6 @@ public final class TargetRepository extends SQLRepository implements Repository<
 	 */
 	@Override
 	public void add(Target target) {
-		//WHERE ARE UUIDs FOR NEW ENTITIES BEING CREATED?
 		//SHOULD I SUPPORT SOFT DELETIONS FOR ENTITIES?
 
 		final String createTargetSQL = 

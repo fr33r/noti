@@ -25,7 +25,9 @@ import api.filters.MetadataPostFilter;
 import api.filters.MetadataPutFilter;
 import api.filters.VaryFilter;
 import api.resources.NotificationResource;
+import api.resources.TargetResource;
 import application.services.NotificationService;
+import application.services.TargetService;
 import configuration.DatabaseConfiguration;
 import configuration.NotiConfiguration;
 import configuration.SMSConfiguration;
@@ -34,6 +36,7 @@ import domain.Notification;
 import domain.NotificationFactory;
 import domain.NotificationSQLFactory;
 import domain.Target;
+import domain.TargetFactory;
 import domain.TargetSQLFactory;
 import infrastructure.EntityTagService;
 import infrastructure.MySQLUnitOfWorkFactory;
@@ -54,7 +57,7 @@ import io.dropwizard.setup.Environment;
 import io.dropwizard.util.Duration;
 import mappers.Mapper;
 import mappers.NotificationMapper;
-
+import mappers.TargetMapper;
 
 public class Noti extends Application<NotiConfiguration> {
 
@@ -173,6 +176,7 @@ public class Noti extends Application<NotiConfiguration> {
 
 	private void initializeResources(NotiConfiguration configuration, Environment environment){
 		environment.jersey().register(NotificationResource.class);
+		environment.jersey().register(TargetResource.class);
 	}
 
 	private void initializeFilters(NotiConfiguration configuration, Environment environment) {
@@ -202,6 +206,15 @@ public class Noti extends Application<NotiConfiguration> {
 				this.bind(NotificationService.class).to(application.NotificationService.class);
 			}
 		});
+
+		environment.jersey().register(new AbstractBinder() {
+
+			@Override
+			protected void configure() {
+				this.bind(TargetService.class).to(application.TargetService.class);
+			}
+		});
+
 
 		environment.jersey().register(new AbstractBinder() {
 
@@ -262,7 +275,24 @@ public class Noti extends Application<NotiConfiguration> {
 
 			@Override
 			protected void configure() {
+				this.bind(TargetMapper.class)
+					.to(new TypeLiteral<Mapper<domain.Target, api.representations.Target>>(){});
+			}
+		});
+
+		environment.jersey().register(new AbstractBinder() {
+
+			@Override
+			protected void configure() {
 				this.bindAsContract(NotificationFactory.class);
+			}
+		});
+
+		environment.jersey().register(new AbstractBinder() {
+
+			@Override
+			protected void configure() {
+				this.bindAsContract(TargetFactory.class);
 			}
 		});
 	}
