@@ -111,11 +111,20 @@ public final class TargetRepository extends SQLRepository implements Repository<
 	 */
 	@Override
 	public void remove(UUID uuid) {
-		final String sql = "DELETE FROM TARGET WHERE UUID = ?;";
-		try(PreparedStatement pStatement = 
-			this.getUnitOfWork().createPreparedStatement(sql)){
-			pStatement.setString(1, uuid.toString());
-			pStatement.executeUpdate();
+		final String deleteTargetSQL = "DELETE FROM TARGET WHERE UUID = ?;";
+		final String deleteNotificationsAssociationSQL =
+			"DELETE FROM NOTIFICATION_TARGET WHERE TARGET_UUID = ?;";
+		try(
+			PreparedStatement deleteNotificationAssociationsStatement =
+				this.getUnitOfWork().createPreparedStatement(deleteNotificationsAssociationSQL);
+			PreparedStatement deleteTargetStatement =
+				this.getUnitOfWork().createPreparedStatement(deleteTargetSQL)
+		){
+			deleteNotificationAssociationsStatement.setString(1, uuid.toString());
+			deleteNotificationAssociationsStatement.executeUpdate();
+
+			deleteTargetStatement.setString(1, uuid.toString());
+			deleteTargetStatement.executeUpdate();
 		} catch (SQLException x) {
 			throw new RuntimeException(x);
 		}
