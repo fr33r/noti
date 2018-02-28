@@ -195,11 +195,17 @@ public final class AudienceRepository extends SQLRepository implements Repositor
 	@Override
 	public void remove(final UUID uuid) {
 
+		final String disassociateMembersSQL = "DELETE FROM AUDIENCE_TARGET WHERE AUDIENCE_UUID = ?;";
 		final String audienceSQL = "DELETE FROM AUDIENCE WHERE UUID = ?;";
 		try(
-			final PreparedStatement removeAudienceStatement = 
-				this.getUnitOfWork().createPreparedStatement(audienceSQL)
+			final PreparedStatement removeAudienceStatement =
+				this.getUnitOfWork().createPreparedStatement(audienceSQL);
+			final PreparedStatement disassociateMembersStatement =
+				this.getUnitOfWork().createPreparedStatement(disassociateMembersSQL)
 		) {
+			disassociateMembersStatement.setString(1, uuid.toString());
+			disassociateMembersStatement.executeUpdate();
+
 			removeAudienceStatement.setString(1, uuid.toString());
 			removeAudienceStatement.executeUpdate();
 		} catch (SQLException x) {

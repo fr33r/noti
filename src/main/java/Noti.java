@@ -24,13 +24,18 @@ import api.filters.MetadataGetFilter;
 import api.filters.MetadataPostFilter;
 import api.filters.MetadataPutFilter;
 import api.filters.VaryFilter;
+import api.resources.AudienceResource;
 import api.resources.NotificationResource;
 import api.resources.TargetResource;
+import application.services.AudienceService;
 import application.services.NotificationService;
 import application.services.TargetService;
 import configuration.DatabaseConfiguration;
 import configuration.NotiConfiguration;
 import configuration.SMSConfiguration;
+import domain.Audience;
+import domain.AudienceSQLFactory;
+import domain.AudienceFactory;
 import domain.EntitySQLFactory;
 import domain.Notification;
 import domain.NotificationFactory;
@@ -55,6 +60,7 @@ import io.dropwizard.metrics.graphite.GraphiteReporterFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.util.Duration;
+import mappers.AudienceMapper;
 import mappers.Mapper;
 import mappers.NotificationMapper;
 import mappers.TargetMapper;
@@ -176,6 +182,7 @@ public class Noti extends Application<NotiConfiguration> {
 
 	private void initializeResources(NotiConfiguration configuration, Environment environment){
 		environment.jersey().register(NotificationResource.class);
+		environment.jersey().register(AudienceResource.class);
 		environment.jersey().register(TargetResource.class);
 	}
 
@@ -215,6 +222,13 @@ public class Noti extends Application<NotiConfiguration> {
 			}
 		});
 
+		environment.jersey().register(new AbstractBinder() {
+
+			@Override
+			protected void configure() {
+				this.bind(AudienceService.class).to(application.AudienceService.class);
+			}
+		});
 
 		environment.jersey().register(new AbstractBinder() {
 
@@ -235,6 +249,10 @@ public class Noti extends Application<NotiConfiguration> {
 				this.bind(TargetSQLFactory.class)
 					.named("TargetSQLFactory")
 					.to(new TypeLiteral<EntitySQLFactory<Target, UUID>>(){});
+
+				this.bind(AudienceSQLFactory.class)
+					.named("AudienceSQLFactory")
+					.to(new TypeLiteral<EntitySQLFactory<Audience, UUID>>(){});
 			}
 		});
 
@@ -284,6 +302,15 @@ public class Noti extends Application<NotiConfiguration> {
 
 			@Override
 			protected void configure() {
+				this.bind(AudienceMapper.class)
+					.to(new TypeLiteral<Mapper<domain.Audience, api.representations.Audience>>(){});
+			}
+		});
+
+		environment.jersey().register(new AbstractBinder() {
+
+			@Override
+			protected void configure() {
 				this.bindAsContract(NotificationFactory.class);
 			}
 		});
@@ -295,6 +322,15 @@ public class Noti extends Application<NotiConfiguration> {
 				this.bindAsContract(TargetFactory.class);
 			}
 		});
+
+		environment.jersey().register(new AbstractBinder() {
+
+			@Override
+			protected void configure() {
+				this.bindAsContract(AudienceFactory.class);
+			}
+		});
+
 	}
 
 	public static void main(String[] args) throws Exception {
