@@ -16,6 +16,9 @@ import com.google.common.collect.ImmutableList;
 import com.uber.jaeger.dropwizard.Configuration;
 import com.uber.jaeger.dropwizard.JaegerFeature;
 
+import api.RepresentationFactory;
+import api.JSONRepresentationFactory;
+import api.XMLRepresentationFactory;
 import api.filters.CacheControlFilter;
 import api.filters.ConditionalGetFilter;
 import api.filters.ConditionalPutFilter;
@@ -27,12 +30,15 @@ import api.filters.VaryFilter;
 import api.resources.AudienceResource;
 import api.resources.NotificationResource;
 import api.resources.TargetResource;
+
 import application.services.AudienceService;
 import application.services.NotificationService;
 import application.services.TargetService;
+
 import configuration.DatabaseConfiguration;
 import configuration.NotiConfiguration;
 import configuration.SMSConfiguration;
+
 import domain.Audience;
 import domain.AudienceSQLFactory;
 import domain.AudienceFactory;
@@ -43,6 +49,7 @@ import domain.NotificationSQLFactory;
 import domain.Target;
 import domain.TargetFactory;
 import domain.TargetSQLFactory;
+
 import infrastructure.EntityTagService;
 import infrastructure.MySQLUnitOfWorkFactory;
 import infrastructure.RepositoryFactory;
@@ -51,6 +58,7 @@ import infrastructure.SQLRepositoryFactory;
 import infrastructure.SQLUnitOfWorkFactory;
 import infrastructure.ShortMessageService;
 import infrastructure.TwilioShortMessageService;
+
 import io.dropwizard.Application;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
@@ -60,6 +68,7 @@ import io.dropwizard.metrics.graphite.GraphiteReporterFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.util.Duration;
+
 import mappers.AudienceMapper;
 import mappers.Mapper;
 import mappers.NotificationMapper;
@@ -330,6 +339,27 @@ public class Noti extends Application<NotiConfiguration> {
 				this.bindAsContract(AudienceFactory.class);
 			}
 		});
+
+		environment.jersey().register(new AbstractBinder() {
+
+			@Override
+			protected void configure() {
+				this.bind(JSONRepresentationFactory.class)
+					.named("JSONRepresentationFactory")
+					.to(RepresentationFactory.class);
+			}
+		});
+
+		environment.jersey().register(new AbstractBinder() {
+
+			@Override
+			protected void configure() {
+				this.bind(XMLRepresentationFactory.class)
+					.named("XMLRepresentationFactory")
+					.to(RepresentationFactory.class);
+			}
+		});
+
 
 	}
 

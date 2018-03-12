@@ -1,16 +1,21 @@
 package api.resources;
 
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
-
+import api.RepresentationFactory;
 import api.representations.Notification;
-import javax.inject.Inject;
+import api.representations.Representation;
+
 import application.NotificationService;
 
 import java.net.URI;
 import java.util.UUID;
+
+import javax.inject.Named;
+import javax.inject.Inject;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriInfo;
 
 /**
  * Represents a notification resource for this RESTful API.
@@ -19,6 +24,8 @@ import java.util.UUID;
 public class NotificationResource implements api.NotificationResource{
 
 	private final NotificationService notificationService;
+	private final RepresentationFactory jsonRepresentationFactory;
+	private final RepresentationFactory xmlRepresentationFactory;
 
 	/**
 	 * Construct a new {@link NotificationResource} instance.
@@ -26,9 +33,13 @@ public class NotificationResource implements api.NotificationResource{
 	 */
 	@Inject
 	public NotificationResource(
-		NotificationService notificationService
+		NotificationService notificationService,
+		@Named("JSONRepresentationFactory") RepresentationFactory jsonRepresentationFactory,
+		@Named("XMLRepresentationFactory") RepresentationFactory xmlRepresentationFactory
 	) {
 		this.notificationService = notificationService;
+		this.jsonRepresentationFactory = jsonRepresentationFactory;
+		this.xmlRepresentationFactory = xmlRepresentationFactory;
 	}
 
 	/**
@@ -41,7 +52,17 @@ public class NotificationResource implements api.NotificationResource{
 	public Response get(HttpHeaders headers, UriInfo uriInfo, String uuid) {
 		Notification notification = 
 			this.notificationService.getNotification(UUID.fromString(uuid));
-		return Response.ok(notification).build();
+
+		api.representations.Representation representation;
+
+		if(headers.getAcceptableMediaTypes().contains(MediaType.APPLICATION_XML_TYPE)) {
+			representation =
+				this.xmlRepresentationFactory.createNotificationRepresentation(uriInfo, notification);
+		} else {
+			representation =
+				this.jsonRepresentationFactory.createNotificationRepresentation(uriInfo, notification);
+		}
+		return Response.ok(representation).build();
 	}
 
 	/**

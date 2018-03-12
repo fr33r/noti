@@ -1,34 +1,38 @@
-package api.representations;
+package api.representations.json;
 
-import api.representations.NotificationStatus;
-import api.representations.Target;
+import api.representations.Representation;
+import api.representations.json.Audience;
+import api.representations.json.NotificationStatus;
+import api.representations.json.Target;
 
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import javax.ws.rs.core.MediaType;
+
 /**
- * Defines the general representation of a Notification resource.
- * This representation can easily be deserialized and serialized
- * for the 'application/json' and 'application/xml' media types.
+ * Defines the 'application/json' representation of a Notification resource.
  *
  * @author Jon Freer
  */
-public class Notification {
+public final class Notification extends Representation {
 
-	private UUID uuid;
-	private String content;
-	private Date sentAt;
-	private Date sendAt;
-	private NotificationStatus status;
-	private Set<Target> targets;
-	private Set<Audience> audiences;
+	private final UUID uuid;
+	private final String content;
+	private final Date sentAt;
+	private final Date sendAt;
+	private final NotificationStatus status;
+	private final Set<Target> targets;
+	private final Set<Audience> audiences;
 
 	/**
 	 * Constructs an empty instance of {@link Notification}.
 	 */
 	public Notification() {
+		super(MediaType.APPLICATION_JSON_TYPE);
+
 		this.uuid = null;
 		this.content = null;
 		this.sentAt = null;
@@ -50,14 +54,16 @@ public class Notification {
 	 * @param sentAt States when the notification was sent to all of its targets and all of its audiences.
 	 */
 	public Notification(
-			UUID uuid,
-			String content, 
-			NotificationStatus status,
-			Set<Target> targets,
-			Set<Audience> audiences,
-			Date sendAt,
-			Date sentAt
+			final UUID uuid,
+			final String content, 
+			final NotificationStatus status,
+			final Set<Target> targets,
+			final Set<Audience> audiences,
+			final Date sendAt,
+			final Date sentAt
 		) {
+			super(MediaType.APPLICATION_JSON_TYPE);
+
 			this.uuid = uuid;
 			this.content = content;
 			this.status = status;

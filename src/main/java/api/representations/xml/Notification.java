@@ -1,34 +1,42 @@
-package api.representations;
+package api.representations.xml;
 
-import api.representations.NotificationStatus;
-import api.representations.Target;
+import api.representations.Representation;
+import api.representations.xml.Audience;
+import api.representations.xml.NotificationStatus;
+import api.representations.xml.Target;
 
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import javax.ws.rs.core.MediaType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
+
 /**
- * Defines the general representation of a Notification resource.
- * This representation can easily be deserialized and serialized
- * for the 'application/json' and 'application/xml' media types.
+ * Defines the 'application/xml' representation of a Notification resource.
  *
  * @author Jon Freer
  */
-public class Notification {
+@XmlRootElement(name = "notification")
+public final class Notification extends Representation {
 
-	private UUID uuid;
-	private String content;
-	private Date sentAt;
-	private Date sendAt;
-	private NotificationStatus status;
-	private Set<Target> targets;
-	private Set<Audience> audiences;
+	private final UUID uuid;
+	private final String content;
+	private final Date sentAt;
+	private final Date sendAt;
+	private final NotificationStatus status;
+	private final Set<Target> targets;
+	private final Set<Audience> audiences;
 
 	/**
 	 * Constructs an empty instance of {@link Notification}.
 	 */
 	public Notification() {
+		super(MediaType.APPLICATION_XML_TYPE);
+
 		this.uuid = null;
 		this.content = null;
 		this.sentAt = null;
@@ -50,28 +58,31 @@ public class Notification {
 	 * @param sentAt States when the notification was sent to all of its targets and all of its audiences.
 	 */
 	public Notification(
-			UUID uuid,
-			String content, 
-			NotificationStatus status,
-			Set<Target> targets,
-			Set<Audience> audiences,
-			Date sendAt,
-			Date sentAt
-		) {
-			this.uuid = uuid;
-			this.content = content;
-			this.status = status;
-			this.sendAt = sendAt;
-			this.sentAt = sentAt;
-			this.targets = targets == null ? new HashSet<>() : targets;
-			this.audiences = audiences == null ? new HashSet<>() : audiences;
-		}
+		final UUID uuid,
+		final String content, 
+		final NotificationStatus status,
+		final Set<Target> targets,
+		final Set<Audience> audiences,
+		final Date sendAt,
+		final Date sentAt
+	) {
+		super(MediaType.APPLICATION_XML_TYPE);
+
+		this.uuid = uuid;
+		this.content = content;
+		this.status = status;
+		this.sendAt = sendAt;
+		this.sentAt = sentAt;
+		this.targets = targets == null ? new HashSet<>() : targets;
+		this.audiences = audiences == null ? new HashSet<>() : audiences;
+	}
 
 	/**
 	 * Retrieves the universally unique identifier of this notification.
 	 *
 	 * @return The universally unique identifier of this notification.
 	 */
+	@XmlElement
 	public UUID getUUID(){
 		return this.uuid;
 	}
@@ -81,15 +92,19 @@ public class Notification {
 	 *
 	 * @return The information being communicated within this notification.
 	 */
+	@XmlElement
 	public String getContent() {
 		return this.content;
 	}
+
+	//public void setContent(String content){ this.content = content; }
 
 	/**
 	 * Retrieves the status the delivery status of this notification.
 	 * 
 	 * @return The status of the notification in terms of its delivery to its audiences and targets.
 	 */
+	@XmlElement
 	public NotificationStatus getStatus() {
 		return this.status;
 	}
@@ -100,6 +115,7 @@ public class Notification {
 	 *
 	 * @return States when the notification should be sent to its targets and audiences.
 	 */
+	@XmlElement
 	public Date getSendAt() {
 		return this.sendAt;
 	}
@@ -111,6 +127,7 @@ public class Notification {
 	 *
 	 * @return States when the notification was sent to all of its targets and all of its audiences.
 	 */
+	@XmlElement
 	public Date getSentAt() {
 		return this.sentAt;
 	}
@@ -120,6 +137,8 @@ public class Notification {
 	 *
 	 * @return Explicit recipients that should receive this notification.
 	 */
+	@XmlElementWrapper(name="targets")
+	@XmlElement(name="target")
 	public Set<Target> getTargets() {
 		return this.targets;
 	}
@@ -129,6 +148,8 @@ public class Notification {
 	 *
 	 * @return Broader audiences that should receive this notification.
 	 */
+	@XmlElementWrapper(name="audiences")
+	@XmlElement(name="audience")
 	public Set<Audience> getAudiences() {
 		return this.audiences;
 	}
