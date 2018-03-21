@@ -282,6 +282,6 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
 				.build();
 
 		// not sure what to do here yet...adapter pattern?
-		return new api.representations.siren.TargetRepresentation(entity);
+		return new api.representations.siren.SirenEntityRepresentation(entity);
 	}
 }
