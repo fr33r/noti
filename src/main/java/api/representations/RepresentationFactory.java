@@ -1,4 +1,4 @@
-package api;
+package api.representations;
 
 import api.representations.Audience;
 import api.representations.Notification;

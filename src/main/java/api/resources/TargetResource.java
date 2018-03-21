@@ -1,11 +1,16 @@
 package api.resources;
 
+import api.representations.Representation;
+import api.representations.RepresentationFactory;
+
 import java.net.URI;
 import java.util.UUID;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
@@ -20,15 +25,24 @@ import api.representations.Target;
 public final class TargetResource implements api.TargetResource {
 
 	private final TargetService targetService;
+	private final RepresentationFactory jsonRepresentationFactory;
+	private final RepresentationFactory xmlRepresentationFactory;
+	private final RepresentationFactory sirenRepresentationFactory;
 
 	/**
 	 * Constructs a new {@link TargetResource} instance.
 	 */
 	@Inject
 	public TargetResource(
-		TargetService targetService
+		TargetService targetService,
+		@Named("JSONRepresentationFactory") RepresentationFactory jsonRepresentationFactory,
+		@Named("XMLRepresentationFactory") RepresentationFactory xmlRepresentationFactory,
+		@Named("SirenRepresentationFactory") RepresentationFactory sirenRepresentationFactory
 	) {
 		this.targetService = targetService;
+		this.jsonRepresentationFactory = jsonRepresentationFactory;
+		this.xmlRepresentationFactory = xmlRepresentationFactory;
+		this.sirenRepresentationFactory = sirenRepresentationFactory;
 	}
 
 	/**
@@ -41,7 +55,16 @@ public final class TargetResource implements api.TargetResource {
 	 */
 	public Response get(HttpHeaders headers, UriInfo uriInfo, String uuid) {
 		Target target = this.targetService.getTarget(UUID.fromString(uuid));
-		return Response.ok(target).build();
+		
+		Representation representation = null;
+		if(headers.getAcceptableMediaTypes().contains(new MediaType("application", "vnd.siren+json"))) {
+			representation = this.sirenRepresentationFactory.createTargetRepresentation(uriInfo, target);
+		} else if (headers.getAcceptableMediaTypes().contains(MediaType.APPLICATION_XML_TYPE)) {
+			representation = this.xmlRepresentationFactory.createTargetRepresentation(uriInfo, target);
+		} else if (headers.getAcceptableMediaTypes().contains(MediaType.APPLICATION_JSON_TYPE)) {
+			representation = this.jsonRepresentationFactory.createTargetRepresentation(uriInfo, target);
+		}
+		return Response.ok(representation).build();
 	}
 
 	/**

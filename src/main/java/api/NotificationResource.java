@@ -31,7 +31,7 @@ public interface NotificationResource {
 	 */
 	@GET
 	@Path("{uuid}")
-	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/vnd.siren+json"})
 	Response get(@Context HttpHeaders headers, @Context UriInfo uriInfo, @PathParam("uuid") String uuid);
 
 	/**
@@ -62,7 +62,7 @@ public interface NotificationResource {
 	 */
 	@DELETE
 	@Path("{uuid}")
-	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/vnd.siren+json"})
 	Response delete(@Context UriInfo uriInfo, @PathParam("uuid") String uuid);
 }
 

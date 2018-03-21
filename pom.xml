@@ -118,6 +118,29 @@
 			<artifactId>jaeger-dropwizard</artifactId>
 			<version>${jaeger.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.jonfreer</groupId>
+			<artifactId>siren</artifactId>
+			<version>${siren.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.fasterxml.jackson.core</groupId>
+					<artifactId>jackson-databind</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.jonfreer</groupId>
+			<artifactId>siren</artifactId>
+			<version>${siren.version}</version>
+			<classifier>javadoc</classifier>
+			<exclusions>
+				<exclusion>
+					<groupId>com.fasterxml.jackson.core</groupId>
+					<artifactId>jackson-databind</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 	</dependencies>
 
 	<properties>
@@ -127,6 +150,7 @@
 		<dropwizard.version>1.2.2</dropwizard.version>
 		<dropwizard.metrics.version>3.2.3</dropwizard.metrics.version>
 		<flyway.version>4.2.0</flyway.version>
+		<siren.version>1.1.0</siren.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 </project>

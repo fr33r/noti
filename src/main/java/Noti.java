@@ -16,9 +16,10 @@ import com.google.common.collect.ImmutableList;
 import com.uber.jaeger.dropwizard.Configuration;
 import com.uber.jaeger.dropwizard.JaegerFeature;
 
-import api.RepresentationFactory;
-import api.JSONRepresentationFactory;
-import api.XMLRepresentationFactory;
+import api.representations.RepresentationFactory;
+import api.representations.JSONRepresentationFactory;
+import api.representations.SirenRepresentationFactory;
+import api.representations.XMLRepresentationFactory;
 import api.filters.CacheControlFilter;
 import api.filters.ConditionalGetFilter;
 import api.filters.ConditionalPutFilter;
@@ -360,6 +361,15 @@ public class Noti extends Application<NotiConfiguration> {
 			}
 		});
 
+		environment.jersey().register(new AbstractBinder() {
+
+			@Override
+			protected void configure() {
+				this.bind(SirenRepresentationFactory.class)
+					.named("SirenRepresentationFactory")
+					.to(RepresentationFactory.class);
+			}
+		});
 
 	}
 

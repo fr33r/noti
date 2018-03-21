@@ -1,6 +1,6 @@
 package api.resources;
 
-import api.RepresentationFactory;
+import api.representations.RepresentationFactory;
 import api.representations.Notification;
 import api.representations.Representation;
 
@@ -26,6 +26,7 @@ public class NotificationResource implements api.NotificationResource{
 	private final NotificationService notificationService;
 	private final RepresentationFactory jsonRepresentationFactory;
 	private final RepresentationFactory xmlRepresentationFactory;
+	private final RepresentationFactory sirenRepresentationFactory;
 
 	/**
 	 * Construct a new {@link NotificationResource} instance.
@@ -35,11 +36,13 @@ public class NotificationResource implements api.NotificationResource{
 	public NotificationResource(
 		NotificationService notificationService,
 		@Named("JSONRepresentationFactory") RepresentationFactory jsonRepresentationFactory,
-		@Named("XMLRepresentationFactory") RepresentationFactory xmlRepresentationFactory
+		@Named("XMLRepresentationFactory") RepresentationFactory xmlRepresentationFactory,
+		@Named("SirenRepresentationFactory") RepresentationFactory sirenRepresentationFactory
 	) {
 		this.notificationService = notificationService;
 		this.jsonRepresentationFactory = jsonRepresentationFactory;
 		this.xmlRepresentationFactory = xmlRepresentationFactory;
+		this.sirenRepresentationFactory = sirenRepresentationFactory;
 	}
 
 	/**
@@ -58,9 +61,12 @@ public class NotificationResource implements api.NotificationResource{
 		if(headers.getAcceptableMediaTypes().contains(MediaType.APPLICATION_XML_TYPE)) {
 			representation =
 				this.xmlRepresentationFactory.createNotificationRepresentation(uriInfo, notification);
-		} else {
+		} else if(headers.getAcceptableMediaTypes().contains(MediaType.APPLICATION_JSON_TYPE)) {
 			representation =
 				this.jsonRepresentationFactory.createNotificationRepresentation(uriInfo, notification);
+		} else {
+			representation =
+				this.sirenRepresentationFactory.createNotificationRepresentation(uriInfo, notification);
 		}
 		return Response.ok(representation).build();
 	}
