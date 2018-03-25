@@ -5,6 +5,9 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Connection;
 import infrastructure.SQLUnitOfWork;
+import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.Tracer;
 
 /**
  * Represents a unit of work in the context of MySQL database interactions.
@@ -13,6 +16,7 @@ public class MySQLUnitOfWork implements SQLUnitOfWork {
 
 	private Connection connection;
 	private boolean hasActed;
+	private final Tracer tracer;
 
 	/**
 	 * Constructs a new instance provided an instance of {@link Connection}. It is
@@ -23,9 +27,10 @@ public class MySQLUnitOfWork implements SQLUnitOfWork {
 	 * @param connection	The connection that this DatabaseUnitOfWork instance
 	 * 			will be used with.
 	 */
-	protected MySQLUnitOfWork(Connection connection) {
+	protected MySQLUnitOfWork(Connection connection, Tracer tracer) {
 		this.connection = connection;
 		this.hasActed = false;
+		this.tracer = tracer;
 	}
 
 	/**
@@ -33,21 +38,27 @@ public class MySQLUnitOfWork implements SQLUnitOfWork {
 	 */
 	@Override
 	public void save() {
-		if(hasActed) {
-			throw new IllegalStateException("Cannot call save() or undo() multiple times.");
-		}
+		final Span span =
+			this.tracer
+				.buildSpan("MySQLUnitOfWork#save")
+				.asChildOf(this.tracer.activeSpan())
+				.start();
+		try(final Scope scope = this.tracer.scopeManager().activate(span, false)) {
+			if(hasActed) {
+				throw new IllegalStateException("Cannot call save() or undo() multiple times.");
+			}
 
-		try {
 			this.connection.commit();
 			this.hasActed = true;
 		} catch (SQLException e) {
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		} finally {
 			try {
 				this.connection.close();
 			} catch (SQLException e) {
-				e.printStackTrace();
+				throw new RuntimeException(e);
 			}
+			span.finish();
 		}
 	}
 
@@ -56,21 +67,26 @@ public class MySQLUnitOfWork implements SQLUnitOfWork {
 	 */
 	@Override
 	public void undo() {
-		if(hasActed) {
-			throw new IllegalStateException("Cannot call save() or undo() multiple times.");
-		}
-
-		try {
+		final Span span =
+			this.tracer
+				.buildSpan("MySQLUnitOfWork#undo")
+				.asChildOf(this.tracer.activeSpan())
+				.start();
+		try(final Scope scope = this.tracer.scopeManager().activate(span, false)) {
+			if(hasActed) {
+				throw new IllegalStateException("Cannot call save() or undo() multiple times.");
+			}
 			this.connection.rollback();
 			this.hasActed = true;
 		} catch (SQLException e) {
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		} finally {
 			try {
 				this.connection.close();
 			} catch (SQLException e) {
-				e.printStackTrace();
+				throw new RuntimeException(e);
 			}
+			span.finish();
 		}
 	}
 
@@ -85,11 +101,17 @@ public class MySQLUnitOfWork implements SQLUnitOfWork {
 	 */
 	@Override
 	public PreparedStatement createPreparedStatement(String sql) {
-		try {
+		final Span span =
+			this.tracer
+				.buildSpan("MySQLUnitOfWork#createPreparedStatement")
+				.asChildOf(this.tracer.activeSpan())
+				.start();
+		try (final Scope scope = this.tracer.scopeManager().activate(span, false)){
 			return this.connection.prepareStatement(sql);
 		} catch (SQLException e) {
-			e.printStackTrace();
 			throw new RuntimeException(e);
+		} finally {
+			span.finish();
 		}
 	}
 
@@ -104,11 +126,18 @@ public class MySQLUnitOfWork implements SQLUnitOfWork {
 	 */ 
 	@Override
 	public CallableStatement createCallableStatement(String sql){
-		try{
+		final Span span =
+			this.tracer
+				.buildSpan("MySQLUnitOfWork#createCallableStatement")
+				.asChildOf(this.tracer.activeSpan())
+				.start();
+		try(final Scope scope = this.tracer.scopeManager().activate(span, false)){
 			return this.connection.prepareCall(sql);
 		} catch(SQLException e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);
+		} finally {
+			span.finish();
 		}
 	}
     

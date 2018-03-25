@@ -11,6 +11,10 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.Tracer;
+
 /**
  * Response for retrieving and persisting the aggregate rooted by the {@link Audience} entity.
  *
@@ -19,6 +23,7 @@ import java.util.UUID;
 public final class AudienceRepository extends SQLRepository implements Repository<Audience, UUID> {
 
 	private final EntitySQLFactory<Audience, UUID> audienceFactory;
+	private final Tracer tracer;
 
 	/**
 	 * Constructs an instance of {@link AudienceRepository}.
@@ -28,11 +33,13 @@ public final class AudienceRepository extends SQLRepository implements Repositor
 	 */
 	public AudienceRepository(
 		SQLUnitOfWork unitOfWork,
-		EntitySQLFactory<Audience, UUID> audienceFactory
+		EntitySQLFactory<Audience, UUID> audienceFactory,
+		Tracer tracer
 	) {
 		super(unitOfWork);
 		//if(audience is not an aggregate root) throw;
 		this.audienceFactory = audienceFactory;
+		this.tracer = tracer;
 	}
 
 	/**
@@ -42,13 +49,18 @@ public final class AudienceRepository extends SQLRepository implements Repositor
 	 */
 	@Override
 	public Audience get(final UUID uuid) {
-
+		final Span span = 
+			this.tracer
+				.buildSpan("AudienceRepository#get")
+				.asChildOf(this.tracer.activeSpan())
+				.start();
 		Audience audience = null;
 		final String audienceSQL = "SELECT A.* FROM AUDIENCE AS A WHERE A.UUID = ?;";
 		final String membersSQL =
 			"SELECT T.* FROM TARGET AS T INNER JOIN AUDIENCE_TARGET AS AT ON T.UUID = AT.TARGET_UUID WHERE AT.AUDIENCE_UUID = ?";
 
 		try(
+			final Scope scope = this.tracer.scopeManager().activate(span, false);
 			final PreparedStatement getAudienceStatement =
 				this.getUnitOfWork().createPreparedStatement(audienceSQL);
 			final PreparedStatement getAudienceMembersStatement =
@@ -63,10 +75,12 @@ public final class AudienceRepository extends SQLRepository implements Repositor
 			) {
 				audience = this.audienceFactory.reconstitute(audienceRS, membersRs);
 			}
+			return audience;
 		} catch (SQLException x) {
 			throw new RuntimeException(x);
+		} finally {
+			span.finish();
 		}
-		return audience;
 	}
 
 	/**
@@ -75,80 +89,88 @@ public final class AudienceRepository extends SQLRepository implements Repositor
 	 */
 	@Override
 	public void put(final Audience audience) {
-
+		final Span span = 
+			this.tracer
+				.buildSpan("AudienceRepository#put")
+				.asChildOf(this.tracer.activeSpan())
+				.start();
 		final String audienceSQL = "UPDATE AUDIENCE SET NAME = ? WHERE UUID = ?;";
 		final String associateMemberSQL =
 			"INSERT INTO AUDIENCE_TARGET (AUDIENCE_UUID, TARGET_UUID) VALUES (?,  ?);";
 		final String disassociateMemberSQL =
 			"DELETE FROM AUDIENCE_TARGET WHERE AUDIENCE_UUID = ? AND TARGET_UUID = ?;";
 
-		Audience existingAudience = this.get(audience.getId());;
-		if(existingAudience == null) {
-			this.add(audience);
-		} else {
-			try(
-				PreparedStatement updateAudienceStatement = 
-					this.getUnitOfWork().createPreparedStatement(audienceSQL);
-			) {
-				updateAudienceStatement.setString(1, audience.name());
-				updateAudienceStatement.setString(2, audience.getId().toString());
-				updateAudienceStatement.executeUpdate();
+		try(final Scope scope = this.tracer.scopeManager().activate(span, false)) {
+			Audience existingAudience = this.get(audience.getId());;
+			if(existingAudience == null) {
+				this.add(audience);
+			} else {
+				try(
+					final PreparedStatement updateAudienceStatement = 
+						this.getUnitOfWork().createPreparedStatement(audienceSQL);
+				) {
+					updateAudienceStatement.setString(1, audience.name());
+					updateAudienceStatement.setString(2, audience.getId().toString());
+					updateAudienceStatement.executeUpdate();
 
-				Set<UUID> toAssociate = new HashSet<>();
-				Set<UUID> toDisassociate = new HashSet<>();
+					Set<UUID> toAssociate = new HashSet<>();
+					Set<UUID> toDisassociate = new HashSet<>();
 
-				//determine which members are being added.
-				for(Target member : audience.members()) {
-					boolean exists = false;
-					for(Target existingMember : existingAudience.members()) {
-						if(member.getId().equals(existingMember.getId())) {
-							exists = true;
-							break;
-						}
-					}
-					if(!exists){
-						toAssociate.add(member.getId());
-					}
-				}
-
-				//determine which members are being removed.
-				for(Target existingMember : existingAudience.members()) {
-					boolean exists = false;
+					//determine which members are being added.
 					for(Target member : audience.members()) {
-						if(existingMember.getId().equals(member.getId())) {
-							exists = true;
-							break;
+						boolean exists = false;
+						for(Target existingMember : existingAudience.members()) {
+							if(member.getId().equals(existingMember.getId())) {
+								exists = true;
+								break;
+							}
+						}
+						if(!exists){
+							toAssociate.add(member.getId());
 						}
 					}
-					if(!exists){
-						toDisassociate.add(existingMember.getId());
-					}
-				}
 
-				for(UUID uuid : toAssociate) {
-					try(
-						final PreparedStatement associateMemberStatement =
-							this.getUnitOfWork().createPreparedStatement(associateMemberSQL)
-					) {
-						associateMemberStatement.setString(1, audience.getId().toString());
-						associateMemberStatement.setString(2, uuid.toString());
-						associateMemberStatement.executeUpdate();
+					//determine which members are being removed.
+					for(Target existingMember : existingAudience.members()) {
+						boolean exists = false;
+						for(Target member : audience.members()) {
+							if(existingMember.getId().equals(member.getId())) {
+								exists = true;
+								break;
+							}
+						}
+						if(!exists){
+							toDisassociate.add(existingMember.getId());
+						}
 					}
-				}
 
-				for(UUID uuid : toDisassociate) {
-					try(
-						final PreparedStatement disassociateMemberStatement =
-							this.getUnitOfWork().createPreparedStatement(disassociateMemberSQL)
-					) {
-						disassociateMemberStatement.setString(1, audience.getId().toString());
-						disassociateMemberStatement.setString(2, uuid.toString());
-						disassociateMemberStatement.executeUpdate();
+					for(UUID uuid : toAssociate) {
+						try(
+							final PreparedStatement associateMemberStatement =
+								this.getUnitOfWork().createPreparedStatement(associateMemberSQL)
+						) {
+							associateMemberStatement.setString(1, audience.getId().toString());
+							associateMemberStatement.setString(2, uuid.toString());
+							associateMemberStatement.executeUpdate();
+						}
 					}
+
+					for(UUID uuid : toDisassociate) {
+						try(
+							final PreparedStatement disassociateMemberStatement =
+								this.getUnitOfWork().createPreparedStatement(disassociateMemberSQL)
+						) {
+							disassociateMemberStatement.setString(1, audience.getId().toString());
+							disassociateMemberStatement.setString(2, uuid.toString());
+							disassociateMemberStatement.executeUpdate();
+						}
+					}
+				} catch(SQLException x) {
+					throw new RuntimeException(x);
 				}
-			} catch(SQLException x) {
-				throw new RuntimeException(x);
 			}
+		} finally {
+			span.finish();
 		}
 	}
 
@@ -159,13 +181,18 @@ public final class AudienceRepository extends SQLRepository implements Repositor
 	 */
 	@Override
 	public void add(final Audience audience) {
-
+		final Span span = 
+			this.tracer
+				.buildSpan("AudienceRepository#add")
+				.asChildOf(this.tracer.activeSpan())
+				.start();
 		final String audienceSQL = "INSERT INTO AUDIENCE (UUID, NAME) VALUES (?, ?);";
 		final String associateMemberSQL =
 			"INSERT INTO AUDIENCE_TARGET (AUDIENCE_UUID, TARGET_UUID) VALUES (?, ?);";
 
 		try(
-			PreparedStatement createAudienceStatement =
+			final Scope scope = this.tracer.scopeManager().activate(span, false);
+			final PreparedStatement createAudienceStatement =
 				this.getUnitOfWork().createPreparedStatement(audienceSQL)
 		) {
 			createAudienceStatement.setString(1, audience.getId().toString());
@@ -184,6 +211,8 @@ public final class AudienceRepository extends SQLRepository implements Repositor
 			}
 		} catch (SQLException x) {
 			throw new RuntimeException(x);
+		} finally {
+			span.finish();
 		}
 	}
 
@@ -194,10 +223,15 @@ public final class AudienceRepository extends SQLRepository implements Repositor
 	 */
 	@Override
 	public void remove(final UUID uuid) {
-
+		final Span span = 
+			this.tracer
+				.buildSpan("AudienceRepository#add")
+				.asChildOf(this.tracer.activeSpan())
+				.start();
 		final String disassociateMembersSQL = "DELETE FROM AUDIENCE_TARGET WHERE AUDIENCE_UUID = ?;";
 		final String audienceSQL = "DELETE FROM AUDIENCE WHERE UUID = ?;";
 		try(
+			final Scope scope = this.tracer.scopeManager().activate(span, false);
 			final PreparedStatement removeAudienceStatement =
 				this.getUnitOfWork().createPreparedStatement(audienceSQL);
 			final PreparedStatement disassociateMembersStatement =
@@ -210,6 +244,8 @@ public final class AudienceRepository extends SQLRepository implements Repositor
 			removeAudienceStatement.executeUpdate();
 		} catch (SQLException x) {
 			throw new RuntimeException(x);
+		} finally {
+			span.finish();
 		}
 	}
 }

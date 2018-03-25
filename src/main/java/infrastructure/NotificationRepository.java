@@ -13,6 +13,10 @@ import domain.Message;
 import domain.Notification;
 import domain.Target;
 
+import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.Tracer;
+
 /**
  * Responsible for retrieving and persisting {@link Notification} entities.
  * @author jonfreer
@@ -21,6 +25,7 @@ import domain.Target;
 public final class NotificationRepository extends SQLRepository implements Repository<Notification, UUID> {
 
 	private final EntitySQLFactory<Notification, UUID> notificationFactory;
+	private final Tracer tracer;
 
 	/**
 	 * Constructs a instance of {@link NotificationRepository}.
@@ -29,10 +34,13 @@ public final class NotificationRepository extends SQLRepository implements Repos
 	 */
 	public NotificationRepository(
 		SQLUnitOfWork unitOfWork, 
-		EntitySQLFactory<Notification, UUID> notificationFactory
+		EntitySQLFactory<Notification, UUID> notificationFactory,
+		Tracer tracer
 	) {
 		super(unitOfWork);
+		
 		this.notificationFactory = notificationFactory;
+		this.tracer = tracer;
 	}
 
 	/**
@@ -40,7 +48,11 @@ public final class NotificationRepository extends SQLRepository implements Repos
 	 */
 	@Override
 	public Notification get(final UUID uuid) {
-
+		final Span span =
+			this.tracer
+				.buildSpan("NotificationRepostory#get")
+				.asChildOf(this.tracer.activeSpan())
+				.start();
 		Notification notification = null;
 		final String notificationSQL =
 			"SELECT N.* FROM NOTIFICATION AS N WHERE N.UUID = ?;";
@@ -53,6 +65,7 @@ public final class NotificationRepository extends SQLRepository implements Repos
 		final String audienceMembersSQL =
 			"SELECT AT.AUDIENCE_UUID, T.* FROM (" + audiencesSQL + ") AS AUDIENCES INNER JOIN AUDIENCE_TARGET AS AT ON AUDIENCES.UUID = AT.AUDIENCE_UUID INNER JOIN TARGET AS T ON AT.TARGET_UUID = T.UUID;";
 		try (
+			final Scope scope = this.tracer.scopeManager().activate(span, false);
 			final PreparedStatement getNotificationStatement = 
 				this.getUnitOfWork().createPreparedStatement(notificationSQL);
 			final PreparedStatement getTargetsStatement = 
@@ -86,11 +99,12 @@ public final class NotificationRepository extends SQLRepository implements Repos
 						membersRS
 					);
 			}
-
+			return notification;
 		} catch (SQLException x){
 			throw new RuntimeException(x);
+		} finally {
+			span.finish();
 		}
-		return notification;
 	}
 
 	/**
@@ -99,37 +113,45 @@ public final class NotificationRepository extends SQLRepository implements Repos
 	 */
 	@Override
 	public void put(final Notification notification) {
-
+		final Span span = 
+			this.tracer
+				.buildSpan("NotificationRepository#put")
+				.asChildOf(this.tracer.activeSpan())
+				.start();
 		final String sql =
 			"UPDATE NOTIFICATION SET MESSAGE = ?, STATUS = ?, SENT_AT = ?, SEND_AT = ? WHERE UUID = ?;";
-		if(this.get(notification.getId()) == null) {
-			this.add(notification);
-		} else {
-			try(
-				final PreparedStatement replaceNotificationStatement =
-					this.getUnitOfWork().createPreparedStatement(sql)
-			) {
-				replaceNotificationStatement.setString(1, notification.content());
-				replaceNotificationStatement.setString(2, notification.status().toString());
+		try(final Scope scope = this.tracer.scopeManager().activate(span, false)) {
+			if(this.get(notification.getId()) == null) {
+				this.add(notification);
+			} else {
+				try(
+					final PreparedStatement replaceNotificationStatement =
+						this.getUnitOfWork().createPreparedStatement(sql)
+				) {
+					replaceNotificationStatement.setString(1, notification.content());
+					replaceNotificationStatement.setString(2, notification.status().toString());
 
-				if(notification.sentAt() == null) {
-					replaceNotificationStatement.setNull(3, Types.TIMESTAMP);
-				} else {
-					replaceNotificationStatement.setTimestamp(3, new Timestamp(notification.sentAt().getTime()));
+					if(notification.sentAt() == null) {
+						replaceNotificationStatement.setNull(3, Types.TIMESTAMP);
+					} else {
+						replaceNotificationStatement.setTimestamp(3, new Timestamp(notification.sentAt().getTime()));
+					}
+
+					if(notification.sendAt() == null) {
+						replaceNotificationStatement.setNull(4, Types.TIMESTAMP);
+					} else {
+						replaceNotificationStatement.setTimestamp(4, new Timestamp(notification.sendAt().getTime()));
+					}
+
+					replaceNotificationStatement.setString(5, notification.getId().toString());
+
+					replaceNotificationStatement.executeUpdate();
+				} catch (SQLException x) {
+					throw new RuntimeException(x);
 				}
-
-				if(notification.sendAt() == null) {
-					replaceNotificationStatement.setNull(4, Types.TIMESTAMP);
-				} else {
-					replaceNotificationStatement.setTimestamp(4, new Timestamp(notification.sendAt().getTime()));
-				}
-
-				replaceNotificationStatement.setString(5, notification.getId().toString());
-
-				replaceNotificationStatement.executeUpdate();
-			} catch (SQLException x) {
-				throw new RuntimeException(x);
 			}
+		} finally {
+			span.finish();
 		}
 	}
 
@@ -138,7 +160,11 @@ public final class NotificationRepository extends SQLRepository implements Repos
 	 */
 	@Override
 	public void add(final Notification notification) {
-
+		final Span span = 
+			this.tracer
+				.buildSpan("NotificationRepository#add")
+				.asChildOf(this.tracer.activeSpan())
+				.start();
 		final String notificationSQL =
 			"INSERT INTO NOTIFICATION (UUID, MESSAGE, STATUS, SEND_AT, SENT_AT) VALUES (?, ?, ?, ?, ?);";
 		final String associateTargetSQL =
@@ -149,6 +175,7 @@ public final class NotificationRepository extends SQLRepository implements Repos
 			"INSERT INTO NOTIFICATION_AUDIENCE (NOTIFICATION_UUID, AUDIENCE_UUID) VALUES (?, ?);";
 
 		try(
+			final Scope scope = this.tracer.scopeManager().activate(span, false);
 			final PreparedStatement createNotificationStatement =
 				this.getUnitOfWork().createPreparedStatement(notificationSQL)
 		) {
@@ -207,6 +234,8 @@ public final class NotificationRepository extends SQLRepository implements Repos
 
 		} catch (SQLException x) {
 			throw new RuntimeException(x);
+		} finally {
+			span.finish();
 		}
 	}
 
@@ -215,12 +244,17 @@ public final class NotificationRepository extends SQLRepository implements Repos
 	 */
 	@Override
 	public void remove(final UUID uuid) {
-
+		final Span span = 
+			this.tracer
+				.buildSpan("NotificationRepository#remove")
+				.asChildOf(this.tracer.activeSpan())
+				.start();
 		final String deleteNotificationSQL = "DELETE FROM NOTIFICATION WHERE UUID = ?;";
 		final String deleteMessagesSQL = "DELETE FROM MESSAGE WHERE NOTIFICATION_UUID = ?;";
 		final String deleteTargetAssociationsSQL = "DELETE FROM NOTIFICATION_TARGET WHERE NOTIFICATION_UUID = ?;";
 		final String deleteAudienceAssociationsSQL = "DELETE FROM NOTIFICATION_AUDIENCE WHERE NOTIFICATION_UUID = ?;";
 		try(
+			final Scope scope = this.tracer.scopeManager().activate(span, false);
 			final PreparedStatement deleteMessagesStatement =
 				this.getUnitOfWork().createPreparedStatement(deleteMessagesSQL);
 			final PreparedStatement deleteNotificationStatement =
@@ -244,6 +278,8 @@ public final class NotificationRepository extends SQLRepository implements Repos
 			
 		} catch (SQLException x) {
 			throw new RuntimeException(x);
+		} finally {
+			span.finish();
 		}
 	}
 }

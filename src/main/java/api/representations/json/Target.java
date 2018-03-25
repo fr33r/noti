@@ -2,8 +2,6 @@ package api.representations.json;
 
 import api.representations.Representation;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 import javax.ws.rs.core.MediaType;

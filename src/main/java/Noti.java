@@ -8,11 +8,15 @@ import org.flywaydb.core.api.FlywayException;
 import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
+import io.opentracing.util.GlobalTracer;
+import io.opentracing.Tracer;
+
 import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.graphite.Graphite;
 import com.codahale.metrics.graphite.GraphiteReporter;
 import com.google.common.collect.ImmutableList;
+import com.uber.jaeger.context.TracingUtils;
 import com.uber.jaeger.dropwizard.Configuration;
 import com.uber.jaeger.dropwizard.JaegerFeature;
 
@@ -95,6 +99,17 @@ public class Noti extends Application<NotiConfiguration> {
 	private void initializeTracing(Configuration jaegerConfiguration, Environment environment) {
 		JaegerFeature jaegerFeature = new JaegerFeature(jaegerConfiguration);
 		environment.jersey().register(jaegerFeature);
+
+		Tracer tracer = jaegerConfiguration.getTracer();
+		GlobalTracer.register(tracer);
+		TracingUtils.setTracer(tracer);
+		environment.jersey().register(new AbstractBinder() {
+
+			@Override
+			protected void configure() {
+				this.bind(tracer).to(Tracer.class);
+			}
+		});
 	}
 
 	private void initializeGraphiteReporter(NotiConfiguration configuration, Environment environment) {
@@ -133,6 +148,9 @@ public class Noti extends Application<NotiConfiguration> {
 				.filter(MetricFilter.ALL)
 				.build(graphite);
 		reporter.start(frequency.getQuantity(), frequency.getUnit());
+
+		// wire up jaeger to metrics registry.
+		configuration.getJaegerConfiguration().setMetricRegistry(graphiteMetricRegistry);
 	}
 
 	private void initializeDatabase(DatabaseConfiguration databaseConfiguration, Environment environment) throws FlywayException {

@@ -1,8 +1,6 @@
 package api.representations;
 
 import java.util.UUID;
-import java.util.Set;
-import java.util.HashSet;
 
 public class Target {
 

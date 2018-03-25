@@ -146,7 +146,7 @@
 	<properties>
 		<twilio.version>(7.11.0,7.12.0]</twilio.version>
 		<mysql.version>6.0.6</mysql.version>
-		<jaeger.version>0.22.0-RC2</jaeger.version>
+		<jaeger.version>0.26.0</jaeger.version>
 		<dropwizard.version>1.2.2</dropwizard.version>
 		<dropwizard.metrics.version>3.2.3</dropwizard.metrics.version>
 		<flyway.version>4.2.0</flyway.version>

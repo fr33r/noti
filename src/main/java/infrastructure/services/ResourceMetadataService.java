@@ -23,6 +23,10 @@ import infrastructure.SQLUnitOfWork;
 import infrastructure.SQLUnitOfWorkFactory;
 import infrastructure.ResourceMetadata;
 
+import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.Tracer;
+
 /**
  * An infrastructure service offering several operations to 
  * calling clients that wish to interact with REST resource metadata.
@@ -34,10 +38,15 @@ import infrastructure.ResourceMetadata;
 public class ResourceMetadataService implements infrastructure.ResourceMetadataService {
 
 	private final SQLUnitOfWorkFactory unitOfWorkFactory;
+	private final Tracer tracer;
 
 	@Inject
-	public ResourceMetadataService(SQLUnitOfWorkFactory unitOfWorkFactory){
+	public ResourceMetadataService(
+		SQLUnitOfWorkFactory unitOfWorkFactory,
+		Tracer tracer
+	){
 		this.unitOfWorkFactory = unitOfWorkFactory;
+		this.tracer = tracer;
 	}
 
 	/**
@@ -50,84 +59,94 @@ public class ResourceMetadataService implements infrastructure.ResourceMetadataS
      */
 	@Override
 	public ResourceMetadata get(URI uri, MediaType contentType) {
-
-		SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+		Span span =
+			this.tracer.buildSpan("ResourceMetadataService#get").asChildOf(this.tracer.activeSpan()).start();
 		final String sql =
 			"SELECT RM.URI, RM.CONTENT_TYPE, RM.NODE_NAME, RM.REVISION, RM.LAST_MODIFIED, RM.ENTITY_TAG FROM RESOURCE_METADATA AS RM WHERE RM.URI = ? AND RM.CONTENT_TYPE = ?";
 		ResourceMetadata resourceMetadata = null;
 
-		try (PreparedStatement statement = unitOfWork.createPreparedStatement(sql)){
-			statement.setString(1, uri.toString());
-			statement.setString(2, contentType.toString());
-			try(ResultSet results = statement.executeQuery()){
-				if(results.next()){
-					String matchingUri = results.getString(1);
-					String contentTypeString = results.getString(2);
-					String nodeName = results.getString(3);
-					Long revision = results.getLong(4);
-					Timestamp lastModified =
-						results.getTimestamp(5, Calendar.getInstance(TimeZone.getTimeZone("UTC")));
-					String entityTag = results.getString(6);
-					entityTag = entityTag.replace("\"", "");
+		try (Scope scope = this.tracer.scopeManager().activate(span, false)){
+			SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+			try (PreparedStatement statement = unitOfWork.createPreparedStatement(sql)) {
+				statement.setString(1, uri.toString());
+				statement.setString(2, contentType.toString());
+				try(ResultSet results = statement.executeQuery()){
+					if(results.next()){
+						String matchingUri = results.getString(1);
+						String contentTypeString = results.getString(2);
+						String nodeName = results.getString(3);
+						Long revision = results.getLong(4);
+						Timestamp lastModified =
+							results.getTimestamp(5, Calendar.getInstance(TimeZone.getTimeZone("UTC")));
+						String entityTag = results.getString(6);
+						entityTag = entityTag.replace("\"", "");
 
-					resourceMetadata =
-						new ResourceMetadata(
-							URI.create(matchingUri),
-							MediaType.valueOf(contentTypeString),
-							nodeName,
-							revision,
-							lastModified,
-							new EntityTag(entityTag)
-						);
+						resourceMetadata =
+							new ResourceMetadata(
+								URI.create(matchingUri),
+								MediaType.valueOf(contentTypeString),
+								nodeName,
+								revision,
+								lastModified,
+								new EntityTag(entityTag)
+							);
+					}
+					unitOfWork.save();
 				}
-				unitOfWork.save();
+			} catch (SQLException x) {
+				//should log instead.
+				x.printStackTrace();
+				unitOfWork.undo();
 			}
-		} catch (SQLException x) {
-			//should log instead.
-			x.printStackTrace();
-			unitOfWork.undo();
+		} finally {
+			span.finish();
 		}
 
 		return resourceMetadata;
 	}
 
 	public List<ResourceMetadata> getAll(URI uri) {
-
-		SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+		Span span =
+			this.tracer.buildSpan("ResourceMetadataService#getAll").asChildOf(this.tracer.activeSpan()).start();
 		final String sql =
 			"SELECT RM.URI, RM.CONTENT_TYPE, RM.NODE_NAME, RM.REVISION, RM.LAST_MODIFIED, RM.ENTITY_TAG FROM RESOURCE_METADATA AS RM WHERE RM.URI = ?;";
 		List<ResourceMetadata> resourceMetadata = new ArrayList<>();
 
-		try (PreparedStatement statement = unitOfWork.createPreparedStatement(sql)){
-			statement.setString(1, uri.toString());
-			try(ResultSet results = statement.executeQuery()){
-				while(results.next()){
-					String matchingUri = results.getString(1);
-					String contentTypeString = results.getString(2);
-					String nodeName = results.getString(3);
-					Long revision = results.getLong(4);
-					Timestamp lastModified =
-						results.getTimestamp(5, Calendar.getInstance(TimeZone.getTimeZone("UTC")));
-					String entityTag = results.getString(6);
-					entityTag = entityTag.replace("\"", "");
+		try (Scope scope = this.tracer.scopeManager().activate(span, false)){
+			SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+			try(PreparedStatement statement = unitOfWork.createPreparedStatement(sql)){
+				statement.setString(1, uri.toString());
+				try(ResultSet results = statement.executeQuery()){
+					while(results.next()){
+						String matchingUri = results.getString(1);
+						String contentTypeString = results.getString(2);
+						String nodeName = results.getString(3);
+						Long revision = results.getLong(4);
+						Timestamp lastModified =
+							results.getTimestamp(5, Calendar.getInstance(TimeZone.getTimeZone("UTC")));
+						String entityTag = results.getString(6);
+						entityTag = entityTag.replace("\"", "");
 
-					resourceMetadata.add(
-						new ResourceMetadata(
-							URI.create(matchingUri),
-							MediaType.valueOf(contentTypeString),
-							nodeName,
-							revision,
-							lastModified,
-							new EntityTag(entityTag)
-						)
-					);
+						resourceMetadata.add(
+							new ResourceMetadata(
+								URI.create(matchingUri),
+								MediaType.valueOf(contentTypeString),
+								nodeName,
+								revision,
+								lastModified,
+								new EntityTag(entityTag)
+							)
+						);
+					}
+					unitOfWork.save();
 				}
-				unitOfWork.save();
+			} catch (SQLException x) {
+				//should log instead.
+				x.printStackTrace();
+				unitOfWork.undo();
 			}
-		} catch (SQLException x) {
-			//should log instead.
-			x.printStackTrace();
-			unitOfWork.undo();
+		} finally {
+			span.finish();
 		}
 
 		return resourceMetadata;
@@ -141,31 +160,36 @@ public class ResourceMetadataService implements infrastructure.ResourceMetadataS
      */
 	@Override
 	public void insert(ResourceMetadata resourceMetadata) {
-
-		SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+		Span span =
+			this.tracer.buildSpan("ResourceMetadataService#insert").asChildOf(this.tracer.activeSpan()).start();
 		final String sql = "INSERT INTO RESOURCE_METADATA (URI, URI_HASH, CONTENT_TYPE, NODE_NAME, REVISION, LAST_MODIFIED, ENTITY_TAG) VALUES (?, ?, ?, ?, ?, ?, ?);";
-		try (PreparedStatement statement = unitOfWork.createPreparedStatement(sql)){
-			MessageDigest digest = MessageDigest.getInstance("MD5");
-			byte[] bytesMD5 =
-				digest.digest(resourceMetadata.getUri().toString().getBytes(Charset.forName("UTF-8")));
+		try (Scope scope = this.tracer.scopeManager().activate(span, false)){
+			SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+			try(PreparedStatement statement = unitOfWork.createPreparedStatement(sql)) {
+				MessageDigest digest = MessageDigest.getInstance("MD5");
+				byte[] bytesMD5 =
+					digest.digest(resourceMetadata.getUri().toString().getBytes(Charset.forName("UTF-8")));
 
-			statement.setString(1, resourceMetadata.getUri().toString());
-			statement.setString(2, new String(bytesMD5));
-			statement.setString(3, resourceMetadata.getContentType().toString());
-			statement.setString(4, resourceMetadata.getNodeName());
-			statement.setLong(5, resourceMetadata.getRevision());
-			statement.setTimestamp(
-				6, 
-				new Timestamp(resourceMetadata.getLastModified().getTime()),
-				Calendar.getInstance(TimeZone.getTimeZone("UTC"))
-			);
-			statement.setString(7, resourceMetadata.getEntityTag().toString());
-			statement.executeUpdate();
-			unitOfWork.save();
-		} catch (SQLException | NoSuchAlgorithmException x) {
-			//should log instead.
-			x.printStackTrace();
-			unitOfWork.undo();
+				statement.setString(1, resourceMetadata.getUri().toString());
+				statement.setString(2, new String(bytesMD5));
+				statement.setString(3, resourceMetadata.getContentType().toString());
+				statement.setString(4, resourceMetadata.getNodeName());
+				statement.setLong(5, resourceMetadata.getRevision());
+				statement.setTimestamp(
+					6, 
+					new Timestamp(resourceMetadata.getLastModified().getTime()),
+					Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+				);
+				statement.setString(7, resourceMetadata.getEntityTag().toString());
+				statement.executeUpdate();
+				unitOfWork.save();
+			} catch (SQLException | NoSuchAlgorithmException x) {
+				//should log instead.
+				x.printStackTrace();
+				unitOfWork.undo();
+			}
+		} finally {
+			span.finish();
 		}
 	}
 
@@ -177,28 +201,33 @@ public class ResourceMetadataService implements infrastructure.ResourceMetadataS
      */
 	@Override
 	public void put(ResourceMetadata resourceMetadata) {
-
-		SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+		Span span =
+			this.tracer.buildSpan("ResourceMetadataService#put").asChildOf(this.tracer.activeSpan()).start();
 		final String sql =
 			"UPDATE RESOURCE_METADATA SET NODE_NAME = ?, REVISION = ?, LAST_MODIFIED = ?, ENTITY_TAG = ? WHERE URI = ? AND CONTENT_TYPE = ?;";
 
-		try (PreparedStatement statement = unitOfWork.createPreparedStatement(sql)){
-			statement.setString(1, resourceMetadata.getNodeName());
-			statement.setLong(2, resourceMetadata.getRevision());
-			statement.setTimestamp(
-				3,
-				new Timestamp(resourceMetadata.getLastModified().getTime()),
-				Calendar.getInstance(TimeZone.getTimeZone("UTC"))
-			);
-			statement.setString(4, resourceMetadata.getEntityTag().toString());
-			statement.setString(5, resourceMetadata.getUri().toString());
-			statement.setString(6, resourceMetadata.getContentType().toString());
-			statement.executeUpdate();
-			unitOfWork.save();
-		} catch (SQLException x) {
-			//should log instead.
-			x.printStackTrace();
-			unitOfWork.undo();
+		try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
+			SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+			try(PreparedStatement statement = unitOfWork.createPreparedStatement(sql)) {
+				statement.setString(1, resourceMetadata.getNodeName());
+				statement.setLong(2, resourceMetadata.getRevision());
+				statement.setTimestamp(
+					3,
+					new Timestamp(resourceMetadata.getLastModified().getTime()),
+					Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+				);
+				statement.setString(4, resourceMetadata.getEntityTag().toString());
+				statement.setString(5, resourceMetadata.getUri().toString());
+				statement.setString(6, resourceMetadata.getContentType().toString());
+				statement.executeUpdate();
+				unitOfWork.save();
+			} catch (SQLException x) {
+				//should log instead.
+				x.printStackTrace();
+				unitOfWork.undo();
+			}
+		} finally {
+			span.finish();
 		}
 	}
 
@@ -209,19 +238,24 @@ public class ResourceMetadataService implements infrastructure.ResourceMetadataS
 	 */
 	@Override
 	public void remove(URI uri, MediaType contentType) {
-
-		SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+		Span span =
+			this.tracer.buildSpan("ResourceMetadataService#remove").asChildOf(this.tracer.activeSpan()).start();
 		final String sql = "DELETE FROM RESOURCE_METADATA WHERE URI = ? AND CONTENT_TYPE = ?;";
 
-		try(PreparedStatement statement = unitOfWork.createPreparedStatement(sql)){
-			statement.setString(1, uri.toString());
-			statement.setString(2, contentType.toString());
-			statement.executeUpdate();
-			unitOfWork.save();
-		}catch (SQLException x) {
-			//should log instead.
-			x.printStackTrace();
-			unitOfWork.undo();
+		try(Scope scope = this.tracer.scopeManager().activate(span, false)){
+			SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+			try(PreparedStatement statement = unitOfWork.createPreparedStatement(sql)) {
+				statement.setString(1, uri.toString());
+				statement.setString(2, contentType.toString());
+				statement.executeUpdate();
+				unitOfWork.save();
+			}catch (SQLException x) {
+				//should log instead.
+				x.printStackTrace();
+				unitOfWork.undo();
+			}
+		} finally {
+			span.finish();
 		}
 	}
 
@@ -232,18 +266,23 @@ public class ResourceMetadataService implements infrastructure.ResourceMetadataS
 	 */
 	@Override
 	public void removeAll(URI uri) {
-
-		SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+		Span span =
+			this.tracer.buildSpan("ResourceMetadataService#removeAll").asChildOf(this.tracer.activeSpan()).start();
 		final String sql = "DELETE FROM RESOURCE_METADATA WHERE URI = ?;";
 
-		try(PreparedStatement statement = unitOfWork.createPreparedStatement(sql)){
-			statement.setString(1, uri.toString());
-			statement.executeUpdate();
-			unitOfWork.save();
-		}catch (SQLException x) {
-			//should log instead.
-			x.printStackTrace();
-			unitOfWork.undo();
+		try(Scope scope = this.tracer.scopeManager().activate(span, false)){
+			SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+			try(PreparedStatement statement = unitOfWork.createPreparedStatement(sql)) {
+				statement.setString(1, uri.toString());
+				statement.executeUpdate();
+				unitOfWork.save();
+			}catch (SQLException x) {
+				//should log instead.
+				x.printStackTrace();
+				unitOfWork.undo();
+			}
+		} finally {
+			span.finish();
 		}
 	}
 }

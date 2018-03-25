@@ -4,10 +4,10 @@ import api.representations.Audience;
 import api.representations.Notification;
 import api.representations.Representation;
 import api.representations.Target;
-import api.representations.siren.SirenEntityRepresentation;
 
 import java.net.URISyntaxException;
 
+import javax.inject.Inject;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
@@ -26,6 +26,10 @@ import siren.factories.EntityBuilderFactory;
 import siren.factories.FieldBuilderFactory;
 import siren.factories.LinkBuilderFactory;
 
+import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.Tracer;
+
 public final class SirenRepresentationFactory extends RepresentationFactory {
 
 	private final LinkBuilderFactory linkBuilderFactory;
@@ -33,8 +37,10 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
 	private final ActionBuilderFactory actionBuilderFactory;
 	private final FieldBuilderFactory fieldBuilderFactory;
 	private final EmbeddedLinkSubEntityBuilderFactory embeddedLinkSubEntityBuilderFactory;
+	private final Tracer tracer;
 
-	public SirenRepresentationFactory() {
+	@Inject
+	public SirenRepresentationFactory(Tracer tracer) {
 		super(new MediaType("application", "vnd.siren+json"));
 		this.linkBuilderFactory = new LinkBuilderFactory();
 		this.entityBuilderFactory = new EntityBuilderFactory();
@@ -42,246 +48,274 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
 		this.fieldBuilderFactory = new FieldBuilderFactory();
 		this.embeddedLinkSubEntityBuilderFactory =
 			new EmbeddedLinkSubEntityBuilderFactory();
+		this.tracer = tracer;
 	}
 
 	@Override
 	public Representation createNotificationRepresentation(UriInfo uriInfo, Notification notification) {
-		Link.Builder linkBuilder = this.linkBuilderFactory.create();
-		
-		Link self = null;
-		try {
-			self =
-				linkBuilder
-					.rel(Relation.SELF)
+		Span span =
+			this.tracer
+				.buildSpan("SirenRepresentationFactory#createNotificationRepresentation")
+				.asChildOf(this.tracer.activeSpan())
+				.start();
+		try(Scope scope = this.tracer.scopeManager().activate(span, false)) {
+			Link.Builder linkBuilder = this.linkBuilderFactory.create();
+			
+			Link self = null;
+			try {
+				self =
+					linkBuilder
+						.rel(Relation.SELF)
+						.href(uriInfo.getRequestUri())
+						.build();
+			} catch (URISyntaxException x){}
+
+			Action.Builder actionBuilder = this.actionBuilderFactory.create();
+			Action delete =
+				actionBuilder
+					.name("delete-notification")
+					.title("Delete Notification")
+					.method(HttpMethod.DELETE)
 					.href(uriInfo.getRequestUri())
 					.build();
-		} catch (URISyntaxException x){}
 
-		Action.Builder actionBuilder = this.actionBuilderFactory.create();
-		Action delete =
-			actionBuilder
-				.name("delete-notification")
-				.title("Delete Notification")
-				.method(HttpMethod.DELETE)
-				.href(uriInfo.getRequestUri())
-				.build();
+			EmbeddedLinkSubEntity.Builder embeddedLinkSubEntityBuilder =
+				this.embeddedLinkSubEntityBuilderFactory.create();
 
-		EmbeddedLinkSubEntity.Builder embeddedLinkSubEntityBuilder =
-			this.embeddedLinkSubEntityBuilderFactory.create();
+			Entity.Builder entityBuilder = this.entityBuilderFactory.create();
+			EmbeddedLinkSubEntity targetCollectionSubEntity = null;
+			EmbeddedLinkSubEntity audienceCollectionSubEntity = null;
 
-		Entity.Builder entityBuilder = this.entityBuilderFactory.create();
-		EmbeddedLinkSubEntity targetCollectionSubEntity = null;
-		EmbeddedLinkSubEntity audienceCollectionSubEntity = null;
+			try {
+				//create target collection entity.
+				targetCollectionSubEntity =
+					embeddedLinkSubEntityBuilder
+						.klasses("target", "collection")
+						.title("Target Collection")
+						.rel(Relation.COLLECTION)
+						.href(
+							UriBuilder
+								.fromUri(uriInfo.getRequestUri())
+								.replacePath("/targets/")
+								.build()
+						)
+						.build();
+			} catch (URISyntaxException x){}
 
-		try {
-			//create target collection entity.
-			targetCollectionSubEntity =
-				embeddedLinkSubEntityBuilder
-					.klasses("target", "collection")
-					.title("Target Collection")
-					.rel(Relation.COLLECTION)
-					.href(
-						UriBuilder
-							.fromUri(uriInfo.getRequestUri())
-							.replacePath("/targets/")
-							.build()
-					)
+			embeddedLinkSubEntityBuilder.clear();
+
+			try {
+				//create audience collection entity.
+				audienceCollectionSubEntity =
+					embeddedLinkSubEntityBuilder
+						.klasses("audience", "collection")
+						.title("Audience Collection")
+						.rel(Relation.COLLECTION)
+						.href(
+							UriBuilder
+								.fromUri(uriInfo.getRequestUri())
+								.replacePath("/audiences/")
+								.build()
+						)
+						.build();
+			} catch (URISyntaxException x){}
+
+			Entity entity =
+				entityBuilder
+					.klass("notification")
+					.property("uuid", notification.getUUID())
+					.property("content", notification.getContent())
+					.property("sendAt", notification.getSendAt())
+					.property("sentAt", notification.getSentAt())
+					.property("status", notification.getStatus().toString())
+					.link(self)
+					.actions(delete)
+					.subEntities(audienceCollectionSubEntity, targetCollectionSubEntity)
 					.build();
-		} catch (URISyntaxException x){}
 
-		embeddedLinkSubEntityBuilder.clear();
-
-		try {
-			//create audience collection entity.
-			audienceCollectionSubEntity =
-				embeddedLinkSubEntityBuilder
-					.klasses("audience", "collection")
-					.title("Audience Collection")
-					.rel(Relation.COLLECTION)
-					.href(
-						UriBuilder
-							.fromUri(uriInfo.getRequestUri())
-							.replacePath("/audiences/")
-							.build()
-					)
-					.build();
-		} catch (URISyntaxException x){}
-
-		Entity entity =
-			entityBuilder
-				.klass("notification")
-				.property("uuid", notification.getUUID())
-				.property("content", notification.getContent())
-				.property("sendAt", notification.getSendAt())
-				.property("sentAt", notification.getSentAt())
-				.property("status", notification.getStatus().toString())
-				.link(self)
-				.actions(delete)
-				.subEntities(audienceCollectionSubEntity, targetCollectionSubEntity)
-				.build();
-
-		return new api.representations.siren.SirenEntityRepresentation(entity);
+			return new api.representations.siren.SirenEntityRepresentation(entity);
+		} finally {
+			span.finish();
+		}
 	}
 
 	@Override
 	public Representation createAudienceRepresentation(UriInfo uriInfo, Audience audience) {
-		Link.Builder linkBuilder = this.linkBuilderFactory.create();
-		
-		Link self = null;
-		try {
-			self =
-				linkBuilder
-					.rel(Relation.SELF)
+		Span span =
+			this.tracer
+				.buildSpan("SirenRepresentationFactory#createAudienceRepresentation")
+				.asChildOf(this.tracer.activeSpan())
+				.start();
+		try(Scope scope = this.tracer.scopeManager().activate(span, false)) {
+			Link.Builder linkBuilder = this.linkBuilderFactory.create();
+			
+			Link self = null;
+			try {
+				self =
+					linkBuilder
+						.rel(Relation.SELF)
+						.href(uriInfo.getRequestUri())
+						.build();
+			} catch (URISyntaxException x){}
+
+			Action.Builder actionBuilder = this.actionBuilderFactory.create();
+			Action delete =
+				actionBuilder
+					.name("delete-audience")
+					.title("Delete Audience")
+					.method(HttpMethod.DELETE)
 					.href(uriInfo.getRequestUri())
 					.build();
-		} catch (URISyntaxException x){}
 
-		Action.Builder actionBuilder = this.actionBuilderFactory.create();
-		Action delete =
-			actionBuilder
-				.name("delete-audience")
-				.title("Delete Audience")
-				.method(HttpMethod.DELETE)
-				.href(uriInfo.getRequestUri())
-				.build();
+			actionBuilder.clear();
 
-		actionBuilder.clear();
+			Field.Builder<String> stringFieldBuilder = this.fieldBuilderFactory.create();
+			Field<String> uuidField =
+				stringFieldBuilder
+					.name("uuid")
+					.title("Universally Unique Identifier")
+					.type(FieldType.TEXT)
+					.build();
 
-		Field.Builder<String> stringFieldBuilder = this.fieldBuilderFactory.create();
-		Field<String> uuidField =
-			stringFieldBuilder
-				.name("uuid")
-				.title("Universally Unique Identifier")
-				.type(FieldType.TEXT)
-				.build();
+			stringFieldBuilder.clear();
 
-		stringFieldBuilder.clear();
+			Field<String> nameField =
+				stringFieldBuilder
+					.name("name")
+					.title("Name")
+					.type(FieldType.TEXT)
+					.build();
 
-		Field<String> nameField =
-			stringFieldBuilder
-				.name("name")
-				.title("Name")
-				.type(FieldType.TEXT)
-				.build();
+			Action replace =
+				actionBuilder
+					.name("replace-audience")
+					.title("Replace Audience")
+					.method(HttpMethod.PUT)
+					.href(uriInfo.getRequestUri())
+					.fields(uuidField, nameField)
+					.type(MediaType.APPLICATION_JSON)
+					.build();
 
-		Action replace =
-			actionBuilder
-				.name("replace-audience")
-				.title("Replace Audience")
-				.method(HttpMethod.PUT)
-				.href(uriInfo.getRequestUri())
-				.fields(uuidField, nameField)
-				.type(MediaType.APPLICATION_JSON)
-				.build();
+			EmbeddedLinkSubEntity.Builder embeddedLinkSubEntityBuilder =
+				this.embeddedLinkSubEntityBuilderFactory.create();
 
-		EmbeddedLinkSubEntity.Builder embeddedLinkSubEntityBuilder =
-			this.embeddedLinkSubEntityBuilderFactory.create();
+			Entity.Builder entityBuilder = this.entityBuilderFactory.create();
 
-		Entity.Builder entityBuilder = this.entityBuilderFactory.create();
+			for(Target member : audience.getMembers()) {
+				try {
+					EmbeddedLinkSubEntity targetSubEntity =
+						embeddedLinkSubEntityBuilder
+							.klass("target")
+							.title("Member")
+							.rel(Relation.ITEM)
+							.href(
+								UriBuilder
+									.fromUri(uriInfo.getRequestUri())
+									.replacePath("/targets/{uuid}/")
+									.build(member.getUUID())
+							)
+							.build();
+					entityBuilder.subEntity(targetSubEntity);
+					embeddedLinkSubEntityBuilder.clear();
+				} catch (URISyntaxException x){}
+			}
 
-		for(Target member : audience.getMembers()) {
-			try {
-				EmbeddedLinkSubEntity targetSubEntity =
-					embeddedLinkSubEntityBuilder
-						.klass("target")
-						.title("Member")
-						.rel(Relation.ITEM)
-						.href(
-							UriBuilder
-								.fromUri(uriInfo.getRequestUri())
-								.replacePath("/targets/{uuid}/")
-								.build(member.getUUID())
-						)
-						.build();
-				entityBuilder.subEntity(targetSubEntity);
-				embeddedLinkSubEntityBuilder.clear();
-			} catch (URISyntaxException x){}
+			Entity entity =
+				entityBuilder
+					.klass("audience")
+					.property("uuid", audience.getUUID())
+					.property("name", audience.getName())
+					.link(self)
+					.actions(delete, replace)
+					.build();
+
+			return new api.representations.siren.SirenEntityRepresentation(entity);
+		} finally {
+			span.finish();
 		}
-
-		Entity entity =
-			entityBuilder
-				.klass("audience")
-				.property("uuid", audience.getUUID())
-				.property("name", audience.getName())
-				.link(self)
-				.actions(delete, replace)
-				.build();
-
-		return new api.representations.siren.SirenEntityRepresentation(entity);
 	}
 
 	@Override
 	public Representation createTargetRepresentation(UriInfo uriInfo, Target target) {
-		Link.Builder linkBuilder = this.linkBuilderFactory.create();
-		
-		Link self = null;
-		try {
-			self =
-				linkBuilder
-					.rel(Relation.SELF)
+		Span span =
+			this.tracer
+				.buildSpan("SirenRepresentationFactory#createTargetRepresentation")
+				.asChildOf(this.tracer.activeSpan())
+				.start();
+		try(Scope scope = this.tracer.scopeManager().activate(span, false)) {
+			Link.Builder linkBuilder = this.linkBuilderFactory.create();
+			
+			Link self = null;
+			try {
+				self =
+					linkBuilder
+						.rel(Relation.SELF)
+						.href(uriInfo.getRequestUri())
+						.build();
+			} catch (URISyntaxException x){}
+
+			Action.Builder actionBuilder = this.actionBuilderFactory.create();
+			Action delete =
+				actionBuilder
+					.name("delete-target")
+					.title("Delete Target")
+					.method(HttpMethod.DELETE)
 					.href(uriInfo.getRequestUri())
 					.build();
-		} catch (URISyntaxException x){}
 
-		Action.Builder actionBuilder = this.actionBuilderFactory.create();
-		Action delete =
-			actionBuilder
-				.name("delete-target")
-				.title("Delete Target")
-				.method(HttpMethod.DELETE)
-				.href(uriInfo.getRequestUri())
-				.build();
+			actionBuilder.clear();
 
-		actionBuilder.clear();
+			Field.Builder<String> stringFieldBuilder = this.fieldBuilderFactory.create();
+			Field<String> uuidField =
+				stringFieldBuilder
+					.name("uuid")
+					.title("Universally Unique Identifier")
+					.type(FieldType.TEXT)
+					.build();
 
-		Field.Builder<String> stringFieldBuilder = this.fieldBuilderFactory.create();
-		Field<String> uuidField =
-			stringFieldBuilder
-				.name("uuid")
-				.title("Universally Unique Identifier")
-				.type(FieldType.TEXT)
-				.build();
+			stringFieldBuilder.clear();
 
-		stringFieldBuilder.clear();
+			Field<String> nameField =
+				stringFieldBuilder
+					.name("name")
+					.title("Name")
+					.type(FieldType.TEXT)
+					.build();
 
-		Field<String> nameField =
-			stringFieldBuilder
-				.name("name")
-				.title("Name")
-				.type(FieldType.TEXT)
-				.build();
+			stringFieldBuilder.clear();
 
-		stringFieldBuilder.clear();
+			Field<String> phoneNumberField =
+				stringFieldBuilder
+					.name("phoneNumber")
+					.title("Phone Number")
+					.type(FieldType.TEL)
+					.build();
 
-		Field<String> phoneNumberField =
-			stringFieldBuilder
-				.name("phoneNumber")
-				.title("Phone Number")
-				.type(FieldType.TEL)
-				.build();
+			Action replace =
+				actionBuilder
+					.name("replace-target")
+					.title("Replace Target")
+					.method(HttpMethod.PUT)
+					.href(uriInfo.getRequestUri())
+					.fields(uuidField, nameField, phoneNumberField)
+					.type(MediaType.APPLICATION_JSON)
+					.build();
 
-		Action replace =
-			actionBuilder
-				.name("replace-target")
-				.title("Replace Target")
-				.method(HttpMethod.PUT)
-				.href(uriInfo.getRequestUri())
-				.fields(uuidField, nameField, phoneNumberField)
-				.type(MediaType.APPLICATION_JSON)
-				.build();
+			Entity.Builder entityBuilder = this.entityBuilderFactory.create();
+			Entity entity =
+				entityBuilder
+					.klass("target")
+					.property("uuid", target.getUUID())
+					.property("phoneNumber", target.getPhoneNumber())
+					.property("name", target.getName())
+					.link(self)
+					.actions(delete, replace)
+					.build();
 
-		Entity.Builder entityBuilder = this.entityBuilderFactory.create();
-		Entity entity =
-			entityBuilder
-				.klass("target")
-				.property("uuid", target.getUUID())
-				.property("phoneNumber", target.getPhoneNumber())
-				.property("name", target.getName())
-				.link(self)
-				.actions(delete, replace)
-				.build();
-
-		// not sure what to do here yet...adapter pattern?
-		return new api.representations.siren.SirenEntityRepresentation(entity);
+			// not sure what to do here yet...adapter pattern?
+			return new api.representations.siren.SirenEntityRepresentation(entity);
+		} finally {
+			span.finish();
+		}
 	}
 }

@@ -3,12 +3,14 @@ package infrastructure;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 import domain.EntitySQLFactory;
 import domain.Target;
+
+import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.Tracer;
 
 /**
  * Responsible for retrieving and persisting {@link Target} entities.
@@ -18,6 +20,7 @@ import domain.Target;
 public final class TargetRepository extends SQLRepository implements Repository<Target, UUID> {
 
 	private final EntitySQLFactory<Target, UUID> targetFactory;
+	private final Tracer tracer;
 
 	/**
 	 * Constructs a instance of {@link TargetRepository}.
@@ -26,10 +29,13 @@ public final class TargetRepository extends SQLRepository implements Repository<
 	 */
 	public TargetRepository(
 		SQLUnitOfWork unitOfWork,
-		EntitySQLFactory<Target, UUID> targetFactory
+		EntitySQLFactory<Target, UUID> targetFactory,
+		Tracer tracer
 	) {
 		super(unitOfWork);
+
 		this.targetFactory = targetFactory;
+		this.tracer = tracer;
 	}
 
 	/**
@@ -37,22 +43,30 @@ public final class TargetRepository extends SQLRepository implements Repository<
 	 */
 	@Override
 	public Target get(UUID uuid) {
+		Span span =
+			this.tracer
+				.buildSpan("TargetRepository#get")
+				.asChildOf(this.tracer.activeSpan())
+				.start();
 		Target target = null;
-		final String targetSQL = 
-			"SELECT T.* FROM TARGET AS T WHERE T.UUID = ?;";
+		final String targetSQL = "SELECT T.* FROM TARGET AS T WHERE T.UUID = ?;";
+
 		try(
+			Scope scope = this.tracer.scopeManager().activate(span, false);
 			PreparedStatement getTargetStatement = 
 				this.getUnitOfWork().createPreparedStatement(targetSQL)
-		){
-			getTargetStatement.setString(1, uuid.toString());
+		) {
 
+			getTargetStatement.setString(1, uuid.toString());
 			try(ResultSet targetRs = getTargetStatement.executeQuery()) {
 				target = this.targetFactory.reconstitute(targetRs);
 			}
+			return target;
 		} catch (SQLException x) {
 			throw new RuntimeException(x);
+		} finally {
+			span.finish();
 		}
-		return target;
 	}
 
 	/**
@@ -61,26 +75,35 @@ public final class TargetRepository extends SQLRepository implements Repository<
 	 */
 	@Override
 	public void put(Target target) {
+		Span span =
+			this.tracer
+				.buildSpan("TargetRepository#put")
+				.asChildOf(this.tracer.activeSpan())
+				.start();
 		final String sql = 
 			"UPDATE TARGET SET NAME = ?, PHONE_NUMBER = ? WHERE UUID = ?;";
 		
-		Target existingTarget = this.get(target.getId());
-		if(existingTarget == null) {
-			this.add(target);
-		} else {
+		try(Scope scope = this.tracer.scopeManager().activate(span, false)) {
+			Target existingTarget = this.get(target.getId());
+			if(existingTarget == null) {
+				this.add(target);
+			} else {
 
-			//update the target.
-			try(
-				PreparedStatement updateTargetStatement =
-					this.getUnitOfWork().createPreparedStatement(sql)
-			) {
-				updateTargetStatement.setString(1, target.getName());
-				updateTargetStatement.setString(2, target.getPhoneNumber().toE164());
-				updateTargetStatement.setString(3, target.getId().toString());
-				updateTargetStatement.executeUpdate();
-			} catch (SQLException x) {
+				//update the target.
+				try(
+					PreparedStatement updateTargetStatement =
+						this.getUnitOfWork().createPreparedStatement(sql)
+				) {
+					updateTargetStatement.setString(1, target.getName());
+					updateTargetStatement.setString(2, target.getPhoneNumber().toE164());
+					updateTargetStatement.setString(3, target.getId().toString());
+					updateTargetStatement.executeUpdate();
+				} catch (SQLException x) {
 				throw new RuntimeException(x);
+				}
 			}
+		} finally {
+			span.finish();
 		}
 	}
 
@@ -89,20 +112,28 @@ public final class TargetRepository extends SQLRepository implements Repository<
 	 */
 	@Override
 	public void add(Target target) {
-		//SHOULD I SUPPORT SOFT DELETIONS FOR ENTITIES?
-
+		Span span =
+			this.tracer
+				.buildSpan("TargetRepository#add")
+				.asChildOf(this.tracer.activeSpan())
+				.start();
 		final String createTargetSQL = 
 			"INSERT INTO TARGET (UUID, NAME, PHONE_NUMBER) VALUES (?, ?, ?);";
-
+		
 		//create target.
-		try(PreparedStatement pStatement = 
-			this.getUnitOfWork().createPreparedStatement(createTargetSQL)) {
+		try(
+			Scope scope = this.tracer.scopeManager().activate(span, false);
+			PreparedStatement pStatement = 
+				this.getUnitOfWork().createPreparedStatement(createTargetSQL)
+		) {
 			pStatement.setString(1, target.getId().toString());
 			pStatement.setString(2, target.getName());
 			pStatement.setString(3, target.getPhoneNumber().toE164());
 			pStatement.executeUpdate();
 		} catch (SQLException x) {
 			throw new RuntimeException(x);
+		} finally {
+			span.finish();
 		}
 	}
 
@@ -111,10 +142,16 @@ public final class TargetRepository extends SQLRepository implements Repository<
 	 */
 	@Override
 	public void remove(UUID uuid) {
+		Span span =
+			this.tracer
+				.buildSpan("TargetRepository#remove")
+				.asChildOf(this.tracer.activeSpan())
+				.start();
 		final String deleteTargetSQL = "DELETE FROM TARGET WHERE UUID = ?;";
 		final String deleteNotificationsAssociationSQL =
 			"DELETE FROM NOTIFICATION_TARGET WHERE TARGET_UUID = ?;";
 		try(
+			Scope scope = this.tracer.scopeManager().activate(span, false);
 			PreparedStatement deleteNotificationAssociationsStatement =
 				this.getUnitOfWork().createPreparedStatement(deleteNotificationsAssociationSQL);
 			PreparedStatement deleteTargetStatement =
@@ -127,6 +164,8 @@ public final class TargetRepository extends SQLRepository implements Repository<
 			deleteTargetStatement.executeUpdate();
 		} catch (SQLException x) {
 			throw new RuntimeException(x);
+		} finally {
+			span.finish();
 		}
 	}
 }

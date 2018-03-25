@@ -2,7 +2,6 @@ package api.resources;
 
 import api.representations.RepresentationFactory;
 import api.representations.Notification;
-import api.representations.Representation;
 
 import application.NotificationService;
 
@@ -17,6 +16,10 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
+import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.Tracer;
+
 /**
  * Represents a notification resource for this RESTful API.
  * @author jonfreer
@@ -27,6 +30,7 @@ public class NotificationResource implements api.NotificationResource{
 	private final RepresentationFactory jsonRepresentationFactory;
 	private final RepresentationFactory xmlRepresentationFactory;
 	private final RepresentationFactory sirenRepresentationFactory;
+	private final Tracer tracer;
 
 	/**
 	 * Construct a new {@link NotificationResource} instance.
@@ -37,12 +41,14 @@ public class NotificationResource implements api.NotificationResource{
 		NotificationService notificationService,
 		@Named("JSONRepresentationFactory") RepresentationFactory jsonRepresentationFactory,
 		@Named("XMLRepresentationFactory") RepresentationFactory xmlRepresentationFactory,
-		@Named("SirenRepresentationFactory") RepresentationFactory sirenRepresentationFactory
+		@Named("SirenRepresentationFactory") RepresentationFactory sirenRepresentationFactory,
+		Tracer tracer
 	) {
 		this.notificationService = notificationService;
 		this.jsonRepresentationFactory = jsonRepresentationFactory;
 		this.xmlRepresentationFactory = xmlRepresentationFactory;
 		this.sirenRepresentationFactory = sirenRepresentationFactory;
+		this.tracer = tracer;
 	}
 
 	/**
@@ -53,22 +59,26 @@ public class NotificationResource implements api.NotificationResource{
 	 */
 	@Override
 	public Response get(HttpHeaders headers, UriInfo uriInfo, String uuid) {
-		Notification notification = 
-			this.notificationService.getNotification(UUID.fromString(uuid));
+		Span span = this.tracer.buildSpan("NotificationResource#get").start();
+		try(Scope scope = this.tracer.scopeManager().activate(span, false)) {
+			Notification notification = 
+				this.notificationService.getNotification(UUID.fromString(uuid));
 
-		api.representations.Representation representation;
-
-		if(headers.getAcceptableMediaTypes().contains(MediaType.APPLICATION_XML_TYPE)) {
-			representation =
-				this.xmlRepresentationFactory.createNotificationRepresentation(uriInfo, notification);
-		} else if(headers.getAcceptableMediaTypes().contains(MediaType.APPLICATION_JSON_TYPE)) {
-			representation =
-				this.jsonRepresentationFactory.createNotificationRepresentation(uriInfo, notification);
-		} else {
-			representation =
-				this.sirenRepresentationFactory.createNotificationRepresentation(uriInfo, notification);
+			api.representations.Representation representation;
+			if(headers.getAcceptableMediaTypes().contains(MediaType.APPLICATION_XML_TYPE)) {
+				representation =
+					this.xmlRepresentationFactory.createNotificationRepresentation(uriInfo, notification);
+			} else if(headers.getAcceptableMediaTypes().contains(MediaType.APPLICATION_JSON_TYPE)) {
+				representation =
+					this.jsonRepresentationFactory.createNotificationRepresentation(uriInfo, notification);
+			} else {
+				representation =
+					this.sirenRepresentationFactory.createNotificationRepresentation(uriInfo, notification);
+			}
+			return Response.ok(representation).build();
+		} finally {
+			span.finish();
 		}
-		return Response.ok(representation).build();
 	}
 
 	/**
@@ -79,13 +89,18 @@ public class NotificationResource implements api.NotificationResource{
 	 */
 	@Override
 	public Response createAndAppend(HttpHeaders headers, UriInfo uriInfo, Notification notification) {
-		UUID uuid = this.notificationService.createNotification(notification);
-		URI location =
-			UriBuilder
-				.fromUri(uriInfo.getRequestUri())
-				.path("/{uuid}/")
-				.build(uuid.toString());
-		return Response.created(location).build();
+		Span span = this.tracer.buildSpan("NotificationResource#createAndAppend").start();
+		try(Scope scope = this.tracer.scopeManager().activate(span, false)) {
+			UUID uuid = this.notificationService.createNotification(notification);
+			URI location =
+				UriBuilder
+					.fromUri(uriInfo.getRequestUri())
+					.path("/{uuid}/")
+					.build(uuid.toString());
+			return Response.created(location).build();
+		} finally {
+			span.finish();
+		}
 	}
 
 	/**
@@ -96,8 +111,13 @@ public class NotificationResource implements api.NotificationResource{
 	 */
 	@Override
 	public Response replace(HttpHeaders headers, UriInfo uriInfo, Notification notification) {
-		this.notificationService.updateNotification(notification);
-		return Response.noContent().build();
+		Span span = this.tracer.buildSpan("NotificationResource#replace").start();
+		try(Scope scope = this.tracer.scopeManager().activate(span, false)) {
+			this.notificationService.updateNotification(notification);
+			return Response.noContent().build();
+		} finally {
+			span.finish();
+		}
 	}
 
 	/**
@@ -107,7 +127,12 @@ public class NotificationResource implements api.NotificationResource{
 	 */
 	@Override
 	public Response delete(UriInfo uriInfo, String uuid) {
-		this.notificationService.deleteNotification(UUID.fromString(uuid));
-		return Response.noContent().build();
+		Span span = this.tracer.buildSpan("NotificationResource#delete").start();
+		try(Scope scope = this.tracer.scopeManager().activate(span, false)) {
+			this.notificationService.deleteNotification(UUID.fromString(uuid));
+			return Response.noContent().build();
+		} finally {
+			span.finish();
+		}
 	}
 }
