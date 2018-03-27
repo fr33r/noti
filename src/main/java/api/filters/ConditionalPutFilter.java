@@ -14,40 +14,57 @@ import javax.ws.rs.ext.Provider;
 import infrastructure.ResourceMetadataService;
 import infrastructure.ResourceMetadata;
 
+import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.Tracer;
+
 @Provider
 public class ConditionalPutFilter implements ContainerRequestFilter {
 
 	private ResourceMetadataService resourceMetadataService;
+	private final Tracer tracer;
 
 	@Inject
-	public ConditionalPutFilter(ResourceMetadataService resourceMetadataService){
+	public ConditionalPutFilter(
+		ResourceMetadataService resourceMetadataService,
+		Tracer tracer
+	){
 		this.resourceMetadataService = resourceMetadataService;
+		this.tracer = tracer;
 	}
 
 	public void filter(ContainerRequestContext requestContext) throws IOException {
+		Span span =
+			this.tracer
+				.buildSpan("ConditionalPutFilter#filter")
+				.asChildOf(this.tracer.activeSpan())
+				.start();
+		try(Scope scope = this.tracer.scopeManager().activate(span, false)) {
+			Request request = requestContext.getRequest();
+			UriInfo uriInfo = requestContext.getUriInfo();
 
-		Request request = requestContext.getRequest();
-		UriInfo uriInfo = requestContext.getUriInfo();
+			if(request.getMethod().equalsIgnoreCase("PUT")){
+				MediaType contentType = requestContext.getMediaType();
+				if (contentType == null) { return; }
 
-		if(request.getMethod().equalsIgnoreCase("PUT")){
-			MediaType contentType = requestContext.getMediaType();
-			if (contentType == null) { return; }
+				ResourceMetadata resourceMetadata = 
+					this.resourceMetadataService.get(uriInfo.getRequestUri(), contentType);
 
-			ResourceMetadata resourceMetadata = 
-				this.resourceMetadataService.get(uriInfo.getRequestUri(), contentType);
+				if(resourceMetadata != null){
+					
+					ResponseBuilder responseBuilder = 
+						request.evaluatePreconditions(
+							resourceMetadata.getLastModified(), 
+							resourceMetadata.getEntityTag()
+						);
 
-			if(resourceMetadata != null){
-				
-				ResponseBuilder responseBuilder = 
-					request.evaluatePreconditions(
-						resourceMetadata.getLastModified(), 
-						resourceMetadata.getEntityTag()
-					);
-
-				if(responseBuilder != null){
-					requestContext.abortWith(responseBuilder.build());
+					if(responseBuilder != null){
+						requestContext.abortWith(responseBuilder.build());
+					}
 				}
 			}
+		} finally {
+			span.finish();
 		}
 	}
 }
