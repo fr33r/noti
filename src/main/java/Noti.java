@@ -74,11 +74,6 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.util.Duration;
 
-import mappers.AudienceMapper;
-import mappers.Mapper;
-import mappers.NotificationMapper;
-import mappers.TargetMapper;
-
 public class Noti extends Application<NotiConfiguration> {
 
 	@Override
