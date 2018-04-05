@@ -11,7 +11,6 @@ import infrastructure.SQLUnitOfWorkFactory;
 import infrastructure.SQLUnitOfWork;
 import infrastructure.RepositoryFactory;
 import infrastructure.Repository;
-import mappers.Mapper;
 
 public final class AudienceService implements application.AudienceService {
 
