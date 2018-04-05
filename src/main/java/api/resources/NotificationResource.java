@@ -1,9 +1,12 @@
 package api.resources;
 
 import api.representations.RepresentationFactory;
-import api.representations.Notification;
+import api.representations.json.Notification;
 
 import application.NotificationService;
+import application.NotificationFactory;
+import application.TargetFactory;
+import application.AudienceFactory;
 
 import java.net.URI;
 import java.util.UUID;
@@ -30,6 +33,7 @@ public class NotificationResource implements api.NotificationResource{
 	private final RepresentationFactory jsonRepresentationFactory;
 	private final RepresentationFactory xmlRepresentationFactory;
 	private final RepresentationFactory sirenRepresentationFactory;
+	private final NotificationFactory notificationFactory;
 	private final Tracer tracer;
 
 	/**
@@ -49,6 +53,7 @@ public class NotificationResource implements api.NotificationResource{
 		this.xmlRepresentationFactory = xmlRepresentationFactory;
 		this.sirenRepresentationFactory = sirenRepresentationFactory;
 		this.tracer = tracer;
+		this.notificationFactory = new NotificationFactory(new TargetFactory(), new AudienceFactory(new TargetFactory()));
 	}
 
 	/**
@@ -61,7 +66,7 @@ public class NotificationResource implements api.NotificationResource{
 	public Response get(HttpHeaders headers, UriInfo uriInfo, String uuid) {
 		Span span = this.tracer.buildSpan("NotificationResource#get").start();
 		try(Scope scope = this.tracer.scopeManager().activate(span, false)) {
-			Notification notification = 
+			application.Notification notification = 
 				this.notificationService.getNotification(UUID.fromString(uuid));
 
 			api.representations.Representation representation;
@@ -91,7 +96,7 @@ public class NotificationResource implements api.NotificationResource{
 	public Response createAndAppend(HttpHeaders headers, UriInfo uriInfo, Notification notification) {
 		Span span = this.tracer.buildSpan("NotificationResource#createAndAppend").start();
 		try(Scope scope = this.tracer.scopeManager().activate(span, false)) {
-			UUID uuid = this.notificationService.createNotification(notification);
+			UUID uuid = this.notificationService.createNotification(this.notificationFactory.createFrom(notification));
 			URI location =
 				UriBuilder
 					.fromUri(uriInfo.getRequestUri())
@@ -113,7 +118,7 @@ public class NotificationResource implements api.NotificationResource{
 	public Response replace(HttpHeaders headers, UriInfo uriInfo, Notification notification) {
 		Span span = this.tracer.buildSpan("NotificationResource#replace").start();
 		try(Scope scope = this.tracer.scopeManager().activate(span, false)) {
-			this.notificationService.updateNotification(notification);
+			this.notificationService.updateNotification(this.notificationFactory.createFrom(notification));
 			return Response.noContent().build();
 		} finally {
 			span.finish();

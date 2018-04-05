@@ -9,30 +9,29 @@ import infrastructure.SQLUnitOfWorkFactory;
 import infrastructure.SQLUnitOfWork;
 import infrastructure.RepositoryFactory;
 import infrastructure.Repository;
-import mappers.Mapper;
 
 public final class TargetService implements application.TargetService {
 
 	private final SQLUnitOfWorkFactory unitOfWorkFactory;
 	private final RepositoryFactory repositoryFactory;
 	private final TargetFactory targetFactory;
-	private final Mapper<Target, api.representations.Target> mapper;
+	private final application.TargetFactory applicationTargetFactory;
 
 	@Inject
 	public TargetService(
 		SQLUnitOfWorkFactory unitOfWorkFactory,
 		RepositoryFactory repositoryFactory,
 		TargetFactory targetFactory,
-		Mapper<Target, api.representations.Target> mapper
+		application.TargetFactory applicationTargetFactory
 	) {
 		this.unitOfWorkFactory = unitOfWorkFactory;
 		this.repositoryFactory = repositoryFactory;
 		this.targetFactory = targetFactory;
-		this.mapper = mapper;
+		this.applicationTargetFactory = applicationTargetFactory;
 	}
 
 	@Override
-	public UUID createTarget(api.representations.Target target) {
+	public UUID createTarget(application.Target target) {
 
 		Target target_domain = this.targetFactory.createFrom(target);
 		SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
@@ -51,7 +50,7 @@ public final class TargetService implements application.TargetService {
 	}
 
 	@Override
-	public api.representations.Target getTarget(UUID uuid) {
+	public application.Target getTarget(UUID uuid) {
 
 		Target target_domain = null;
 		SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
@@ -71,11 +70,11 @@ public final class TargetService implements application.TargetService {
 			throw new RuntimeException(String.format("Can't find target with UUID of '%s'", uuid.toString()));
 		}
 
-		return this.mapper.map(target_domain);
+		return this.applicationTargetFactory.createFrom(target_domain);
 	}
 
 	@Override
-	public void replaceTarget(api.representations.Target target) {
+	public void replaceTarget(application.Target target) {
 
 		Target target_domain = this.targetFactory.createFrom(target);
 		SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();

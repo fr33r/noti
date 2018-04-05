@@ -1,6 +1,6 @@
 package application;
 
-import api.representations.Target;
+import application.Target;
 
 import java.util.UUID;
 

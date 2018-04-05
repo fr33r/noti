@@ -6,7 +6,7 @@ import java.util.UUID;
 //factories with DDD. not a fan of everything being a concrete type.
 public class TargetFactory {
 
-	public Target createFrom(api.representations.Target target) {
+	public Target createFrom(application.Target target) {
 		UUID uuid = target.getUUID() == null ? UUID.randomUUID() : target.getUUID();
 		return 
 			new Target(

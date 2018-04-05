@@ -1,4 +1,4 @@
-package api.representations;
+package application;
 
 public enum NotificationStatus {
 

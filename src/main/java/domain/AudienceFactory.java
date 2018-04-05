@@ -15,10 +15,10 @@ public class AudienceFactory {
 
 	//what happens here if not all of the target info is provided?
 	//perhaps just require it to be honest...
-	public Audience createFrom(api.representations.Audience audience) {
+	public Audience createFrom(application.Audience audience) {
 		UUID uuid = audience.getUUID() == null ? UUID.randomUUID() : audience.getUUID();
 		Set<Target> members = new HashSet<>();
-		for(api.representations.Target target : audience.getMembers()) {
+		for(application.Target target : audience.getMembers()) {
 			members.add(
 				new Target(
 					target.getUUID(),

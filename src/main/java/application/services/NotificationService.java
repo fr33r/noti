@@ -14,19 +14,16 @@ import java.util.TimeZone;
 
 import infrastructure.SQLUnitOfWork;
 import infrastructure.ShortMessageService;
-import mappers.Mapper;
 import domain.Message;
 
-//TODO: Do not return representations from this service; return generic response;
-// only layer that should be concerned with representations is API layer.
-public final class NotificationService implements application.NotificationService{
+public final class NotificationService implements application.NotificationService {
 
 	private SQLUnitOfWorkFactory unitOfWorkFactory;
 	private RepositoryFactory repositoryFactory;
 	private ShortMessageService shortMessageService;
 	private NotificationFactory notificationFactory;
-	private Mapper<Notification, api.representations.Notification> mapper;
-	
+	private application.NotificationFactory applicationNotificationFactory;
+
 	/**
 	 * Constructs a {@link NotificationService} instance.
 	 * @param unitOfWorkFactory The factory responsible for constructing instances of {@link SQLUnitOfWork}.
@@ -40,13 +37,13 @@ public final class NotificationService implements application.NotificationServic
 		RepositoryFactory repositoryFactory,
 		ShortMessageService shortMessageService,
 		NotificationFactory notificationFactory,
-		Mapper<Notification, api.representations.Notification> mapper
+		application.NotificationFactory applicationNotificationFactory
 	) {
 		this.unitOfWorkFactory = unitOfWorkFactory;
 		this.repositoryFactory = repositoryFactory;
 		this.shortMessageService = shortMessageService;
 		this.notificationFactory = notificationFactory;
-		this.mapper = mapper;
+		this.applicationNotificationFactory = applicationNotificationFactory;
 	}
 
 	/**
@@ -54,13 +51,13 @@ public final class NotificationService implements application.NotificationServic
 	 * @param notification The representation of the notification to create.
 	 * @return The unique identifier assigned to the newly created notification.
 	 */
-	public UUID createNotification(api.representations.Notification notification) {
+	public UUID createNotification(application.Notification notification) {
 	
 		SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
 		Date now = Calendar.getInstance(TimeZone.getTimeZone("UTC")).getTime();
 		Notification noti_domain = 
 			this.notificationFactory.createFrom(notification);
-		
+
 		try {
 			
 			Repository<Notification, UUID> notificationRepository = 
@@ -99,7 +96,7 @@ public final class NotificationService implements application.NotificationServic
 	 * @param uuid The unique identifier for the notification to retrieve.
 	 * @return A representation of the notification with the unique identifier provided.
 	 */
-	public api.representations.Notification getNotification(UUID uuid) {
+	public application.Notification getNotification(UUID uuid) {
 
 		SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
 		Notification noti_dm = null;
@@ -118,7 +115,7 @@ public final class NotificationService implements application.NotificationServic
 			throw new RuntimeException(String.format("Can't find notification with UUID of '%s'", uuid.toString()));
 		}
 		
-		api.representations.Notification noti_sm = this.mapper.map(noti_dm);
+		application.Notification noti_sm = this.applicationNotificationFactory.createFrom(noti_dm);
 		return noti_sm;
 	}
 
@@ -127,8 +124,9 @@ public final class NotificationService implements application.NotificationServic
 	 * @param uuid The unique identifier for the notification to delete.
 	 */
 	public void deleteNotification(UUID uuid) {
+
 		SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
-		
+
 		try {
 			Repository<Notification, UUID> notificationRepository = 
 				this.repositoryFactory.createNotificationRepository(unitOfWork);
@@ -144,9 +142,10 @@ public final class NotificationService implements application.NotificationServic
 	 * Replaces the existing state of a notification with the representation provided.
 	 * @param notification The representation of the notification to overwrite the existing state.
 	 */
-	public void updateNotification(api.representations.Notification notification) {
+	public void updateNotification(application.Notification notification) {
+
 		SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
-		
+
 		try {
 			Repository<Notification, UUID> notificationRepository = 
 				this.repositoryFactory.createNotificationRepository(unitOfWork);

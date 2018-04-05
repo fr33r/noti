@@ -18,23 +18,23 @@ public final class AudienceService implements application.AudienceService {
 	private final SQLUnitOfWorkFactory unitOfWorkFactory;
 	private final RepositoryFactory repositoryFactory;
 	private final AudienceFactory audienceFactory;
-	private final Mapper<Audience, api.representations.Audience> mapper;
+	private final application.AudienceFactory applicationAudienceFactory;
 
 	@Inject
 	public AudienceService(
 		SQLUnitOfWorkFactory unitOfWorkFactory,
 		RepositoryFactory repositoryFactory,
 		AudienceFactory audienceFactory,
-		Mapper<Audience, api.representations.Audience> mapper
+		application.AudienceFactory applicationAudienceFactory
 	) {
 		this.unitOfWorkFactory = unitOfWorkFactory;
 		this.repositoryFactory = repositoryFactory;
 		this.audienceFactory = audienceFactory;
-		this.mapper = mapper;
+		this.applicationAudienceFactory = applicationAudienceFactory;
 	}
 
 	@Override
-	public UUID createAudience(final api.representations.Audience audience) {
+	public UUID createAudience(final application.Audience audience) {
 
 		Audience audience_domain = this.audienceFactory.createFrom(audience);
 		SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
@@ -53,7 +53,7 @@ public final class AudienceService implements application.AudienceService {
 	}
 
 	@Override
-	public api.representations.Audience getAudience(final UUID uuid) {
+	public application.Audience getAudience(final UUID uuid) {
 
 		Audience audience_domain = null;
 		SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
@@ -75,11 +75,11 @@ public final class AudienceService implements application.AudienceService {
 			);
 		}
 
-		return this.mapper.map(audience_domain);
+		return this.applicationAudienceFactory.createFrom(audience_domain);
 	}
 
 	@Override
-	public void replaceAudience(final api.representations.Audience audience) {
+	public void replaceAudience(final application.Audience audience) {
 
 		Audience audience_domain = this.audienceFactory.createFrom(audience);
 		SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();

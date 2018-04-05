@@ -1,9 +1,11 @@
 package api.resources;
 
-import api.representations.Audience;
+import api.representations.json.Audience;
 import api.representations.Representation;
 import api.representations.RepresentationFactory;
 import application.AudienceService;
+import application.AudienceFactory;
+import application.TargetFactory;
 
 import java.net.URI;
 import java.util.UUID;
@@ -26,6 +28,7 @@ public class AudienceResource implements api.AudienceResource {
 	private final RepresentationFactory jsonRepresentationFactory;
 	private final RepresentationFactory xmlRepresentationFactory;
 	private final RepresentationFactory sirenRepresentationFactory;
+	private final AudienceFactory audienceFactory;
 	private final Tracer tracer;
 
 	@Inject
@@ -41,13 +44,14 @@ public class AudienceResource implements api.AudienceResource {
 		this.xmlRepresentationFactory = xmlRepresentationFactory;
 		this.sirenRepresentationFactory = sirenRepresentationFactory;
 		this.tracer = tracer;
+		this.audienceFactory = new AudienceFactory(new TargetFactory());
 	}
 
 	@Override
 	public Response get(HttpHeaders headers, UriInfo uriInfo, String uuid) {
 		Span span = this.tracer.buildSpan("AudienceResource#get").start();
 		try(Scope scope = this.tracer.scopeManager().activate(span, false)) {
-			Audience audience = this.audienceService.getAudience(UUID.fromString(uuid));
+			application.Audience audience = this.audienceService.getAudience(UUID.fromString(uuid));
 		
 			Representation representation = null;
 			if(headers.getAcceptableMediaTypes().contains(MediaType.APPLICATION_JSON_TYPE)) {
@@ -67,7 +71,7 @@ public class AudienceResource implements api.AudienceResource {
 	public Response createAndAppend(HttpHeaders headers, UriInfo uriInfo, Audience audience) {
 		Span span = this.tracer.buildSpan("AudienceResource#createAndAppend").start();
 		try(Scope scope = this.tracer.scopeManager().activate(span, false)) {
-			UUID audienceUUID = this.audienceService.createAudience(audience);
+			UUID audienceUUID = this.audienceService.createAudience(this.audienceFactory.createFrom(audience));
 			URI location =
 				UriBuilder
 					.fromUri(uriInfo.getRequestUri())
@@ -83,7 +87,7 @@ public class AudienceResource implements api.AudienceResource {
 	public Response replace(HttpHeaders headers, UriInfo uriInfo, Audience audience) {
 		Span span = this.tracer.buildSpan("AudienceResource#replace").start();
 		try(Scope scope = this.tracer.scopeManager().activate(span, false)) {
-			this.audienceService.replaceAudience(audience);
+			this.audienceService.replaceAudience(this.audienceFactory.createFrom(audience));
 			return Response.noContent().build();
 		} finally {
 			span.finish();

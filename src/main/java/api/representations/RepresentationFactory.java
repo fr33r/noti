@@ -1,9 +1,10 @@
 package api.representations;
 
-import api.representations.Audience;
-import api.representations.Notification;
 import api.representations.Representation;
-import api.representations.Target;
+
+import application.Audience;
+import application.Notification;
+import application.Target;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;

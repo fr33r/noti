@@ -10,14 +10,14 @@ import javax.inject.Named;
 public class NotificationFactory {
 
 	//i hate this. can't create mappers as they violate DDD. mappers are factories.
-	public Notification createFrom(api.representations.Notification notification) {
+	public Notification createFrom(application.Notification notification) {
 		Notification noti = this.create(notification);
 		Set<Message> messages = this.createMessages(noti);
 		noti.messages(messages);
 		return noti;
 	}
 	
-	public Notification createFrom(api.representations.Notification notification, Set<Message> messages) {
+	public Notification createFrom(application.Notification notification, Set<Message> messages) {
 		Notification noti = this.create(notification);
 		noti.messages(messages);
 		return noti;
@@ -71,9 +71,9 @@ public class NotificationFactory {
 		return messages;
 	}
 	
-	private Notification create(api.representations.Notification notification) {
+	private Notification create(application.Notification notification) {
 		Set<Target> targets = new HashSet<>();
-		for(api.representations.Target target : notification.getTargets()) {
+		for(application.Target target : notification.getTargets()) {
 			targets.add(
 				new Target(
 					target.getUUID(),
@@ -83,7 +83,7 @@ public class NotificationFactory {
 			);
 		}
 		Set<Audience> audiences = new HashSet<>();
-		for(api.representations.Audience audience : notification.getAudiences()) {
+		for(application.Audience audience : notification.getAudiences()) {
 			audiences.add(new Audience(audience.getUUID(), audience.getName(), new HashSet<>()));
 		}
 		

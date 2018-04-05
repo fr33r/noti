@@ -339,6 +339,30 @@ public class Noti extends Application<NotiConfiguration> {
 
 			@Override
 			protected void configure() {
+				this.bindAsContract(application.NotificationFactory.class);
+			}
+		});
+
+		environment.jersey().register(new AbstractBinder() {
+
+			@Override
+			protected void configure() {
+				this.bindAsContract(application.TargetFactory.class);
+			}
+		});
+
+		environment.jersey().register(new AbstractBinder() {
+
+			@Override
+			protected void configure() {
+				this.bindAsContract(application.AudienceFactory.class);
+			}
+		});
+
+		environment.jersey().register(new AbstractBinder() {
+
+			@Override
+			protected void configure() {
 				this.bindAsContract(NotificationFactory.class);
 			}
 		});

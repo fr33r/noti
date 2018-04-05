@@ -13,8 +13,9 @@ import javax.ws.rs.core.UriInfo;
 
 import api.representations.Representation;
 import api.representations.RepresentationFactory;
-import api.representations.Target;
+import api.representations.json.Target;
 import application.TargetService;
+import application.TargetFactory;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -30,6 +31,7 @@ public final class TargetResource implements api.TargetResource {
 	private final RepresentationFactory jsonRepresentationFactory;
 	private final RepresentationFactory xmlRepresentationFactory;
 	private final RepresentationFactory sirenRepresentationFactory;
+	private final TargetFactory targetFactory;
 	private final Tracer tracer;
 
 	/**
@@ -48,6 +50,7 @@ public final class TargetResource implements api.TargetResource {
 		this.xmlRepresentationFactory = xmlRepresentationFactory;
 		this.sirenRepresentationFactory = sirenRepresentationFactory;
 		this.tracer = tracer;
+		this.targetFactory = new TargetFactory();
 	}
 
 	/**
@@ -61,7 +64,7 @@ public final class TargetResource implements api.TargetResource {
 	public Response get(HttpHeaders headers, UriInfo uriInfo, String uuid) {
 		Span span = this.tracer.buildSpan("TargetResource#get").start();
 		try(Scope scope = this.tracer.scopeManager().activate(span, false)) {
-			Target target = this.targetService.getTarget(UUID.fromString(uuid));
+			application.Target target = this.targetService.getTarget(UUID.fromString(uuid));
 	
 			//instead of doing it this way, i think it would be better to have:
 			//RepresentationFactory representationFactory = ...conditional logic to figure out which one.
@@ -92,7 +95,7 @@ public final class TargetResource implements api.TargetResource {
 	public Response createAndAppend(HttpHeaders headers, UriInfo uriInfo, Target target) {
 		Span span = this.tracer.buildSpan("TargetResource#createAndAppend").start();
 		try(Scope scope = this.tracer.scopeManager().activate(span, false)) {
-			UUID uuid = this.targetService.createTarget(target);
+			UUID uuid = this.targetService.createTarget(this.targetFactory.createFrom(target));
 			URI location =
 				UriBuilder
 					.fromUri(uriInfo.getRequestUri())
@@ -115,7 +118,7 @@ public final class TargetResource implements api.TargetResource {
 	public Response replace(HttpHeaders headers, UriInfo uriInfo, Target target) {
 		Span span = this.tracer.buildSpan("TargetResource#replace").start();
 		try(Scope scope = this.tracer.scopeManager().activate(span, false)) {
-			this.targetService.replaceTarget(target);
+			this.targetService.replaceTarget(this.targetFactory.createFrom(target));
 			return Response.noContent().build();
 		} finally {
 			span.finish();

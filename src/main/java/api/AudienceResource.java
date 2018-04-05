@@ -14,7 +14,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import api.representations.Audience;
+import api.representations.json.Audience;
 
 @Path("/audiences")
 public interface AudienceResource {

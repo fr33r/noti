@@ -2,7 +2,7 @@ package application;
 
 import java.util.UUID;
 
-import api.representations.Audience;
+import application.Audience;
 
 public interface AudienceService {
 
