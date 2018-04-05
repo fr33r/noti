@@ -307,33 +307,6 @@ public class Noti extends Application<NotiConfiguration> {
 
 			@Override
 			protected void configure() {
-				this.bind(NotificationMapper.class)
-					.to(new TypeLiteral<Mapper<domain.Notification, api.representations.Notification>>(){});
-			}
-		});
-
-		environment.jersey().register(new AbstractBinder() {
-
-			@Override
-			protected void configure() {
-				this.bind(TargetMapper.class)
-					.to(new TypeLiteral<Mapper<domain.Target, api.representations.Target>>(){});
-			}
-		});
-
-		environment.jersey().register(new AbstractBinder() {
-
-			@Override
-			protected void configure() {
-				this.bind(AudienceMapper.class)
-					.to(new TypeLiteral<Mapper<domain.Audience, api.representations.Audience>>(){});
-			}
-		});
-
-		environment.jersey().register(new AbstractBinder() {
-
-			@Override
-			protected void configure() {
 				this.bindAsContract(application.NotificationFactory.class);
 			}
 		});
