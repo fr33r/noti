@@ -1,9 +1,9 @@
-package api.representations;
+package application;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-import api.representations.Target;
+import application.Target;
 
 /**
  * Defines the general representation of an Audience resource.

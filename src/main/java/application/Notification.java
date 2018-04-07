@@ -1,7 +1,7 @@
-package api.representations;
+package application;
 
-import api.representations.NotificationStatus;
-import api.representations.Target;
+import application.NotificationStatus;
+import application.Target;
 
 import java.util.Date;
 import java.util.HashSet;

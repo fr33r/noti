@@ -14,7 +14,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import api.representations.Target;
+import api.representations.json.Target;
 
 /**
  * Represents a Target resource. Handles interactions with the Target resource.

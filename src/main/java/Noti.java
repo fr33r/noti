@@ -74,11 +74,6 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.util.Duration;
 
-import mappers.AudienceMapper;
-import mappers.Mapper;
-import mappers.NotificationMapper;
-import mappers.TargetMapper;
-
 public class Noti extends Application<NotiConfiguration> {
 
 	@Override
@@ -312,8 +307,7 @@ public class Noti extends Application<NotiConfiguration> {
 
 			@Override
 			protected void configure() {
-				this.bind(NotificationMapper.class)
-					.to(new TypeLiteral<Mapper<domain.Notification, api.representations.Notification>>(){});
+				this.bindAsContract(application.NotificationFactory.class);
 			}
 		});
 
@@ -321,8 +315,7 @@ public class Noti extends Application<NotiConfiguration> {
 
 			@Override
 			protected void configure() {
-				this.bind(TargetMapper.class)
-					.to(new TypeLiteral<Mapper<domain.Target, api.representations.Target>>(){});
+				this.bindAsContract(application.TargetFactory.class);
 			}
 		});
 
@@ -330,8 +323,7 @@ public class Noti extends Application<NotiConfiguration> {
 
 			@Override
 			protected void configure() {
-				this.bind(AudienceMapper.class)
-					.to(new TypeLiteral<Mapper<domain.Audience, api.representations.Audience>>(){});
+				this.bindAsContract(application.AudienceFactory.class);
 			}
 		});
 

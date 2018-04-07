@@ -2,7 +2,7 @@ package application;
 
 import java.util.UUID;
 
-import api.representations.Notification;
+import application.Notification;
 
 /**
  * Defines the contract for all application services that wish to provide

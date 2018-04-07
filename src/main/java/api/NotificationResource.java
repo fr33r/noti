@@ -1,6 +1,6 @@
 package api;
 
-import api.representations.Notification;
+import api.representations.json.Notification;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;

@@ -1,4 +1,4 @@
-package api.representations;
+package application;
 
 import java.util.UUID;
 
