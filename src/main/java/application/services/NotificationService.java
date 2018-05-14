@@ -13,35 +13,34 @@ import java.util.Date;
 import java.util.TimeZone;
 
 import infrastructure.SQLUnitOfWork;
-import infrastructure.ShortMessageService;
+import infrastructure.MessageQueueService;
 import domain.Message;
 
 public final class NotificationService implements application.NotificationService {
 
 	private SQLUnitOfWorkFactory unitOfWorkFactory;
 	private RepositoryFactory repositoryFactory;
-	private ShortMessageService shortMessageService;
 	private NotificationFactory notificationFactory;
 	private application.NotificationFactory applicationNotificationFactory;
+	private MessageQueueService smsQueueService;
 
 	/**
 	 * Constructs a {@link NotificationService} instance.
 	 * @param unitOfWorkFactory The factory responsible for constructing instances of {@link SQLUnitOfWork}.
 	 * @param repositoryFactory The factory responsible for constructing instances of {@link Repository}
-	 * @param shortMessageService The infrastructure service responsible for sending and retrieving 
-	 * short messages (text messages; AKA SMS).
 	 */
 	@Inject
 	public NotificationService(
 		SQLUnitOfWorkFactory unitOfWorkFactory, 
 		RepositoryFactory repositoryFactory,
-		ShortMessageService shortMessageService,
+		MessageQueueService smsQueueService,
 		NotificationFactory notificationFactory,
 		application.NotificationFactory applicationNotificationFactory
 	) {
 		this.unitOfWorkFactory = unitOfWorkFactory;
 		this.repositoryFactory = repositoryFactory;
-		this.shortMessageService = shortMessageService;
+		//this.shortMessageService = shortMessageService;
+		this.smsQueueService = smsQueueService;
 		this.notificationFactory = notificationFactory;
 		this.applicationNotificationFactory = applicationNotificationFactory;
 	}
@@ -70,17 +69,15 @@ public final class NotificationService implements application.NotificationServic
 
 			if(timeUntilSend <= 0) {
 				for(Message message : noti_domain.messages()){
-					message = this.shortMessageService.send(message);
+					this.smsQueueService.send(message);
+					//mark message as PROCESSING via notification interface.
 				}
-			} else {
-				//place them in queue to be processed later.
 			}
 
 			notificationRepository.add(noti_domain);
 
 			unitOfWork.save();
 			return noti_domain.getId();
-
 		} catch (Exception x) {
 			//log.
 			//throw generic error with reason(s) that can easily be mapped to HTTP status codes.

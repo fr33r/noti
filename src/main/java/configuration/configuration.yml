@@ -7,15 +7,31 @@ database:
   useSSL: false
   useLegacyDatetimeCode: false
 
-sms:
-  accountSID: ${SMS_ACCOUNT_SID}
-  authToken: ${SMS_ACCOUNT_AUTH_TOKEN}
-
 jaeger:
   serviceName: noti
 
 logging:
   level: INFO
+
+kafka:
+    producer:
+        acks: all
+        bootstrap.servers:
+            - 10.0.1.2:9092
+        schema.registry.url: http://10.0.1.2:8081
+        #buffer.memory:
+        #compression.type:
+        #retries:
+        #batch.size:
+        #linger.ms:
+        #client.id:
+        #max.in.flight.requests.per.connection:
+        #timeout.ms.request.timeout.ms:
+        #metadata.fetch.timeout.ms:
+        #max.block.ms:
+        #max.request.size:
+        #receive.buffer.bytes:
+        #send.buffer.bytes:
 
 metrics:
   frequency: ${METRICS_FREQUENCY:-1 second}

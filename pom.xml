@@ -69,6 +69,15 @@
 		</plugins>
 	</build>
 
+	<!-- https://maven.apache.org/pom.html#Repositories -->
+	<!-- https://docs.confluent.io/3.1.1/installation.html#maven-repository-for-jars -->
+	<repositories>
+		<repository>
+			<id>confluent</id>
+			<url>http://packages.confluent.io/maven/</url>
+		</repository>
+	</repositories>
+
 	<dependencies>
 		<dependency>
 			<groupId>io.dropwizard</groupId>
@@ -89,29 +98,6 @@
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<version>${mysql.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.twilio.sdk</groupId>
-			<artifactId>twilio</artifactId>
-			<version>${twilio.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-core</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-annotations</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-databind</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.google.guava</groupId>
-					<artifactId>guava</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.uber.jaeger</groupId>
@@ -141,10 +127,25 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.kafka</groupId>
+			<artifactId>kafka-clients</artifactId>
+			<version>${kafka.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.avro</groupId>
+			<artifactId>avro</artifactId>
+			<version>${avro.version}</version>
+		</dependency>
+		<!-- https://docs.confluent.io/current/app-development/index.html#java -->
+		<dependency>
+			<groupId>io.confluent</groupId>
+			<artifactId>kafka-avro-serializer</artifactId>
+			<version>${avro.serializer.version}</version>
+		</dependency>
 	</dependencies>
 
 	<properties>
-		<twilio.version>(7.11.0,7.12.0]</twilio.version>
 		<mysql.version>6.0.6</mysql.version>
 		<jaeger.version>0.26.0</jaeger.version>
 		<dropwizard.version>1.2.2</dropwizard.version>
@@ -152,5 +153,8 @@
 		<flyway.version>4.2.0</flyway.version>
 		<siren.version>1.1.0</siren.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<kafka.version>1.1.0</kafka.version>
+		<avro.version>1.8.2</avro.version>
+		<avro.serializer.version>3.3.1</avro.serializer.version>
 	</properties>
 </project>

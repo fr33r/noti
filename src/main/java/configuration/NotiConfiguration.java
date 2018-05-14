@@ -10,8 +10,8 @@ import io.dropwizard.Configuration;
 public class NotiConfiguration extends Configuration {
 
 	private DatabaseConfiguration databaseConfiguration;
-	private SMSConfiguration smsConfiguration;
 	private com.uber.jaeger.dropwizard.Configuration jaegerConfiguration;
+	private KafkaConfiguration kafkaConfiguration;
 
 	@JsonProperty("database")
 	public DatabaseConfiguration getDatabaseConfiguration(){
@@ -22,17 +22,6 @@ public class NotiConfiguration extends Configuration {
 	public void setDatabaseConfiguration(final DatabaseConfiguration databaseConfiguration){
 		this.databaseConfiguration = databaseConfiguration;
 	}
-
-	@JsonProperty("sms")
-	public SMSConfiguration getSMSConfiguration(){
-		return this.smsConfiguration;
-	}
-
-	@JsonProperty("sms")
-	public void setSMSConfiguration(final SMSConfiguration smsConfiguration){
-		this.smsConfiguration = smsConfiguration;
-	}
-
 	@JsonProperty("jaeger")
 	public com.uber.jaeger.dropwizard.Configuration getJaegerConfiguration(){
 		return this.jaegerConfiguration;
@@ -41,5 +30,15 @@ public class NotiConfiguration extends Configuration {
 	@JsonProperty("jaeger")
 	public void setJaegerConfiguration(final com.uber.jaeger.dropwizard.Configuration configuration){
 		this.jaegerConfiguration = configuration;
+	}
+
+	@JsonProperty("kafka")
+	public KafkaConfiguration getKafkaConfiguration(){
+		return this.kafkaConfiguration;
+	}
+
+	@JsonProperty("kafka")
+	public void setKafkaConfiguration(final KafkaConfiguration configuration) {
+		this.kafkaConfiguration = configuration;
 	}
 }
