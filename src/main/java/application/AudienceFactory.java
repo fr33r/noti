@@ -3,10 +3,13 @@ package application;
 import java.util.Set;
 import java.util.HashSet;
 
+import javax.inject.Inject;
+
 public class AudienceFactory {
 
 	private final TargetFactory targetFactory;
 
+	@Inject
 	public AudienceFactory(TargetFactory targetFactory) {
 		this.targetFactory = targetFactory;
 	}

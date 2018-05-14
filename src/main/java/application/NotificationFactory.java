@@ -3,11 +3,14 @@ package application;
 import java.util.Set;
 import java.util.HashSet;
 
+import javax.inject.Inject;
+
 public class NotificationFactory {
 
 	private final TargetFactory targetFactory;
 	private final AudienceFactory audienceFactory;
 
+	@Inject
 	public NotificationFactory(TargetFactory targetFactory, AudienceFactory audienceFactory) {
 		this.targetFactory = targetFactory;
 		this.audienceFactory = audienceFactory;
