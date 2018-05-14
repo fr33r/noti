@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  *	Represents the database configuration for Noti.
  */
-public class DatabaseConfiguration extends Configuration {
+public class DatabaseConfiguration {
 
 	private String host;
 	private int port;
