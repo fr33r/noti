@@ -39,7 +39,6 @@ public final class NotificationService implements application.NotificationServic
 	) {
 		this.unitOfWorkFactory = unitOfWorkFactory;
 		this.repositoryFactory = repositoryFactory;
-		//this.shortMessageService = shortMessageService;
 		this.smsQueueService = smsQueueService;
 		this.notificationFactory = notificationFactory;
 		this.applicationNotificationFactory = applicationNotificationFactory;
@@ -69,7 +68,7 @@ public final class NotificationService implements application.NotificationServic
 
 			if(timeUntilSend <= 0) {
 				for(Message message : noti_domain.messages()){
-					this.smsQueueService.send(message);
+					this.smsQueueService.send(noti_domain, message.getId());
 					//mark message as PROCESSING via notification interface.
 				}
 			}

@@ -1,10 +1,10 @@
 package infrastructure;
 
-import domain.Message;
+import domain.Notification;
 import org.jvnet.hk2.annotations.Contract;
 
 @Contract
 public interface MessageQueueService {
 
-	void send(Message message);
+	void send(Notification notification, Integer messageID) throws Exception;
 }
