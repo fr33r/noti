@@ -131,5 +131,55 @@ public class Notification extends Entity<UUID> {
 			this.messages = messages;
 		}
 	}
+
+	public boolean containsMessage(Message message) {
+		if(message == null) {
+			throw new IllegalArgumentException("The argument 'message' cannot be null.");
+		}
+
+		if(this.messages == null || this.messages.size() == 0) {
+			return false;
+		}
+
+		return this.messages.contains(message);
+	}
+
+	public boolean containsMessage(Integer messageId) {
+		if(messageId == null) {
+			throw new IllegalArgumentException("The argument 'messageId' cannot be null.");
+		}
+
+		if(this.messages == null || this.messages.size() == 0) {
+			return false;
+		}
+
+		for(Message message : this.messages) {
+			if(message.getId() == messageId) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public Message message(Integer messageId) {
+		if(messageId == null) {
+			throw new IllegalArgumentException("The argument 'messageId' cannot be null.");
+		}
+		
+		Message desiredMessage = null;
+		if(this.messages == null || this.messages.size() == 0) {
+			return desiredMessage;
+		}
+
+		for(Message message : this.messages) {
+			if(message.getId() == messageId) {
+				desiredMessage = message;
+				break;
+			}
+		}
+
+		return desiredMessage;
+	}
 }
 
