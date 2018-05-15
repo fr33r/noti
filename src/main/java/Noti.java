@@ -37,6 +37,7 @@ public class Noti extends Application<NotiConfiguration> {
 		modules.add(new ResourceModule(configuration, environment));
 		modules.add(new FilterModule(configuration, environment));
 		modules.add(new RepresentationModule(configuration, environment));
+		modules.add(new LoggingModule(configuration, environment));
 		modules.add(new NotiDomainModule(configuration, environment));
 		modules.add(new NotiApplicationModule(configuration, environment));
 		modules.add(new NotiInfrastructureModule(configuration, environment));
