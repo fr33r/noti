@@ -3,9 +3,6 @@ package api.filters;
 import java.io.IOException;
 
 import javax.inject.Inject;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerResponseContext;
-import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.UriInfo;
@@ -16,7 +13,7 @@ import io.opentracing.Span;
 import io.opentracing.Tracer;
 
 @Provider
-public class CacheControlFilter implements ContainerResponseFilter {
+public class CacheControlFilter extends ResponseFilter {
 
 	private final Tracer tracer;
 
@@ -26,9 +23,9 @@ public class CacheControlFilter implements ContainerResponseFilter {
 	}
 
 	public void filter(
-		ContainerRequestContext requestContext, 
-		ContainerResponseContext responseContext
-	) throws IOException {
+		RequestContext requestContext, 
+		ResponseContext responseContext
+	) {
 	
 		Span span =
 			this.tracer

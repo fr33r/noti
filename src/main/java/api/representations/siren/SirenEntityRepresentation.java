@@ -20,14 +20,33 @@ public final class SirenEntityRepresentation extends Representation {
 
 	private final Entity sirenEntity;
 
-	public SirenEntityRepresentation() {
+	private SirenEntityRepresentation() {
 		super(new MediaType("application", "vnd.siren+json"));
 		this.sirenEntity = null;
 	}
 	
-	public SirenEntityRepresentation(Entity sirenEntity) {
+	private SirenEntityRepresentation(Entity sirenEntity) {
 		super(new MediaType("application", "vnd.siren+json"));
 		this.sirenEntity = sirenEntity;
+	}
+
+	public static final class Builder extends Representation.Builder {
+
+		private Entity entity;
+
+		public Builder() {
+			super(new MediaType("application", "vnd.siren+json"));
+		}
+
+		public Builder entity(Entity entity) {
+			this.entity = entity;
+			return this;
+		}
+
+		@Override
+		public Representation build() {
+			return new SirenEntityRepresentation(this.entity);
+		}
 	}
 
 	@JsonProperty("class")

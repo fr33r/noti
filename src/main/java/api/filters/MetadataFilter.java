@@ -1,265 +1,171 @@
 package api.filters;
 
+import infrastructure.RepresentationMetadata;
+import infrastructure.RepresentationMetadataService;
 import java.net.URI;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 import java.util.TimeZone;
-import java.util.UUID;
-
 import javax.inject.Inject;
-
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.EntityTag;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-//import javax.ws.rs.ext.Provider;
 
-import infrastructure.EntityTagService;
-import infrastructure.ResourceMetadata;
-import infrastructure.ResourceMetadataService;
-
-//@Provider
 public abstract class MetadataFilter implements ContainerResponseFilter {
 
-	private final ResourceMetadataService resourceMetadataService;
-	private final EntityTagService entityTagService;
+  private final RepresentationMetadataService representationMetadataService;
+  private final Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 
-	@Inject
-	public MetadataFilter(
-		ResourceMetadataService resourceMetadataService,
-		EntityTagService entityTagService
-	) {
-		this.resourceMetadataService = resourceMetadataService;
-		this.entityTagService = entityTagService;
-	}
+  @Inject
+  public MetadataFilter(RepresentationMetadataService representationMetadataService) {
+    this.representationMetadataService = representationMetadataService;
+  }
 
-	@Override
-	public abstract void filter(
-		ContainerRequestContext requestContext,
-		ContainerResponseContext responseContext
-	);
+  @Override
+  public abstract void filter(
+      ContainerRequestContext requestContext, ContainerResponseContext responseContext);
 
-	public boolean isPostRequest(ContainerRequestContext requestContext) {
-		return requestContext.getRequest().getMethod().equalsIgnoreCase("POST");
-	}
+  public boolean isPostRequest(ContainerRequestContext requestContext) {
+    return this.requestMethodEquals(requestContext, "POST");
+  }
 
-	public boolean isGetRequest(ContainerRequestContext requestContext) {
-		return requestContext.getRequest().getMethod().equalsIgnoreCase("GET");
-	}
+  public boolean isGetRequest(ContainerRequestContext requestContext) {
+    return this.requestMethodEquals(requestContext, "GET");
+  }
 
-	public boolean isPutRequest(ContainerRequestContext requestContext) {
-		return requestContext.getRequest().getMethod().equalsIgnoreCase("PUT");
-	}
+  public boolean isPutRequest(ContainerRequestContext requestContext) {
+    return this.requestMethodEquals(requestContext, "PUT");
+  }
 
-	public boolean isDeleteRequest(ContainerRequestContext requestContext) {
-		return requestContext.getRequest().getMethod().equalsIgnoreCase("DELETE");
-	}
+  public boolean isDeleteRequest(ContainerRequestContext requestContext) {
+    return this.requestMethodEquals(requestContext, "DELETE");
+  }
 
-	public boolean isPatchRequest(ContainerRequestContext requestContext) {
-		return requestContext.getRequest().getMethod().equalsIgnoreCase("PATCH");
-	}
+  public boolean isPatchRequest(ContainerRequestContext requestContext) {
+    return this.requestMethodEquals(requestContext, "PATCH");
+  }
 
-	public boolean isHeadRequest(ContainerRequestContext requestContext) {
-		return requestContext.getRequest().getMethod().equalsIgnoreCase("HEAD");
-	}
-	
-	public boolean isErrorResponse(ContainerResponseContext responseContext) {
-		return responseContext.getStatus() >= 400;
-	}
-	
-	public boolean isNotModifiedResponse(ContainerResponseContext responseContext) {
-		return responseContext.getStatus() == 304;
-	}
+  public boolean isHeadRequest(ContainerRequestContext requestContext) {
+    return this.requestMethodEquals(requestContext, "HEAD");
+  }
 
-	public boolean isPreconditionFailedResponse(ContainerResponseContext responseContext) {
-		return responseContext.getStatus() == 412;
-	}
-	
-	public URI getRequestUri(ContainerRequestContext requestContext) {
-		return requestContext.getUriInfo().getRequestUri();
-	}
-	
-	public MediaType getResponseMediaType(ContainerResponseContext responseContext) {
-		return responseContext.getMediaType();
-	}
-	
-	public MediaType getRequestMediaType(ContainerRequestContext requestContext) {
-		return requestContext.getMediaType();
-	}
+  public boolean requestMethodEquals(ContainerRequestContext requestContext, String method) {
+    return requestContext.getRequest().getMethod().equalsIgnoreCase(method);
+  }
 
-	ResourceMetadataService getResourceMetadataService() {
-		return this.resourceMetadataService;
-	}
-	
-	EntityTagService getEntityTagService() {
-		return this.entityTagService;
-	}
+  public boolean isErrorResponse(ContainerResponseContext responseContext) {
+    return responseContext.getStatus() >= 400;
+  }
 
-	//basically find or create.
-	void get(
-		ContainerRequestContext requestContext,
-		ContainerResponseContext responseContext
-	) {
+  public boolean isNotModifiedResponse(ContainerResponseContext responseContext) {
+    return this.responseStatusCodeEquals(responseContext, 304);
+  }
 
-		URI requestUri = requestContext.getUriInfo().getRequestUri();
-		MediaType mediaType = responseContext.getMediaType();
+  public boolean isPreconditionFailedResponse(ContainerResponseContext responseContext) {
+    return this.responseStatusCodeEquals(responseContext, 412);
+  }
 
-		//search storage of resource metadata.
-		ResourceMetadata metadata = this.find(requestUri, mediaType);
+  public boolean responseStatusCodeEquals(
+      ContainerResponseContext responseContext, int statusCode) {
+    return responseContext.getStatus() == statusCode;
+  }
 
-		//guard: if resource representation metadata already exists our work is done.
-		if(metadata != null){
-			responseContext.getHeaders().add("Last-Modified", metadata.getLastModified());
-			responseContext.getHeaders().add("ETag", metadata.getEntityTag());
-			return;
-		}
+  public URI getRequestUri(ContainerRequestContext requestContext) {
+    return requestContext.getUriInfo().getRequestUri();
+  }
 
-		//generate an entity tag.
-		String nodeName = UUID.randomUUID().toString();
-		Long revision = 0l;
-		EntityTag entityTag = this.entityTagService.generateTag(nodeName, revision);
+  public MediaType getResponseMediaType(ContainerResponseContext responseContext) {
+    return responseContext.getMediaType();
+  }
 
-		//set the Last-Modified header to the current time (in UTC).
-		Calendar utcCalendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-		Date lastModified = utcCalendar.getTime();
-		MediaType contentType = responseContext.getMediaType();
+  public MediaType getRequestMediaType(ContainerRequestContext requestContext) {
+    return requestContext.getMediaType();
+  }
 
-		//persist the resource representation metadata..
-		this.resourceMetadataService.insert(
-			new ResourceMetadata(
-				requestUri,
-				contentType,
-				nodeName,
-				revision,
-				lastModified,
-				entityTag
-			)
-		);
+  public List<MediaType> getRequestAcceptableMediaTypes(ContainerRequestContext requestContext) {
+    return requestContext.getAcceptableMediaTypes();
+  }
 
-		responseContext.getHeaders().add("Last-Modified", lastModified);
-		responseContext.getHeaders().add("ETag", entityTag);
-	}
+  public List<Locale> getRequestAcceptableLanguages(ContainerRequestContext requestContext) {
+    return requestContext.getAcceptableLanguages();
+  }
 
-	/**
-	 * Searches for resource representation metadata provided the
-	 * request URI and media types specified in the Accept HTTP request header.
-	 *
-	 * @param uri	The URI of the request.
-	 * @param mediaTypes	The media types specified in the Accept HTTP request header.
-	 * @return	An instance of {@link ResourceMetadata} containing the resource metadata
-	 *			about the resource with the provided URI and one of the media types provided.
-	 *			If metadata exists for more than one representation of the same resource, the
-	 *			metadata that matches first based on the order of the provided media types is
-	 *			returned.
-	 */
-	private ResourceMetadata find(URI uri, MediaType mediaType) {
-		ResourceMetadata resourceMetadata =
-			this.resourceMetadataService.get(uri, mediaType);
-		return resourceMetadata;
-	}
+  public Locale getRequestLanguage(ContainerRequestContext requestContext) {
+    return requestContext.getLanguage();
+  }
 
-	void post(
-		ContainerRequestContext requestContext,
-		ContainerResponseContext responseContext
-	) {
+  public Locale getResponseLanguage(ContainerResponseContext responseContext) {
+    return responseContext.getLanguage();
+  }
 
-		Date lastModified = Calendar.getInstance(TimeZone.getTimeZone("UTC")).getTime();
-		String nodeName = UUID.randomUUID().toString();
-		Long revision = 0l;
-		EntityTag entityTag = this.entityTagService.generateTag(nodeName, revision);
+  public List<String> getRequestAcceptableEncodings(ContainerRequestContext requestContext) {
+    return requestContext.getHeaders().get(HttpHeaders.ACCEPT_ENCODING);
+  }
 
-		this.resourceMetadataService.insert(
-			new ResourceMetadata(
-				responseContext.getLocation(),
-				requestContext.getMediaType(),
-				nodeName,
-				revision,
-				lastModified,
-				entityTag
-			)
-		);
-	}
+  public String getRequestEncodingAsString(ContainerRequestContext requestContext) {
+    return requestContext.getHeaderString(HttpHeaders.CONTENT_ENCODING);
+  }
 
-	void delete(
-		ContainerRequestContext requestContext,
-		ContainerResponseContext responseContext
-	) {
-		URI requestUri = requestContext.getUriInfo().getRequestUri();
-		this.resourceMetadataService.removeAll(requestUri);
-	}
+  public String getResponseEncoding(ContainerResponseContext responseContext) {
+    return responseContext.getHeaderString(HttpHeaders.CONTENT_ENCODING);
+  }
 
-	void put(
-		ContainerRequestContext requestContext,
-		ContainerResponseContext responseContext
-	) {
-		URI requestUri = requestContext.getUriInfo().getRequestUri();
-		MediaType contentType = requestContext.getMediaType();
+  RepresentationMetadataService getRepresentationMetadataService() {
+    return this.representationMetadataService;
+  }
 
-		ResourceMetadata resourceMetadata = 
-			this.resourceMetadataService.get(
-				requestUri,
-				contentType
-			);
-		System.out.println("FOUND REPRESENTATION METADATA!");
+  RepresentationMetadata getMetadata(
+      URI location, MediaType mediaType, Locale language, String encoding) {
+    RepresentationMetadata metadata =
+        this.representationMetadataService.get(location, language, encoding, mediaType);
+    return metadata;
+  }
 
-		//update resource metadata.
-		Date lastModified = Calendar.getInstance(TimeZone.getTimeZone("UTC")).getTime();
-		EntityTag entityTag = null;
+  /**
+   * Removes all representation metadata associated with a URI.
+   *
+   * @param location The URI that identifies the representations to be deleted.
+   */
+  void deleteMetadata(URI location) {
+    this.representationMetadataService.removeAll(location);
+  }
 
-		if(resourceMetadata != null){
-			resourceMetadata.incrementRevision();
-			entityTag = this.entityTagService.generateTag(
-					resourceMetadata.getNodeName(),
-					resourceMetadata.getRevision()
-				);
+  /*
+   * GET
+   *
+   * 'put' (replace) the metadata based on the response, because the representation will be in the response.
+   *
+   * POST
+   *
+   * can't participate in caching activities - there is no guarentee that the request or response has the representation.
+   *
+   * PUT
+   *
+   * 'put' (replace) the metadata based on the request, because the representation will be in the request.
+   *
+   * DELETE (DONE)
+   *
+   * remove all resource metadata.
+   */
 
-			this.resourceMetadataService.put(
-				new ResourceMetadata(
-					resourceMetadata.getUri(),
-					resourceMetadata.getContentType(),
-					resourceMetadata.getNodeName(),
-					resourceMetadata.getRevision(),
-					lastModified,
-					entityTag
-				)
-			);
+  /** Stores the resource metadata provided. */
+  void putMetadata(
+      URI location,
+      MediaType mediaType,
+      Locale language,
+      String encoding,
+      Date lastModified,
+      EntityTag entityTag) {
+    this.representationMetadataService.put(
+        new RepresentationMetadata(
+            location, mediaType, language, encoding, lastModified, entityTag));
 
-			System.out.println("UPDATED REPRESENTATION METADATA!");
-
-		} else {
-
-			String nodeName = UUID.randomUUID().toString();
-			Long revision = 0l;
-			entityTag = this.entityTagService.generateTag(nodeName, revision);
-			
-			this.resourceMetadataService.insert(
-				new ResourceMetadata(
-					requestUri,
-					contentType,
-					nodeName,
-					revision,
-					lastModified,
-					entityTag
-				)
-			);
-		}
-
-		responseContext.getHeaders().add("Last-Modified", lastModified);
-		responseContext.getHeaders().add("ETag", entityTag);
-	}
-
-	void patch(
-		ContainerRequestContext requestContext,
-		ContainerResponseContext responseContext
-	) {
-		this.put(requestContext, responseContext);
-	}
-
-	void head(
-		ContainerRequestContext requestContext,
-		ContainerResponseContext responseContext
-	) {
-		this.get(requestContext, responseContext);
-	}
+    // responseContext.getHeaders().add(HttpHeaders.LAST_MODIFIED, lastModified);
+    // responseContext.getHeaders().add(HttpHeaders.ETAG, entityTag);
+  }
 }

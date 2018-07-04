@@ -23,13 +23,13 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 @XmlRootElement(name = "notification")
 public final class Notification extends Representation {
 
-	private final UUID uuid;
-	private final String content;
-	private final Date sentAt;
-	private final Date sendAt;
-	private final NotificationStatus status;
-	private final Set<Target> targets;
-	private final Set<Audience> audiences;
+	private UUID uuid;
+	private String content;
+	private Date sentAt;
+	private Date sendAt;
+	private NotificationStatus status;
+	private Set<Target> targets;
+	private Set<Audience> audiences;
 
 	/**
 	 * Constructs an empty instance of {@link Notification}.
@@ -77,15 +77,93 @@ public final class Notification extends Representation {
 		this.audiences = audiences == null ? new HashSet<>() : audiences;
 	}
 
+	public static final class Builder extends Representation.Builder {
+
+		private UUID uuid;
+		private String content;
+		private Date sentAt;
+		private Date sendAt;
+		private NotificationStatus status;
+		private Set<Target> targets;
+		private Set<Audience> audiences;
+
+		public Builder() {
+			super(MediaType.APPLICATION_XML_TYPE);
+			this.targets = new HashSet<>();
+			this.audiences = new HashSet<>();
+		}
+
+		public Builder uuid(UUID uuid) {
+			this.uuid = uuid;
+			return this;
+		}
+
+		public Builder content(String content) {
+			this.content = content;
+			return this;
+		}
+
+		public Builder sentAt(Date sentAt) {
+			this.sentAt = sentAt;
+			return this;
+		}
+
+		public Builder sendAt(Date sendAt) {
+			this.sendAt = sendAt;
+			return this;
+		}
+
+		public Builder status(NotificationStatus status) {
+			this.status = status;
+			return this;
+		}
+
+		public Builder addTarget(Target target) {
+			this.targets.add(target);
+			return this;
+		}
+
+		public Builder targets(Set<Target> targets) {
+			this.targets = targets;
+			return this;
+		}
+
+		public Builder addAudience(Audience audience) {
+			this.audiences.add(audience);
+			return this;
+		}
+
+		public Builder audiences(Set<Audience> audiences) {
+			this.audiences = audiences;
+			return this;
+		}
+
+		@Override
+		public Representation build() {
+			Notification n = new Notification();
+			n.setLocation(this.location());
+			n.setEncoding(this.encoding());
+			n.setLanguage(this.language());
+			n.setLastModified(this.lastModified());
+			n.setUUID(this.uuid);
+			n.setContent(this.content);
+			n.setSentAt(this.sentAt);
+			n.setSendAt(this.sendAt);
+			n.setTargets(this.targets);
+			n.setAudiences(this.audiences);
+			return n;
+		}
+	}
+
 	/**
 	 * Retrieves the universally unique identifier of this notification.
 	 *
 	 * @return The universally unique identifier of this notification.
 	 */
 	@XmlElement
-	public UUID getUUID(){
-		return this.uuid;
-	}
+	public UUID getUUID(){ return this.uuid; }
+
+	private void setUUID(UUID uuid) { this.uuid = uuid; }
 
 	/**
 	 * Retrieves the information being communicated within this notification.
@@ -93,11 +171,9 @@ public final class Notification extends Representation {
 	 * @return The information being communicated within this notification.
 	 */
 	@XmlElement
-	public String getContent() {
-		return this.content;
-	}
+	public String getContent() { return this.content; }
 
-	//public void setContent(String content){ this.content = content; }
+	private void setContent(String content){ this.content = content; }
 
 	/**
 	 * Retrieves the status the delivery status of this notification.
@@ -105,9 +181,9 @@ public final class Notification extends Representation {
 	 * @return The status of the notification in terms of its delivery to its audiences and targets.
 	 */
 	@XmlElement
-	public NotificationStatus getStatus() {
-		return this.status;
-	}
+	public NotificationStatus getStatus() { return this.status; }
+
+	private void setStatus(NotificationStatus status) { this.status = status; }
 
 	/**
 	 * Retrieves the date and time in which this notification is to be sent.
@@ -116,9 +192,9 @@ public final class Notification extends Representation {
 	 * @return States when the notification should be sent to its targets and audiences.
 	 */
 	@XmlElement
-	public Date getSendAt() {
-		return this.sendAt;
-	}
+	public Date getSendAt() { return this.sendAt; }
+
+	private void setSendAt(Date sendAt) { this.sendAt = sendAt; }
 
 	/**
 	 * Retrieves the date and time in which this notification was sent to all of its targets and audiences.
@@ -128,9 +204,9 @@ public final class Notification extends Representation {
 	 * @return States when the notification was sent to all of its targets and all of its audiences.
 	 */
 	@XmlElement
-	public Date getSentAt() {
-		return this.sentAt;
-	}
+	public Date getSentAt() { return this.sentAt; }
+
+	private void setSentAt(Date sentAt) { this.sentAt = sentAt; }
 
 	/**
 	 * Retrieves the explicit recipients that should receive this notification.
@@ -139,9 +215,9 @@ public final class Notification extends Representation {
 	 */
 	@XmlElementWrapper(name="targets")
 	@XmlElement(name="target")
-	public Set<Target> getTargets() {
-		return this.targets;
-	}
+	public Set<Target> getTargets() { return this.targets; }
+
+	private void setTargets(Set<Target> targets) { this.targets = targets; }
 
 	/**
 	 * Retrieves the named audiences that should receive this notification.
@@ -150,7 +226,7 @@ public final class Notification extends Representation {
 	 */
 	@XmlElementWrapper(name="audiences")
 	@XmlElement(name="audience")
-	public Set<Audience> getAudiences() {
-		return this.audiences;
-	}
+	public Set<Audience> getAudiences() { return this.audiences; }
+
+	private void setAudiences(Set<Audience> audiences) { this.audiences = audiences; }
 }

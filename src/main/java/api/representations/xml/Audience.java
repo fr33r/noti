@@ -20,14 +20,14 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 @XmlRootElement(name = "audience")
 public final class Audience extends Representation {
 
-	private final UUID uuid;
-	private final String name;
-	private final Set<Target> members;
+	private UUID uuid;
+	private String name;
+	private Set<Target> members;
 
 	/**
 	 * Constructs an empty instance of {@link Audience}.
 	 */
-	public Audience() {
+	private Audience() {
 		super(MediaType.APPLICATION_XML_TYPE);
 
 		this.uuid = null;
@@ -35,23 +35,37 @@ public final class Audience extends Representation {
 		this.members = new HashSet<>();
 	}
 
-	/**
-	 * Constructs a fully initialized instance of {@link Audience}.
-	 *
-	 * @param uuid The universally unique identifier for this audience.
-	 * @param name The name of the audience.
-	 * @param members The members that collectively resemble this audience.
-	 */
-	public Audience(
-		UUID uuid,
-		String name,
-		Set<Target> members
-	) {
-		super(MediaType.APPLICATION_XML_TYPE);
+	public static final class Builder extends Representation.Builder {
 
-		this.uuid = uuid;
-		this.name = name;
-		this.members = members;
+		private UUID uuid;
+		private String name;
+		private Set<Target> members;
+
+		public Builder() {
+			super(MediaType.APPLICATION_XML_TYPE);
+			this.members = new HashSet<>();
+		}
+
+		public Builder uuid(UUID uuid) { this.uuid = uuid; return this; }
+
+		public Builder name(String name) { this.name = name; return this; }
+
+		public Builder addMember(Target member) { this.members.add(member); return this;  }
+
+		public Builder members(Set<Target> members) { this.members = members; return this; }
+
+		@Override
+		public Representation build() {
+			Audience a = new Audience();
+			a.setLocation(this.location());
+			a.setEncoding(this.encoding());
+			a.setLanguage(this.language());
+			a.setLastModified(this.lastModified());
+			a.setUUID(this.uuid);
+			a.setName(this.name);
+			a.setMembers(this.members);
+			return a;
+		}
 	}
 
 	/**
@@ -60,9 +74,9 @@ public final class Audience extends Representation {
 	 * @return The universally unique identifier for this audience.
 	 */
 	@XmlElement
-	public UUID getUUID() {
-		return this.uuid;
-	}
+	public UUID getUUID() { return this.uuid; }
+
+	private void setUUID(UUID uuid) { this.uuid = uuid; }
 
 	/**
 	 * Retrieves the name of the audience.
@@ -70,9 +84,9 @@ public final class Audience extends Representation {
 	 * @return The name of the audience.
 	 */
 	@XmlElement
-	public String getName() {
-		return this.name;
-	}
+	public String getName() { return this.name; }
+
+	private void setName(String name) { this.name = name; }
 
 	/**
 	 * Retrieves the members that collectively resemble this audience.
@@ -81,9 +95,9 @@ public final class Audience extends Representation {
 	 */
 	@XmlElementWrapper(name="members")
 	@XmlElement(name="member")
-	public Set<Target> getMembers() {
-		return this.members;
-	}
+	public Set<Target> getMembers() { return this.members; }
+
+	private void setMembers(Set<Target> members) { this.members = members; }
 
 	/**
 	 * Determines if the provided instance is equal to the calling instance.

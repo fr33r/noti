@@ -6,12 +6,13 @@ import application.Audience;
 import application.Notification;
 import application.Target;
 
+import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Locale;
 
 import javax.inject.Inject;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
 
 import siren.Action;
 import siren.EmbeddedLinkSubEntity;
@@ -43,6 +44,8 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
 	@Inject
 	public SirenRepresentationFactory(Tracer tracer) {
 		super(new MediaType("application", "vnd.siren+json"));
+
+		//these should be injected.
 		this.linkBuilderFactory = new LinkBuilderFactory();
 		this.entityBuilderFactory = new EntityBuilderFactory();
 		this.actionBuilderFactory = new ActionBuilderFactory();
@@ -53,7 +56,11 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
 	}
 
 	@Override
-	public Representation createNotificationRepresentation(UriInfo uriInfo, Notification notification) {
+	public Representation createNotificationRepresentation(
+		URI location,
+		Locale language,
+		Notification notification
+	) {
 		Span span =
 			this.tracer
 				.buildSpan("SirenRepresentationFactory#createNotificationRepresentation")
@@ -61,13 +68,13 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
 				.start();
 		try(Scope scope = this.tracer.scopeManager().activate(span, false)) {
 			Link.Builder linkBuilder = this.linkBuilderFactory.create();
-			
+
 			Link self = null;
 			try {
 				self =
 					linkBuilder
 						.rel(Relation.SELF)
-						.href(uriInfo.getRequestUri())
+						.href(location)
 						.build();
 			} catch (URISyntaxException x){}
 
@@ -77,7 +84,7 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
 					.name("delete-notification")
 					.title("Delete Notification")
 					.method(HttpMethod.DELETE)
-					.href(uriInfo.getRequestUri())
+					.href(location)
 					.build();
 
 			EmbeddedLinkSubEntity.Builder embeddedLinkSubEntityBuilder =
@@ -96,7 +103,7 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
 						.rel(Relation.COLLECTION)
 						.href(
 							UriBuilder
-								.fromUri(uriInfo.getRequestUri())
+								.fromUri(location)
 								.replacePath("/targets/")
 								.build()
 						)
@@ -114,7 +121,7 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
 						.rel(Relation.COLLECTION)
 						.href(
 							UriBuilder
-								.fromUri(uriInfo.getRequestUri())
+								.fromUri(location)
 								.replacePath("/audiences/")
 								.build()
 						)
@@ -134,14 +141,22 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
 					.subEntities(audienceCollectionSubEntity, targetCollectionSubEntity)
 					.build();
 
-			return new api.representations.siren.SirenEntityRepresentation(entity);
+			return new api.representations.siren.SirenEntityRepresentation.Builder()
+				.entity(entity)
+				.location(location)
+				.language(language)
+				.build();
 		} finally {
 			span.finish();
 		}
 	}
 
 	@Override
-	public Representation createAudienceRepresentation(UriInfo uriInfo, Audience audience) {
+	public Representation createAudienceRepresentation(
+		URI location,
+		Locale language,
+		Audience audience
+	) {
 		Span span =
 			this.tracer
 				.buildSpan("SirenRepresentationFactory#createAudienceRepresentation")
@@ -149,13 +164,13 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
 				.start();
 		try(Scope scope = this.tracer.scopeManager().activate(span, false)) {
 			Link.Builder linkBuilder = this.linkBuilderFactory.create();
-			
+
 			Link self = null;
 			try {
 				self =
 					linkBuilder
 						.rel(Relation.SELF)
-						.href(uriInfo.getRequestUri())
+						.href(location)
 						.build();
 			} catch (URISyntaxException x){}
 
@@ -165,7 +180,7 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
 					.name("delete-audience")
 					.title("Delete Audience")
 					.method(HttpMethod.DELETE)
-					.href(uriInfo.getRequestUri())
+					.href(location)
 					.build();
 
 			actionBuilder.clear();
@@ -192,7 +207,7 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
 					.name("replace-audience")
 					.title("Replace Audience")
 					.method(HttpMethod.PUT)
-					.href(uriInfo.getRequestUri())
+					.href(location)
 					.fields(uuidField, nameField)
 					.type(MediaType.APPLICATION_JSON)
 					.build();
@@ -211,7 +226,7 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
 							.rel(Relation.ITEM)
 							.href(
 								UriBuilder
-									.fromUri(uriInfo.getRequestUri())
+									.fromUri(location)
 									.replacePath("/targets/{uuid}/")
 									.build(member.getUUID())
 							)
@@ -230,14 +245,23 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
 					.actions(delete, replace)
 					.build();
 
-			return new api.representations.siren.SirenEntityRepresentation(entity);
+			return new api.representations.siren.SirenEntityRepresentation.Builder()
+				.entity(entity)
+				.location(location)
+				.language(language)
+				.build();
+
 		} finally {
 			span.finish();
 		}
 	}
 
 	@Override
-	public Representation createTargetRepresentation(UriInfo uriInfo, Target target) {
+	public Representation createTargetRepresentation(
+		URI location,
+		Locale language,
+		Target target
+	) {
 		Span span =
 			this.tracer
 				.buildSpan("SirenRepresentationFactory#createTargetRepresentation")
@@ -251,7 +275,7 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
 				self =
 					linkBuilder
 						.rel(Relation.SELF)
-						.href(uriInfo.getRequestUri())
+						.href(location)
 						.build();
 			} catch (URISyntaxException x){}
 
@@ -261,7 +285,7 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
 					.name("delete-target")
 					.title("Delete Target")
 					.method(HttpMethod.DELETE)
-					.href(uriInfo.getRequestUri())
+					.href(location)
 					.build();
 
 			actionBuilder.clear();
@@ -297,7 +321,7 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
 					.name("replace-target")
 					.title("Replace Target")
 					.method(HttpMethod.PUT)
-					.href(uriInfo.getRequestUri())
+					.href(location)
 					.fields(uuidField, nameField, phoneNumberField)
 					.type(MediaType.APPLICATION_JSON)
 					.build();
@@ -313,8 +337,12 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
 					.actions(delete, replace)
 					.build();
 
-			// not sure what to do here yet...adapter pattern?
-			return new api.representations.siren.SirenEntityRepresentation(entity);
+			return new api.representations.siren.SirenEntityRepresentation.Builder()
+				.entity(entity)
+				.location(location)
+				.language(language)
+				.build();
+
 		} finally {
 			span.finish();
 		}

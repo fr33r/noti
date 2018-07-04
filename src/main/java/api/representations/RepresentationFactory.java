@@ -7,7 +7,9 @@ import application.Notification;
 import application.Target;
 
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriInfo;
+
+import java.net.URI;
+import java.util.Locale;
 
 public abstract class RepresentationFactory {
 
@@ -17,9 +19,25 @@ public abstract class RepresentationFactory {
 		this.mediaType = mediaType;
 	}
 
-	public abstract Representation createNotificationRepresentation(UriInfo uriInfo, Notification notification);
+	protected MediaType getMediaType() {
+		return this.mediaType;
+	}
 
-	public abstract Representation createAudienceRepresentation(UriInfo uriInfo, Audience audience);
+	public abstract Representation createNotificationRepresentation(
+		URI location,
+		Locale language,
+		Notification notification
+	);
 
-	public abstract Representation createTargetRepresentation(UriInfo uriInfo, Target target);
+	public abstract Representation createAudienceRepresentation(
+		URI location,
+		Locale language,
+		Audience audience
+	);
+
+	public abstract Representation createTargetRepresentation(
+		URI location,
+		Locale language,
+		Target target
+	);
 }

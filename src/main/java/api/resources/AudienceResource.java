@@ -8,6 +8,7 @@ import application.AudienceFactory;
 import application.TargetFactory;
 
 import java.net.URI;
+import java.util.Locale;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -52,14 +53,19 @@ public class AudienceResource implements api.AudienceResource {
 		Span span = this.tracer.buildSpan("AudienceResource#get").start();
 		try(Scope scope = this.tracer.scopeManager().activate(span, false)) {
 			application.Audience audience = this.audienceService.getAudience(UUID.fromString(uuid));
-		
+
+			URI requestURI = uriInfo.getRequestUri();
+			Locale language = null;
 			Representation representation = null;
 			if(headers.getAcceptableMediaTypes().contains(MediaType.APPLICATION_JSON_TYPE)) {
-				representation = this.jsonRepresentationFactory.createAudienceRepresentation(uriInfo, audience);
+				representation =
+					this.jsonRepresentationFactory.createAudienceRepresentation(requestURI, language, audience);
 			} else if (headers.getAcceptableMediaTypes().contains(MediaType.APPLICATION_XML_TYPE)) {
-				representation = this.xmlRepresentationFactory.createAudienceRepresentation(uriInfo, audience);
+				representation =
+					this.xmlRepresentationFactory.createAudienceRepresentation(requestURI, language, audience);
 			} else {
-				representation = this.sirenRepresentationFactory.createAudienceRepresentation(uriInfo, audience);
+				representation =
+					this.sirenRepresentationFactory.createAudienceRepresentation(requestURI, language, audience);
 			}
 			return Response.ok(representation).build();
 		} finally {
@@ -71,7 +77,8 @@ public class AudienceResource implements api.AudienceResource {
 	public Response createAndAppend(HttpHeaders headers, UriInfo uriInfo, Audience audience) {
 		Span span = this.tracer.buildSpan("AudienceResource#createAndAppend").start();
 		try(Scope scope = this.tracer.scopeManager().activate(span, false)) {
-			UUID audienceUUID = this.audienceService.createAudience(this.audienceFactory.createFrom(audience));
+			UUID audienceUUID =
+				this.audienceService.createAudience(this.audienceFactory.createFrom(audience));
 			URI location =
 				UriBuilder
 					.fromUri(uriInfo.getRequestUri())

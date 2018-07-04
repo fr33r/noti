@@ -1,58 +1,48 @@
 package api.filters;
 
-import java.net.URI;
-
-import javax.inject.Inject;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerResponseContext;
-import javax.ws.rs.ext.Provider;
-
-import infrastructure.EntityTagService;
-import infrastructure.ResourceMetadataService;
-
+import infrastructure.RepresentationMetadataService;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
+import java.net.URI;
+import javax.inject.Inject;
+import javax.ws.rs.ext.Provider;
 
 @Provider
-public class MetadataDeleteFilter extends MetadataFilter {
+public class MetadataDeleteFilter extends ResponseFilter {
 
-	private final Tracer tracer;
+  private final RepresentationMetadataService representationMetadataService;
+  private final Tracer tracer;
 
-	@Inject
-	public MetadataDeleteFilter(
-		ResourceMetadataService resourceMetadataService,
-		EntityTagService entityTagService,
-		Tracer tracer
-	) {
-		super(resourceMetadataService, entityTagService);
+  @Inject
+  public MetadataDeleteFilter(
+      RepresentationMetadataService representationMetadataService, Tracer tracer) {
+    this.representationMetadataService = representationMetadataService;
+    this.tracer = tracer;
+  }
 
-		this.tracer = tracer;
-	}
-	
-	@Override
-	public void filter(
-		ContainerRequestContext requestContext,
-		ContainerResponseContext responseContext
-	) {
-		Span span =
-			this.tracer
-				.buildSpan("MetadataDeleteFilter#filter")
-				.asChildOf(this.tracer.activeSpan())
-				.start();
-		try(Scope scope = this.tracer.scopeManager().activate(span, false)) {
-			//guard: don't proceed if response is an error or is a response to conditional request.
-			if(this.isErrorResponse(responseContext) || this.isNotModifiedResponse(responseContext)) {
-				return;
-			}
+  @Override
+  public void filter(RequestContext requestContext, ResponseContext responseContext) {
+    Span span =
+        this.tracer
+            .buildSpan("MetadataDeleteFilter#filter")
+            .asChildOf(this.tracer.activeSpan())
+            .start();
+    try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
+      // guard: don't proceed if response is an error or is a response to conditional request.
+      if (responseContext.statusIsServerError()
+          || responseContext.statusIsClientError()
+          || responseContext.statusIs(304)) {
+        return;
+      }
 
-			//guard: don't proceed if the request is not an HTTP GET request.
-			if(!this.isDeleteRequest(requestContext)) return;
+      // guard: don't proceed if the request is not an HTTP GET request.
+      if (!requestContext.methodIs("DELETE")) return;
 
-			URI requestUri = this.getRequestUri(requestContext);
-			this.getResourceMetadataService().removeAll(requestUri);
-		} finally {
-			span.finish();
-		}
-	}
+      URI requestUri = requestContext.getRequestUri();
+      this.representationMetadataService.removeAll(requestUri);
+    } finally {
+      span.finish();
+    }
+  }
 }

@@ -1,7 +1,6 @@
 package api;
 
 import api.representations.json.Notification;
-
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -18,51 +17,61 @@ import javax.ws.rs.core.UriInfo;
 
 /**
  * Defines the contract that exposes various HTTP operations on the notification resource.
+ *
  * @author jonfreer
  */
 @Path("/notifications")
 public interface NotificationResource {
 
-	/**
-	 * Handles HTTP GET requests for the notification with the unique identifier provided.
-	 * @param uuid The unique identifier for the notification resource being retrieved.
-	 * @return An instance of {@link Response} representing the HTTP response, including 
-	 * the representation of requested notification resource.
-	 */
-	@GET
-	@Path("{uuid}")
-	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/vnd.siren+json"})
-	Response get(@Context HttpHeaders headers, @Context UriInfo uriInfo, @PathParam("uuid") String uuid);
+  /**
+   * Handles HTTP GET requests for the notification with the unique identifier provided.
+   *
+   * @param uuid The unique identifier for the notification resource being retrieved.
+   * @return An instance of {@link Response} representing the HTTP response, including the
+   *     representation of requested notification resource.
+   */
+  @GET
+  @Path("{uuid}")
+  @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/vnd.siren+json"})
+  Response get(
+      @Context HttpHeaders headers, @Context UriInfo uriInfo, @PathParam("uuid") String uuid);
 
-	/**
-	 * Handles HTTP POST requests for the collection of notification resources.
-	 * @param uriInfo Information about the request URI, so that it can be leveraged when constructing the response.
-	 * @param notification The representation of the notification resource to be created.
-	 * @return An instance of {@link Response} representing the HTTP response.
-	 */
-	@POST
-	@Consumes({MediaType.APPLICATION_JSON})
-	Response createAndAppend(@Context HttpHeaders headers, @Context UriInfo uriInfo, Notification notification);
+  /**
+   * Handles HTTP POST requests for the collection of notification resources.
+   *
+   * @param uriInfo Information about the request URI, so that it can be leveraged when constructing
+   *     the response.
+   * @param notification The representation of the notification resource to be created.
+   * @return An instance of {@link Response} representing the HTTP response.
+   */
+  @POST
+  @Consumes({MediaType.APPLICATION_JSON})
+  Response createAndAppend(
+      @Context HttpHeaders headers, @Context UriInfo uriInfo, Notification notification);
 
-	/**
-	 * Handles HTTP PUT requests for the notification with the unique identifier provided.
-	 * @param uriInfo Information about the request URI, so that it can be leveraged when constructing the response.
-	 * @param notification The representation of the notification resource to replace the current existing state.
-	 * @return An instance of {@link Response} representing the HTTP response.
-	 */
-	@PUT
-	@Path("{uuid}")
-	@Consumes({MediaType.APPLICATION_JSON})
-	Response replace(@Context HttpHeaders headers, @Context UriInfo uriInfo, Notification notification);
+  /**
+   * Handles HTTP PUT requests for the notification with the unique identifier provided.
+   *
+   * @param uriInfo Information about the request URI, so that it can be leveraged when constructing
+   *     the response.
+   * @param notification The representation of the notification resource to replace the current
+   *     existing state.
+   * @return An instance of {@link Response} representing the HTTP response.
+   */
+  @PUT
+  @Path("{uuid}")
+  @Consumes({MediaType.APPLICATION_JSON})
+  Response replace(
+      @Context HttpHeaders headers, @Context UriInfo uriInfo, Notification notification);
 
-	/**
-	 * Handles HTTP DELETE requests for the notification with the unique identifier provided.
-	 * @param uuid The unique identifier for the notification resource being deleted.
-	 * @return An instance of {@link Response} representing the HTTP response.
-	 */
-	@DELETE
-	@Path("{uuid}")
-	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/vnd.siren+json"})
-	Response delete(@Context UriInfo uriInfo, @PathParam("uuid") String uuid);
+  /**
+   * Handles HTTP DELETE requests for the notification with the unique identifier provided.
+   *
+   * @param uuid The unique identifier for the notification resource being deleted.
+   * @return An instance of {@link Response} representing the HTTP response.
+   */
+  @DELETE
+  @Path("{uuid}")
+  @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/vnd.siren+json"})
+  Response delete(@Context UriInfo uriInfo, @PathParam("uuid") String uuid);
 }
-

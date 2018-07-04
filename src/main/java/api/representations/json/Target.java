@@ -8,43 +8,53 @@ import javax.ws.rs.core.MediaType;
 
 public final class Target extends Representation {
 
-	private final UUID uuid;
-	private final String name;
-	private final String phoneNumber;
+	private UUID uuid;
+	private String name;
+	private String phoneNumber;
 	
-	public Target() {
+	private Target() {
 		super(MediaType.APPLICATION_JSON_TYPE);
+	}
 
-		this.uuid = null;
-		this.name = null;
-		this.phoneNumber = null;
+	public static final class Builder extends Representation.Builder {
+
+		private UUID uuid;
+		private String name;
+		private String phoneNumber;
+
+		public Builder() {
+			super(MediaType.APPLICATION_JSON_TYPE);
+		}
+
+		public Builder uuid(UUID uuid) { this.uuid = uuid; return this; }
+
+		public Builder name(String name) { this.name = name; return this; }
+
+		public Builder phoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; return this; }
+
+		@Override
+		public Representation build() {
+			Target t = new Target();
+			t.setLocation(this.location());
+			t.setEncoding(this.encoding());
+			t.setLanguage(this.language());
+			t.setLastModified(this.lastModified());
+			t.setUUID(this.uuid);
+			t.setName(this.name);
+			t.setPhoneNumber(this.phoneNumber);
+			return t;
+		}
 	}
 	
-	public Target(final String name, final String phoneNumber) {
-		super(MediaType.APPLICATION_JSON_TYPE);
+	public UUID getUUID() { return uuid; }
 
-		this.uuid = null;
-		this.name = name;
-		this.phoneNumber = phoneNumber;
-	}
-	
-	public Target(final UUID uuid, final String name, final String phoneNumber) {
-		super(MediaType.APPLICATION_JSON_TYPE);
+	private void setUUID(UUID uuid) { this.uuid = uuid; }
 
-		this.uuid = uuid;
-		this.name = name;
-		this.phoneNumber = phoneNumber;
-	}
-	
-	public UUID getUUID() {
-		return uuid;
-	}
+	public String getName() { return name; }
 
-	public String getName() {
-		return name;
-	}
+	private void setName(String name) { this.name = name; }
 
-	public String getPhoneNumber() {
-		return phoneNumber;
-	}
+	public String getPhoneNumber() { return phoneNumber; }
+
+	private void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
 }

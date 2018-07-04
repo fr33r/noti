@@ -1,5 +1,6 @@
 package api;
 
+import api.representations.json.Audience;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -14,42 +15,27 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import api.representations.json.Audience;
-
 @Path("/audiences")
 public interface AudienceResource {
 
-	@GET
-	@Path("{uuid}")
-	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/vnd.siren+json"})
-	Response get(
-		@Context HttpHeaders headers,
-		@Context UriInfo uriInfo,
-		@PathParam("uuid") String uuid
-	);
+  @GET
+  @Path("{uuid}")
+  @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/vnd.siren+json"})
+  Response get(
+      @Context HttpHeaders headers, @Context UriInfo uriInfo, @PathParam("uuid") String uuid);
 
-	@POST
-	@Consumes({MediaType.APPLICATION_JSON})
-	Response createAndAppend(
-		@Context HttpHeaders headers,
-		@Context UriInfo uriInfo,
-		Audience audience
-	);
+  @POST
+  @Consumes({MediaType.APPLICATION_JSON})
+  Response createAndAppend(
+      @Context HttpHeaders headers, @Context UriInfo uriInfo, Audience audience);
 
-	@PUT
-	@Path("{uuid}")
-	@Consumes({MediaType.APPLICATION_JSON})
-	Response replace(
-		@Context HttpHeaders headers,
-		@Context UriInfo uriInfo,
-		Audience audience
-	);
+  @PUT
+  @Path("{uuid}")
+  @Consumes({MediaType.APPLICATION_JSON})
+  Response replace(@Context HttpHeaders headers, @Context UriInfo uriInfo, Audience audience);
 
-	@DELETE
-	@Path("{uuid}")
-	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/vnd.siren+json"})
-	Response delete(
-		@Context UriInfo uriInfo,
-		@PathParam("uuid") String uuid
-	);
+  @DELETE
+  @Path("{uuid}")
+  @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/vnd.siren+json"})
+  Response delete(@Context UriInfo uriInfo, @PathParam("uuid") String uuid);
 }

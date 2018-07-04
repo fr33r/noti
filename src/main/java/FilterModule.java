@@ -3,7 +3,6 @@ import api.filters.ConditionalGetFilter;
 import api.filters.ConditionalPutFilter;
 import api.filters.MetadataDeleteFilter;
 import api.filters.MetadataGetFilter;
-import api.filters.MetadataPostFilter;
 import api.filters.MetadataPutFilter;
 import api.filters.VaryFilter;
 import configuration.NotiConfiguration;
@@ -25,7 +24,6 @@ public final class FilterModule extends NotiModule {
 		this.getEnvironment().jersey().register(VaryFilter.class);
 		this.getEnvironment().jersey().register(MetadataGetFilter.class);
 		this.getEnvironment().jersey().register(MetadataDeleteFilter.class);
-		this.getEnvironment().jersey().register(MetadataPostFilter.class);
 		this.getEnvironment().jersey().register(MetadataPutFilter.class);
 	}
 }
