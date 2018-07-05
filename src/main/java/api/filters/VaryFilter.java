@@ -1,6 +1,5 @@
 package api.filters;
 
-
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;

@@ -1,24 +1,25 @@
 package api.filters.context;
 
-import java.util.Collections;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.net.URI;
-import java.util.Date;
-import java.io.InputStream;
 import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Cookie;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.core.Request;
 import javax.ws.rs.core.HttpHeaders;
-import java.lang.reflect.Type;
-import java.lang.annotation.Annotation;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Request;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.core.UriInfo;
 
 public class RequestContext implements api.filters.RequestContext {
 
@@ -28,9 +29,103 @@ public class RequestContext implements api.filters.RequestContext {
     this.containerRequestContext = containerRequestContext;
   }
 
+  private final class WeightedHeaderValue implements Comparable<WeightedHeaderValue> {
+
+    private final class Quality implements Comparable<Quality> {
+
+      private final float qValue;
+
+      public Quality(String qValue) {
+        this.qValue = new Float(qValue).floatValue();
+        if (this.qValue > 1.0 || this.qValue < 0.0) {
+          throw new IllegalStateException("Quality value must be between 0.0 and 1.0");
+        }
+      }
+
+      public float getValue() {
+        return this.qValue;
+      }
+
+      @Override
+      public boolean equals(Object obj) {
+        if (obj == null || obj.getClass() != this.getClass()) return false;
+        Quality quality = (Quality) obj;
+        return this.getValue() == quality.getValue();
+      }
+
+      @Override
+      public int hashCode() {
+        final float prime = 17.0f;
+        return (int) (this.qValue * prime);
+      }
+
+      @Override
+      public int compareTo(Quality quality) {
+        if (quality == null) return 1;
+        if (quality.equals(this)) return 0;
+        return quality.getValue() < this.getValue() ? 1 : -1;
+      }
+    }
+
+    private final String headerValue;
+    private final Quality quality;
+
+    public WeightedHeaderValue(String headerValue) {
+      String[] parts = headerValue.split(";");
+      this.headerValue = parts[0];
+      if (parts.length > 1) {
+        this.quality = new Quality(parts[1]);
+      } else {
+        this.quality = null;
+      }
+    }
+
+    public String getHeaderValue() {
+      return this.headerValue;
+    }
+
+    public Quality getQuality() {
+      return this.quality;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj == null || obj.getClass() != this.getClass()) return false;
+      WeightedHeaderValue weightedHeaderValue = (WeightedHeaderValue) obj;
+      boolean hasSameHeaderValue =
+          this.getHeaderValue().equals(weightedHeaderValue.getHeaderValue());
+      boolean hasSameQuality =
+          this.getQuality() == null && weightedHeaderValue.getQuality() == null
+              || this.getQuality() != null
+                  && weightedHeaderValue.getQuality() != null
+                  && this.getQuality().equals(weightedHeaderValue.getQuality());
+      return hasSameQuality && hasSameHeaderValue;
+    }
+
+    @Override
+    public int hashCode() {
+      int hashCode = 1;
+      final int prime = 17;
+      hashCode = hashCode * prime + this.getHeaderValue().hashCode();
+      if (this.getQuality() != null) {
+        hashCode = hashCode * prime + this.getQuality().hashCode();
+      }
+      return hashCode;
+    }
+
+    @Override
+    public int compareTo(WeightedHeaderValue headerValue) {
+      if (headerValue == null) return 1;
+      if (headerValue.equals(this)) return 0;
+      Quality quality = this.getQuality();
+      if (quality == null) return 1;
+      return headerValue.getQuality().getValue() < this.getQuality().getValue() ? 1 : -1;
+    }
+  }
+
   @Override
   public void abortWith(Response response) {
-	this.containerRequestContext.abortWith(response);
+    this.containerRequestContext.abortWith(response);
   }
 
   @Override
@@ -39,8 +134,26 @@ public class RequestContext implements api.filters.RequestContext {
     if (acceptCharset == null || acceptCharset.isEmpty()) {
       return Collections.singletonList("*");
     }
-    // TODO - implement this algorithm.
-    return null;
+    List<WeightedHeaderValue> weightedHeaderValues = this.asWeightedHeaderValues(acceptCharset);
+    Collections.sort(weightedHeaderValues);
+    List<String> weightedHeaderValueStrings = new ArrayList<>();
+    for (WeightedHeaderValue weightedHeaderValue : weightedHeaderValues) {
+      weightedHeaderValueStrings.add(weightedHeaderValue.getHeaderValue());
+    }
+    return Collections.unmodifiableList(weightedHeaderValueStrings);
+  }
+
+  private WeightedHeaderValue asWeightedHeaderValue(String weightedHeaderValue) {
+    return new WeightedHeaderValue(weightedHeaderValue);
+  }
+
+  private List<WeightedHeaderValue> asWeightedHeaderValues(String headerAsString) {
+    List<WeightedHeaderValue> weightedHeaderValues = new ArrayList<>();
+    String[] parts = headerAsString.split(",");
+    for (String part : parts) {
+      weightedHeaderValues.add(this.asWeightedHeaderValue(part));
+    }
+    return weightedHeaderValues;
   }
 
   @Override
@@ -49,8 +162,13 @@ public class RequestContext implements api.filters.RequestContext {
     if (acceptEncoding == null || acceptEncoding.isEmpty()) {
       return Collections.singletonList("*");
     }
-    // TODO - implement this algorithm.
-    return null;
+    List<WeightedHeaderValue> weightedHeaderValues = this.asWeightedHeaderValues(acceptEncoding);
+    Collections.sort(weightedHeaderValues);
+    List<String> weightedHeaderValueStrings = new ArrayList<>();
+    for (WeightedHeaderValue weightedHeaderValue : weightedHeaderValues) {
+      weightedHeaderValueStrings.add(weightedHeaderValue.getHeaderValue());
+    }
+    return Collections.unmodifiableList(weightedHeaderValueStrings);
   }
 
   @Override
@@ -73,10 +191,40 @@ public class RequestContext implements api.filters.RequestContext {
     return this.containerRequestContext.getDate();
   }
 
-	@Override
-	public String getEncoding() {
-		return this.getHeaderString(HttpHeaders.CONTENT_ENCODING);
-	}
+  @Override
+  public List<String> getEncodings() {
+    String contentEncoding = this.getHeaderString(HttpHeaders.CONTENT_ENCODING);
+    if (contentEncoding == null || contentEncoding.isEmpty()) {
+      return null;
+    }
+
+    String[] parts = contentEncoding.split(",");
+    List<String> encodings = new ArrayList<String>();
+    for (String part : parts) {
+      encodings.add(part);
+    }
+    return encodings;
+  }
+
+  @Override
+  public byte[] getEntityBytes() throws IOException {
+
+    InputStream is = this.getEntityStream();
+    try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+
+      final int bufferSize = 2048;
+      final int done = -1;
+      byte[] buffer = new byte[bufferSize];
+      int numBytesRead;
+
+      while ((numBytesRead = is.read(buffer, 0, buffer.length)) != done) {
+        baos.write(buffer, 0, numBytesRead);
+      }
+      baos.flush();
+
+      return baos.toByteArray();
+    }
+  }
 
   @Override
   public InputStream getEntityStream() {

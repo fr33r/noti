@@ -1,21 +1,23 @@
 package api.filters.context;
 
 import java.io.OutputStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import javax.ws.rs.container.ContainerResponseContext;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.EntityTag;
-import javax.ws.rs.core.Link;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.HttpHeaders;
-import java.lang.reflect.Type;
-import java.lang.annotation.Annotation;
+import javax.ws.rs.core.Link;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.NewCookie;
+import javax.ws.rs.core.Response;
 
 /**
  * Provides response-specific information for a response filter.
@@ -43,6 +45,21 @@ public final class ResponseContext implements api.filters.ResponseContext {
   @Override
   public Date getDate() {
     return this.containerResponseContext.getDate();
+  }
+
+  @Override
+  public List<String> getEncodings() {
+    String contentEncoding = this.getHeaderString(HttpHeaders.CONTENT_ENCODING);
+    if (contentEncoding == null || contentEncoding.isEmpty()) {
+      return null;
+    }
+
+    String[] parts = contentEncoding.split(",");
+    List<String> encodings = new ArrayList<String>();
+    for (String part : parts) {
+      encodings.add(part);
+    }
+    return encodings;
   }
 
   @Override

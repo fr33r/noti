@@ -5,13 +5,12 @@ import infrastructure.RepresentationMetadataService;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.net.URI;
 import java.security.MessageDigest;
 import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 import javax.inject.Inject;
@@ -53,7 +52,7 @@ public class MetadataPutFilter extends ResponseFilter {
       // guard: don't proceed if the request is not an HTTP PUT request.
       if (!requestContext.methodIs("PUT")) return;
 
-      byte[] representationBytes = this.getRequestBytes(requestContext);
+      byte[] representationBytes = requestContext.getEntityBytes();
       MessageDigest digest = MessageDigest.getInstance("MD5");
       byte[] hashedBytes = digest.digest(representationBytes);
       String hashedBytesBase64 = Base64.getEncoder().encodeToString(hashedBytes);
@@ -66,32 +65,20 @@ public class MetadataPutFilter extends ResponseFilter {
       Date lastModified = calendar.getTime();
       EntityTag entityTag = new EntityTag(hashedBytesBase64);
       Locale language = requestContext.getLanguage();
-      String encoding = requestContext.getEncoding();
+      List<String> encodings = requestContext.getEncodings();
 
       this.representationMetadataService.put(
           new RepresentationMetadata(
-              requestUri, contentType, language, encoding, lastModified, entityTag));
+              requestUri,
+              contentType,
+              language,
+              String.join(",", encodings),
+              lastModified,
+              entityTag));
     } catch (Exception x) {
       throw new RuntimeException(x);
     } finally {
       span.finish();
     }
-  }
-
-  private byte[] getRequestBytes(RequestContext requestContext) throws Exception {
-    // convert the input stream containing the representation to a byte array.
-    InputStream is = requestContext.getEntityStream();
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    final int bufferSize = 2048;
-    final int done = -1;
-    byte[] buffer = new byte[bufferSize];
-    int numBytesRead;
-
-    while ((numBytesRead = is.read(buffer, 0, buffer.length)) != done) {
-      baos.write(buffer, 0, numBytesRead);
-    }
-    baos.flush();
-    byte[] representationBytes = baos.toByteArray();
-    return representationBytes;
   }
 }

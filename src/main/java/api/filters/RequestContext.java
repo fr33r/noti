@@ -1,5 +1,6 @@
 package api.filters;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -38,5 +39,17 @@ public interface RequestContext extends ContainerRequestContext {
    */
   List<String> getAcceptableCharsets();
 
-	String getEncoding();
+  /**
+   * Get the encoding(s) of the entity.
+   *
+   * @return The encoding(s) of the entity or null if not specified.
+   */
+  List<String> getEncodings();
+
+  /**
+   * Get the entity bytes.
+   *
+   * @return A byte array containing the entity.
+   */
+  byte[] getEntityBytes() throws IOException;
 }

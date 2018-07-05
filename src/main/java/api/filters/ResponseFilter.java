@@ -5,11 +5,11 @@ package api.filters;
 //		api.filter.context.ResponseContext;
 //  api.filter.RequestContext;
 //		api.filter.context.RequestContext;
-import api.filters.context.ResponseContext;
 import api.filters.context.RequestContext;
-import javax.ws.rs.container.ContainerResponseFilter;
+import api.filters.context.ResponseContext;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
+import javax.ws.rs.container.ContainerResponseFilter;
 
 public abstract class ResponseFilter implements ContainerResponseFilter {
 
@@ -23,8 +23,6 @@ public abstract class ResponseFilter implements ContainerResponseFilter {
     this.filter(requestContext, responseContext);
   }
 
-	public abstract void filter(
-		api.filters.RequestContext requestContext,
-		api.filters.ResponseContext responseContext
-	);
+  public abstract void filter(
+      api.filters.RequestContext requestContext, api.filters.ResponseContext responseContext);
 }
