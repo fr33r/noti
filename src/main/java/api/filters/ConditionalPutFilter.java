@@ -6,26 +6,27 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import java.io.IOException;
+import java.util.List;
 import java.util.Locale;
 import javax.inject.Inject;
-import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Provider;
+import org.slf4j.Logger;
 
 @Provider
 public class ConditionalPutFilter extends RequestFilter {
 
   private RepresentationMetadataService representationMetadataService;
   private final Tracer tracer;
+  private final Logger logger;
 
   @Inject
   public ConditionalPutFilter(
-      RepresentationMetadataService representationMetadataService, Tracer tracer) {
+      RepresentationMetadataService representationMetadataService, Tracer tracer, Logger logger) {
     this.representationMetadataService = representationMetadataService;
     this.tracer = tracer;
+    this.logger = logger;
   }
 
   public void filter(RequestContext requestContext) throws IOException {
@@ -35,32 +36,37 @@ public class ConditionalPutFilter extends RequestFilter {
             .asChildOf(this.tracer.activeSpan())
             .start();
     try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
-      Request request = requestContext.getRequest();
-      UriInfo uriInfo = requestContext.getUriInfo();
 
-      if (request.getMethod().equalsIgnoreCase("PUT")) {
-        MediaType contentType = requestContext.getMediaType();
+      // gaurd: do not proceed if the HTTP method is not PUT.
+      if (!requestContext.methodIs("PUT")) return;
 
-        if (contentType == null) {
-          return;
-        }
-        Locale language = requestContext.getLanguage();
-        // PUT LINK HERE DESCRIBING HOW MULTIPLE ENCODINGS CAN BE PRESENT FOR THE REPRESENTATION.
-        String encodings = requestContext.getHeaderString(HttpHeaders.CONTENT_ENCODING);
+      // gaurd: do not proceed if there is not value for the Content-Type HTTP header.
+      MediaType contentType = requestContext.getMediaType();
+      if (contentType == null) {
+        this.logger.info("Unable to perform conditional request without 'Content-Type' header.");
+        return;
+      }
 
-        RepresentationMetadata representationMetadata =
-            this.representationMetadataService.get(
-                uriInfo.getRequestUri(), language, encodings, contentType);
+      Locale language = requestContext.getLanguage();
+      List<String> encodings = requestContext.getEncodings();
 
-        if (representationMetadata != null) {
+      RepresentationMetadata representationMetadata =
+          this.representationMetadataService.get(
+              requestContext.getRequestUri(), language, String.join(",", encodings), contentType);
 
-          ResponseBuilder responseBuilder =
-              request.evaluatePreconditions(
-                  representationMetadata.getLastModified(), representationMetadata.getEntityTag());
+      if (representationMetadata != null) {
 
-          if (responseBuilder != null) {
-            requestContext.abortWith(responseBuilder.build());
-          }
+        this.logger.info("Discovered representation metdata match.");
+
+        ResponseBuilder responseBuilder =
+            requestContext
+                .getRequest()
+                .evaluatePreconditions(
+                    representationMetadata.getLastModified(),
+                    representationMetadata.getEntityTag());
+
+        if (responseBuilder != null) {
+          requestContext.abortWith(responseBuilder.build());
         }
       }
     } finally {

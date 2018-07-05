@@ -17,6 +17,7 @@ import javax.inject.Inject;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.Provider;
+import org.slf4j.Logger;
 
 @Provider
 public class MetadataGetFilter extends ResponseFilter {
@@ -24,13 +25,15 @@ public class MetadataGetFilter extends ResponseFilter {
   private final Calendar calendar;
   private final Tracer tracer;
   private final RepresentationMetadataService representationMetadataService;
+  private final Logger logger;
 
   @Inject
   public MetadataGetFilter(
-      RepresentationMetadataService representationMetadataService, Tracer tracer) {
+      RepresentationMetadataService representationMetadataService, Tracer tracer, Logger logger) {
     this.representationMetadataService = representationMetadataService;
     this.calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
     this.tracer = tracer;
+    this.logger = logger;
   }
 
   @Override
@@ -72,7 +75,8 @@ public class MetadataGetFilter extends ResponseFilter {
       responseContext.setLastModified(lastModified);
       responseContext.setEntityTag(entityTag);
     } catch (Exception x) {
-      throw new RuntimeException(x);
+      this.logger.error("Encountered an issue when persisting representation metadata.", x);
+      return;
     } finally {
       span.finish();
     }

@@ -7,18 +7,21 @@ import io.opentracing.Tracer;
 import java.net.URI;
 import javax.inject.Inject;
 import javax.ws.rs.ext.Provider;
+import org.slf4j.Logger;
 
 @Provider
 public class MetadataDeleteFilter extends ResponseFilter {
 
   private final RepresentationMetadataService representationMetadataService;
   private final Tracer tracer;
+  private final Logger logger;
 
   @Inject
   public MetadataDeleteFilter(
-      RepresentationMetadataService representationMetadataService, Tracer tracer) {
+      RepresentationMetadataService representationMetadataService, Tracer tracer, Logger logger) {
     this.representationMetadataService = representationMetadataService;
     this.tracer = tracer;
+    this.logger = logger;
   }
 
   @Override
@@ -41,6 +44,9 @@ public class MetadataDeleteFilter extends ResponseFilter {
 
       URI requestUri = requestContext.getRequestUri();
       this.representationMetadataService.removeAll(requestUri);
+      this.logger.info("Removed representation metadata.");
+    } catch (Exception x) {
+      this.logger.error("Encountered issue when removing representation metadata.", x);
     } finally {
       span.finish();
     }
