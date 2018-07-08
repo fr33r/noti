@@ -31,6 +31,9 @@ public class RequestContext implements api.filters.RequestContext {
 
   private final class WeightedHeaderValue implements Comparable<WeightedHeaderValue> {
 
+	  /**
+	   * @see <a href='https://tools.ietf.org/html/rfc7231#section-5.3.1'>RFC 7231 Section 5.3.1</a>
+	   */
     private final class Quality implements Comparable<Quality> {
 
       private final float qValue;
@@ -206,6 +209,7 @@ public class RequestContext implements api.filters.RequestContext {
     return encodings;
   }
 
+  //TODO - validate that the input stream has been written to at this point.
   @Override
   public byte[] getEntityBytes() throws IOException {
 
@@ -288,7 +292,7 @@ public class RequestContext implements api.filters.RequestContext {
 
   @Override
   public UriInfo getUriInfo() {
-    return this.getUriInfo();
+    return this.containerRequestContext.getUriInfo();
   }
 
   @Override

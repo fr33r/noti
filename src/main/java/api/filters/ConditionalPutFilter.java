@@ -69,6 +69,8 @@ public class ConditionalPutFilter extends RequestFilter {
           requestContext.abortWith(responseBuilder.build());
         }
       }
+    } catch (Exception x) {
+      this.logger.error("Encountered an issue when retrieving representation metadata.", x);
     } finally {
       span.finish();
     }

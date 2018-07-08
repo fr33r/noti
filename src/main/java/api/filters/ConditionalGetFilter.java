@@ -49,7 +49,6 @@ public class ConditionalGetFilter extends RequestFilter {
         this.logger.info("Unable to perform conditional request without 'Accept' header.");
         return;
       }
-      ;
 
       URI contentLocation = requestContext.getRequestUri();
       List<Locale> acceptableLanguages = requestContext.getAcceptableLanguages();
@@ -74,6 +73,10 @@ public class ConditionalGetFilter extends RequestFilter {
       //  AND CONTENT_ENCODING IN (?);
       RepresentationMetadata representationMetadata = null;
 
+	  this.logger.debug(String.format("Content Location: %s", contentLocation));
+	  this.logger.debug(String.format("Acceptable Languages: %s", acceptableLanguages));
+	  this.logger.debug(String.format("Acceptable Encodings: %s", acceptableEncodings));
+	  this.logger.debug(String.format("Acceptable Media Types: %s", acceptableMediaTypes));
       List<RepresentationMetadata> matches =
           this.representationMetadataService.match(
               contentLocation, acceptableMediaTypes, acceptableLanguages, acceptableEncodings);
@@ -83,10 +86,10 @@ public class ConditionalGetFilter extends RequestFilter {
       // that i don't retreive the wrong metadata.
       // NOTE - i am not even sure if jersey supports any different routing based on
       // language or encoding. if it doesn't we should be good here.
+      this.logger.info(
+          String.format("Discovered %d representation metadata match(es).", matches.size()));
       if (matches.size() > 0) {
         representationMetadata = matches.get(0);
-        this.logger.info(
-            String.format("Discovered %d representation metadata match(es).", matches.size()));
       }
 
       if (representationMetadata != null) {
@@ -108,6 +111,8 @@ public class ConditionalGetFilter extends RequestFilter {
           requestContext.abortWith(response);
         }
       }
+    } catch (Exception x) {
+      this.logger.error("Encountered an issue when persisting representation metadata.", x);
     } finally {
       span.finish();
     }

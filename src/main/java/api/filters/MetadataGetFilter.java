@@ -1,21 +1,12 @@
 package api.filters;
 
-import infrastructure.RepresentationMetadata;
 import infrastructure.RepresentationMetadataService;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
-import java.net.URI;
-import java.security.MessageDigest;
-import java.util.Base64;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
 import java.util.TimeZone;
 import javax.inject.Inject;
-import javax.ws.rs.core.EntityTag;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.Provider;
 import org.slf4j.Logger;
 
@@ -53,27 +44,33 @@ public class MetadataGetFilter extends ResponseFilter {
 
       // guard: don't proceed if the request is not an HTTP GET or HEAD request.
       if (!requestContext.methodIs("GET") && !requestContext.methodIs("HEAD")) return;
-
-      byte[] representationBytes = requestContext.getEntityBytes();
+      /*
+         byte[] representationBytes = responseContext.getEntityBytes();
+         this.logger.debug(String.format("Representation is %d bytes long.", representationBytes.length));
       MessageDigest digest = MessageDigest.getInstance("MD5");
-      byte[] hashedBytes = digest.digest(representationBytes);
-      String hashedBytesBase64 = Base64.getEncoder().encodeToString(hashedBytes);
+         byte[] hashedBytes = digest.digest(representationBytes);
+         String hashedBytesBase64 = Base64.getEncoder().encodeToString(hashedBytes);
 
-      URI location = requestContext.getRequestUri();
-      MediaType mediaType = responseContext.getMediaType();
-      Locale language = responseContext.getLanguage();
-      List<String> encodings = responseContext.getEncodings();
-      EntityTag entityTag = new EntityTag(hashedBytesBase64);
-      Date lastModified = calendar.getTime();
+         URI location = requestContext.getRequestUri();
+         MediaType mediaType = responseContext.getMediaType();
+         Locale language = responseContext.getLanguage();
+         List<String> encodings = responseContext.getEncodings();
+         EntityTag entityTag = new EntityTag(hashedBytesBase64);
+         Date lastModified = calendar.getTime();
 
-      // persist the resource representation metadata.
-      this.representationMetadataService.put(
-          new RepresentationMetadata(
-              location, mediaType, language, String.join(",", encodings), lastModified, entityTag));
+         // persist the resource representation metadata.
+         this.representationMetadataService.put(
+             new RepresentationMetadata(
+                 location,
+                 mediaType,
+                 language,
+                 encodings == null || encodings.size() == 0 ? null : String.join(",", encodings),
+                 lastModified,
+                 entityTag));
 
-      // set the Last-Modified and ETag response headers.
-      responseContext.setLastModified(lastModified);
-      responseContext.setEntityTag(entityTag);
+         // set the Last-Modified and ETag response headers.
+         responseContext.setLastModified(lastModified);
+         responseContext.setEntityTag(entityTag);*/
     } catch (Exception x) {
       this.logger.error("Encountered an issue when persisting representation metadata.", x);
       return;

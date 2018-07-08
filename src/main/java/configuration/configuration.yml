@@ -11,7 +11,7 @@ jaeger:
   serviceName: noti
 
 logging:
-  level: INFO
+  level: DEBUG
 
 kafka:
     producer:

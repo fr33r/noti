@@ -25,5 +25,6 @@ public final class FilterModule extends NotiModule {
 		this.getEnvironment().jersey().register(MetadataGetFilter.class);
 		this.getEnvironment().jersey().register(MetadataDeleteFilter.class);
 		this.getEnvironment().jersey().register(MetadataPutFilter.class);
+		this.getEnvironment().jersey().register(api.interceptors.MetadataGetInterceptor.class);
 	}
 }
