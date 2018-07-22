@@ -15,13 +15,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
+import javax.annotation.Priority;
 import javax.inject.Inject;
+import javax.ws.rs.Priorities;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
-import javax.ws.rs.Priorities;
-import javax.annotation.Priority;
 
 @Priority(Priorities.HEADER_DECORATOR)
 public final class MetadataGetInterceptor extends WriterInterceptor {
@@ -98,10 +98,10 @@ public final class MetadataGetInterceptor extends WriterInterceptor {
       EntityTag entityTag = new EntityTag(hashedBytesBase64);
       Date lastModified = calendar.getTime();
 
-		this.logger.debug(String.format("Content Location: %s", location));
-		this.logger.debug(String.format("Content Type: %s", mediaType));
-		this.logger.debug(String.format("Content Language: %s", language));
-		this.logger.debug(String.format("Content Encoding: %s", encodings));
+      this.logger.debug(String.format("Content Location: %s", location));
+      this.logger.debug(String.format("Content Type: %s", mediaType));
+      this.logger.debug(String.format("Content Language: %s", language));
+      this.logger.debug(String.format("Content Encoding: %s", encodings));
 
       // persist the resource representation metadata.
       this.representationMetadataService.put(
