@@ -159,7 +159,7 @@ public class RepresentationMetadataService implements infrastructure.Representat
                 new RepresentationMetadata(
                     URI.create(matchingUri),
                     MediaType.valueOf(contentTypeString),
-                    new Locale(contentLanguageString),
+                    contentLanguageString == null ? null : new Locale(contentLanguageString),
                     contentEncoding,
                     lastModified,
                     new EntityTag(entityTag)));
