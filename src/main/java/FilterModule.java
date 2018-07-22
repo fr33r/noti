@@ -2,9 +2,9 @@ import api.filters.CacheControlFilter;
 import api.filters.ConditionalGetFilter;
 import api.filters.ConditionalPutFilter;
 import api.filters.MetadataDeleteFilter;
-import api.filters.MetadataGetFilter;
 import api.filters.MetadataPutFilter;
 import api.filters.VaryFilter;
+import api.interceptors.MetadataGetInterceptor;
 import configuration.NotiConfiguration;
 import io.dropwizard.setup.Environment;
 
@@ -22,9 +22,8 @@ public final class FilterModule extends NotiModule {
 		this.getEnvironment().jersey().register(ConditionalGetFilter.class);
 		this.getEnvironment().jersey().register(ConditionalPutFilter.class);
 		this.getEnvironment().jersey().register(VaryFilter.class);
-		this.getEnvironment().jersey().register(MetadataGetFilter.class);
 		this.getEnvironment().jersey().register(MetadataDeleteFilter.class);
 		this.getEnvironment().jersey().register(MetadataPutFilter.class);
-		this.getEnvironment().jersey().register(api.interceptors.MetadataGetInterceptor.class);
+		this.getEnvironment().jersey().register(MetadataGetInterceptor.class);
 	}
 }
