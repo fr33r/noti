@@ -1,76 +1,72 @@
 package api.representations.siren;
 
 import api.representations.Representation;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.List;
 import java.util.Map;
-
 import javax.ws.rs.core.MediaType;
-
 import siren.Action;
 import siren.Entity;
 import siren.EntityBase;
 import siren.Link;
 
-//this class use object adapter pattern.
-//mapping between Entity and Representation interfaces.
+// this class use object adapter pattern.
+// mapping between Entity and Representation interfaces.
 public final class SirenEntityRepresentation extends Representation {
 
-	private final Entity sirenEntity;
+  private final Entity sirenEntity;
 
-	private SirenEntityRepresentation() {
-		super(new MediaType("application", "vnd.siren+json"));
-		this.sirenEntity = null;
-	}
-	
-	private SirenEntityRepresentation(Entity sirenEntity) {
-		super(new MediaType("application", "vnd.siren+json"));
-		this.sirenEntity = sirenEntity;
-	}
+  private SirenEntityRepresentation() {
+    super(new MediaType("application", "vnd.siren+json"));
+    this.sirenEntity = null;
+  }
 
-	public static final class Builder extends Representation.Builder {
+  private SirenEntityRepresentation(Entity sirenEntity) {
+    super(new MediaType("application", "vnd.siren+json"));
+    this.sirenEntity = sirenEntity;
+  }
 
-		private Entity entity;
+  public static final class Builder extends Representation.Builder {
 
-		public Builder() {
-			super(new MediaType("application", "vnd.siren+json"));
-		}
+    private Entity entity;
 
-		public Builder entity(Entity entity) {
-			this.entity = entity;
-			return this;
-		}
+    public Builder() {
+      super(new MediaType("application", "vnd.siren+json"));
+    }
 
-		@Override
-		public Representation build() {
-			return new SirenEntityRepresentation(this.entity);
-		}
-	}
+    public Builder entity(Entity entity) {
+      this.entity = entity;
+      return this;
+    }
 
-	@JsonProperty("class")
-	public List<String> getKlass() {
-		return this.sirenEntity.getKlass();
-	}
+    @Override
+    public Representation build() {
+      return new SirenEntityRepresentation(this.entity);
+    }
+  }
 
-	public String getTitle() {
-		return this.sirenEntity.getTitle();
-	}
+  @JsonProperty("class")
+  public List<String> getKlass() {
+    return this.sirenEntity.getKlass();
+  }
 
-	public Map<String, Object> getProperties() {
-		return this.sirenEntity.getProperties();
-	}
+  public String getTitle() {
+    return this.sirenEntity.getTitle();
+  }
 
-	public List<Action> getActions() {
-		return this.sirenEntity.getActions();
-	}
+  public Map<String, Object> getProperties() {
+    return this.sirenEntity.getProperties();
+  }
 
-	public List<Link> getLinks() {
-		return this.sirenEntity.getLinks();
-	}
+  public List<Action> getActions() {
+    return this.sirenEntity.getActions();
+  }
 
-	public List<EntityBase> getEntities() {
-		return this.sirenEntity.getEntities();
-	}
+  public List<Link> getLinks() {
+    return this.sirenEntity.getLinks();
+  }
+
+  public List<EntityBase> getEntities() {
+    return this.sirenEntity.getEntities();
+  }
 }
