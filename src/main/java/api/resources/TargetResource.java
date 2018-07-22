@@ -1,5 +1,6 @@
 package api.resources;
 
+import java.util.Locale;
 import java.net.URI;
 import java.util.UUID;
 
@@ -64,6 +65,8 @@ public final class TargetResource implements api.TargetResource {
 	public Response get(HttpHeaders headers, UriInfo uriInfo, String uuid) {
 		Span span = this.tracer.buildSpan("TargetResource#get").start();
 		try(Scope scope = this.tracer.scopeManager().activate(span, false)) {
+			URI requestURI = uriInfo.getRequestUri();
+			Locale language = null;
 			application.Target target = this.targetService.getTarget(UUID.fromString(uuid));
 	
 			//instead of doing it this way, i think it would be better to have:
@@ -72,11 +75,11 @@ public final class TargetResource implements api.TargetResource {
 
 			Representation representation = null;
 			if(headers.getAcceptableMediaTypes().contains(new MediaType("application", "vnd.siren+json"))) {
-				representation = this.sirenRepresentationFactory.createTargetRepresentation(uriInfo, target);
+				representation = this.sirenRepresentationFactory.createTargetRepresentation(requestURI, language, target);
 			} else if (headers.getAcceptableMediaTypes().contains(MediaType.APPLICATION_XML_TYPE)) {
-				representation = this.xmlRepresentationFactory.createTargetRepresentation(uriInfo, target);
+				representation = this.xmlRepresentationFactory.createTargetRepresentation(requestURI, language, target);
 			} else if (headers.getAcceptableMediaTypes().contains(MediaType.APPLICATION_JSON_TYPE)) {
-				representation = this.jsonRepresentationFactory.createTargetRepresentation(uriInfo, target);
+				representation = this.jsonRepresentationFactory.createTargetRepresentation(requestURI, language, target);
 			}
 			return Response.ok(representation).build();
 		} finally {

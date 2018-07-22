@@ -6,8 +6,7 @@ import infrastructure.MySQLUnitOfWorkFactory;
 import infrastructure.RepositoryFactory;
 import infrastructure.SQLRepositoryFactory;
 import infrastructure.SQLUnitOfWorkFactory;
-import infrastructure.services.EntityTagService;
-import infrastructure.services.ResourceMetadataService;
+import infrastructure.services.RepresentationMetadataService;
 import infrastructure.services.SMSQueueService;
 import io.dropwizard.setup.Environment;
 
@@ -34,11 +33,8 @@ public final class NotiInfrastructureModule extends NotiModule {
 				this.bind(MySQLUnitOfWorkFactory.class)
 					.to(SQLUnitOfWorkFactory.class);
 
-				this.bind(ResourceMetadataService.class)
-					.to(infrastructure.ResourceMetadataService.class);
-
-				this.bind(EntityTagService.class)
-					.to(infrastructure.EntityTagService.class);
+				this.bind(RepresentationMetadataService.class)
+					.to(infrastructure.RepresentationMetadataService.class);
 
 				this.bind(SMSQueueService.class)
 					.to(MessageQueueService.class);

@@ -2,12 +2,13 @@ package infrastructure;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Locale;
 
 import javax.ws.rs.core.MediaType;
 
 import org.jvnet.hk2.annotations.Contract;
 
-import infrastructure.ResourceMetadata;
+import infrastructure.RepresentationMetadata;
 
 /**
  * Defines the interactions available on resource representation metadata.
@@ -15,7 +16,7 @@ import infrastructure.ResourceMetadata;
  * @author Jon Freer
  */
 @Contract
-public interface ResourceMetadataService {
+public interface RepresentationMetadataService {
 
 	/**
 	 * Retrieves representation metadata for a resource identified by the provided URI.
@@ -24,21 +25,21 @@ public interface ResourceMetadataService {
 	 * @return	The resource metadata for the resource identified by
 	 * the provided URI.
 	 */
-	ResourceMetadata get(URI uri, MediaType contentType);
+	RepresentationMetadata get(URI uri, Locale language, String encoding, MediaType contentType);
 
 	/**
 	 * Recards the metadata for a single resource representation.
 	 *
-	 * @param resourceMetadata	The desired state for the representation metadata.
+	 * @param representationMetadata	The desired state for the representation metadata.
 	 */
-	void insert(ResourceMetadata resourceMetadata);
+	void insert(RepresentationMetadata representationMetadata);
 
 	/**
 	 * Replaces the metadata for a representation with the metadata provided.
 	 *
-	 * @param resourceMetadata	The desired state for the resource metadata.
+	 * @param representationMetadata	The desired state for the resource metadata.
 	 */
-	void put(ResourceMetadata resourceMetadata);
+	void put(RepresentationMetadata representationMetadata);
 
 	/**
 	 * Deletes a single representation's metadata for a resource.
@@ -46,7 +47,7 @@ public interface ResourceMetadataService {
 	 * @param uri	The URI of the resource to delete metadata for.
 	 * @param contentType	The media type used to specify which metadata to delete.
 	 */
-	void remove(URI uri, MediaType contentType);
+	void remove(URI uri, Locale language, String encoding, MediaType contentType);
 
 	/**
 	 * Deletes all representation metadata for a resource identified by the provided URI.
@@ -62,5 +63,18 @@ public interface ResourceMetadataService {
 	 * @param uri	The URI of the resource to retrieve representation metadata for.
 	 * @return	The representation metadata for the resource identified by the provided URI.
 	 */
-	 List<ResourceMetadata> getAll(URI uri);
+	 List<RepresentationMetadata> getAll(URI uri);
+
+	 /**
+	  * Retrieves all representation metadata that matches the content location,
+	  * one of the content types, one of the content languages, and one of the encodings
+	  * provided. If an empty or null entry is provided for the media types, languages, or
+	  * encodings, all representation will that specific criteria.
+	  */
+	 List<RepresentationMetadata> match(
+		URI contentLocation,
+		List<MediaType> mediaTypes,
+		List<Locale> languages,
+		List<String> encodings
+	);
 }

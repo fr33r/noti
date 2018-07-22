@@ -1,12 +1,9 @@
 package api.representations.json;
 
 import api.representations.Representation;
-import api.representations.json.Target;
-
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-
 import javax.ws.rs.core.MediaType;
 
 /**
@@ -16,104 +13,135 @@ import javax.ws.rs.core.MediaType;
  */
 public final class Audience extends Representation {
 
-	private final UUID uuid;
-	private final String name;
-	private final Set<Target> members;
+  private UUID uuid;
+  private String name;
+  private Set<Target> members;
 
-	/**
-	 * Constructs an empty instance of {@link Audience}.
-	 */
-	public Audience() {
-		super(MediaType.APPLICATION_JSON_TYPE);
+  private Audience(final MediaType mediaType) {
+    super(mediaType);
+  }
 
-		this.uuid = null;
-		this.name = null;
-		this.members = new HashSet<>();
-	}
+  public static final class Builder extends Representation.Builder {
 
-	/**
-	 * Constructs a fully initialized instance of {@link Audience}.
-	 *
-	 * @param uuid The universally unique identifier for this audience.
-	 * @param name The name of the audience.
-	 * @param members The members that collectively resemble this audience.
-	 */
-	public Audience(
-		final UUID uuid,
-		final String name,
-		final Set<Target> members
-	) {
-		super(MediaType.APPLICATION_JSON_TYPE);
+    private UUID uuid;
+    private String name;
+    private Set<Target> members;
 
-		this.uuid = uuid;
-		this.name = name;
-		this.members = members;
-	}
+    public Builder() {
+      super(MediaType.APPLICATION_XML_TYPE);
+      this.members = new HashSet<>();
+    }
 
-	/**
-	 * Retrieves the universally unique identifier for this audience.
-	 *
-	 * @return The universally unique identifier for this audience.
-	 */
-	public UUID getUUID() {
-		return this.uuid;
-	}
+    public Builder uuid(UUID uuid) {
+      this.uuid = uuid;
+      return this;
+    }
 
-	/**
-	 * Retrieves the name of the audience.
-	 *
-	 * @return The name of the audience.
-	 */
-	public String getName() {
-		return this.name;
-	}
+    public Builder name(String name) {
+      this.name = name;
+      return this;
+    }
 
-	/**
-	 * Retrieves the members that collectively resemble this audience.
-	 *
-	 * @return The members that collectively resemble this audience.
-	 */
-	public Set<Target> getMembers() {
-		return this.members;
-	}
+    public Builder addMember(Target member) {
+      this.members.add(member);
+      return this;
+    }
 
-	/**
-	 * Determines if the provided instance is equal to the calling instance.
-	 *
-	 * @param obj The instance to compare to the calling instance for equality.
-	 * @return {@code true} if the two instances are equal; {@code false} otherwise.
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		if(obj == null || this.getClass() != obj.getClass()) return false;
+    public Builder members(Set<Target> members) {
+      this.members = members;
+      return this;
+    }
 
-		Audience audience = (Audience)obj;
-		boolean nameIsEqual =
-			(this.name == null && audience.name == null) ||
-			(this.name != null && audience.name != null && this.name.equals(audience.name));
-		boolean membersAreEqual = this.members.equals(audience.members);
+    @Override
+    public Representation build() {
+      Audience a = new Audience(this.mediaType());
+      a.setLocation(this.location());
+      a.setEncoding(this.encoding());
+      a.setLanguage(this.language());
+      a.setLastModified(this.lastModified());
+      a.setUUID(this.uuid);
+      a.setName(this.name);
+      a.setMembers(this.members);
+      return a;
+    }
+  }
 
-		return nameIsEqual && membersAreEqual;
-	}
+  /**
+   * Retrieves the universally unique identifier for this audience.
+   *
+   * @return The universally unique identifier for this audience.
+   */
+  public UUID getUUID() {
+    return this.uuid;
+  }
 
-	/**
-	 * Generates hash code for this instance.
-	 *
-	 * @return The hash code represented as an integer.
-	 */
-	@Override
-	public int hashCode() {
-		int hashCode = 1;
-		final int prime = 17;
+  private void setUUID(UUID uuid) {
+    this.uuid = uuid;
+  }
 
-		if(this.name != null) {
-			hashCode = hashCode * prime + this.name.hashCode();
-		}
+  /**
+   * Retrieves the name of the audience.
+   *
+   * @return The name of the audience.
+   */
+  public String getName() {
+    return this.name;
+  }
 
-		if(this.members != null) {
-			hashCode = hashCode * prime + this.members.hashCode();
-		}
+  private void setName(String name) {
+    this.name = name;
+  }
 
-		return hashCode;
-	}
+  /**
+   * Retrieves the members that collectively resemble this audience.
+   *
+   * @return The members that collectively resemble this audience.
+   */
+  public Set<Target> getMembers() {
+    return this.members;
+  }
+
+  private void setMembers(Set<Target> members) {
+    this.members = members;
+  }
+
+  /**
+   * Determines if the provided instance is equal to the calling instance.
+   *
+   * @param obj The instance to compare to the calling instance for equality.
+   * @return {@code true} if the two instances are equal; {@code false} otherwise.
+   */
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == null || this.getClass() != obj.getClass()) return false;
+
+    Audience audience = (Audience) obj;
+    boolean nameIsEqual =
+        (this.name == null && audience.name == null)
+            || (this.name != null && audience.name != null && this.name.equals(audience.name));
+    boolean membersAreEqual = this.members.equals(audience.members);
+
+    return nameIsEqual && membersAreEqual;
+  }
+
+  /**
+   * Generates hash code for this instance.
+   *
+   * @return The hash code represented as an integer.
+   */
+  @Override
+  public int hashCode() {
+    int hashCode = 1;
+    final int prime = 17;
+
+    if (this.name != null) {
+      hashCode = hashCode * prime + this.name.hashCode();
+    }
+
+    if (this.members != null) {
+      hashCode = hashCode * prime + this.members.hashCode();
+    }
+
+    return hashCode;
+  }
 }

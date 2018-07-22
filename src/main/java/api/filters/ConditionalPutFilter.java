@@ -1,70 +1,78 @@
 package api.filters;
 
-import java.io.IOException;
-
-import javax.inject.Inject;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Request;
-import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.ext.Provider;
-
-import infrastructure.ResourceMetadataService;
-import infrastructure.ResourceMetadata;
-
+import infrastructure.RepresentationMetadata;
+import infrastructure.RepresentationMetadataService;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
+import javax.inject.Inject;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.ext.Provider;
+import org.slf4j.Logger;
 
 @Provider
-public class ConditionalPutFilter implements ContainerRequestFilter {
+public class ConditionalPutFilter extends RequestFilter {
 
-	private ResourceMetadataService resourceMetadataService;
-	private final Tracer tracer;
+  private RepresentationMetadataService representationMetadataService;
+  private final Tracer tracer;
+  private final Logger logger;
 
-	@Inject
-	public ConditionalPutFilter(
-		ResourceMetadataService resourceMetadataService,
-		Tracer tracer
-	){
-		this.resourceMetadataService = resourceMetadataService;
-		this.tracer = tracer;
-	}
+  @Inject
+  public ConditionalPutFilter(
+      RepresentationMetadataService representationMetadataService, Tracer tracer, Logger logger) {
+    this.representationMetadataService = representationMetadataService;
+    this.tracer = tracer;
+    this.logger = logger;
+  }
 
-	public void filter(ContainerRequestContext requestContext) throws IOException {
-		Span span =
-			this.tracer
-				.buildSpan("ConditionalPutFilter#filter")
-				.asChildOf(this.tracer.activeSpan())
-				.start();
-		try(Scope scope = this.tracer.scopeManager().activate(span, false)) {
-			Request request = requestContext.getRequest();
-			UriInfo uriInfo = requestContext.getUriInfo();
+  public void filter(RequestContext requestContext) throws IOException {
+    Span span =
+        this.tracer
+            .buildSpan("ConditionalPutFilter#filter")
+            .asChildOf(this.tracer.activeSpan())
+            .start();
+    try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
 
-			if(request.getMethod().equalsIgnoreCase("PUT")){
-				MediaType contentType = requestContext.getMediaType();
-				if (contentType == null) { return; }
+      // gaurd: do not proceed if the HTTP method is not PUT.
+      if (!requestContext.methodIs("PUT")) return;
 
-				ResourceMetadata resourceMetadata = 
-					this.resourceMetadataService.get(uriInfo.getRequestUri(), contentType);
+      // gaurd: do not proceed if there is not value for the Content-Type HTTP header.
+      MediaType contentType = requestContext.getMediaType();
+      if (contentType == null) {
+        this.logger.info("Unable to perform conditional request without 'Content-Type' header.");
+        return;
+      }
 
-				if(resourceMetadata != null){
-					
-					ResponseBuilder responseBuilder = 
-						request.evaluatePreconditions(
-							resourceMetadata.getLastModified(), 
-							resourceMetadata.getEntityTag()
-						);
+      Locale language = requestContext.getLanguage();
+      List<String> encodings = requestContext.getEncodings();
 
-					if(responseBuilder != null){
-						requestContext.abortWith(responseBuilder.build());
-					}
-				}
-			}
-		} finally {
-			span.finish();
-		}
-	}
+      RepresentationMetadata representationMetadata =
+          this.representationMetadataService.get(
+              requestContext.getRequestUri(), language, String.join(",", encodings), contentType);
+
+      if (representationMetadata != null) {
+
+        this.logger.info("Discovered representation metdata match.");
+
+        ResponseBuilder responseBuilder =
+            requestContext
+                .getRequest()
+                .evaluatePreconditions(
+                    representationMetadata.getLastModified(),
+                    representationMetadata.getEntityTag());
+
+        if (responseBuilder != null) {
+          requestContext.abortWith(responseBuilder.build());
+        }
+      }
+    } catch (Exception x) {
+      this.logger.error("Encountered an issue when retrieving representation metadata.", x);
+    } finally {
+      span.finish();
+    }
+  }
 }
