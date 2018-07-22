@@ -7,6 +7,7 @@ import io.opentracing.Span;
 import io.opentracing.Tracer;
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import javax.inject.Inject;
@@ -14,6 +15,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.Variant;
 import javax.ws.rs.ext.Provider;
 import org.slf4j.Logger;
 
@@ -54,58 +56,95 @@ public class ConditionalGetFilter extends RequestFilter {
       List<Locale> acceptableLanguages = requestContext.getAcceptableLanguages();
       List<String> acceptableEncodings = requestContext.getAcceptableEncodings();
 
-      // search for a match for all values of accept; use first match.
-      // gotta think about how to perform this search...
-      // its possible for there to be multiple values for the following:
-      //
-      // - Accept
-      // - Accept-Language
-      // - Accept-Encoding
-      //
-      // SELECT
-      //  *
-      // FROM
-      //  REPRESENTATION_METADATA
-      // WHERE
-      //  CONTENT_LOCATION = ?
-      //  AND CONTENT_TYPE IN (?)
-      //  AND CONTENT_LANGUAGE IN (?)
-      //  AND CONTENT_ENCODING IN (?);
-      RepresentationMetadata representationMetadata = null;
+      // debug.
+      this.logger.debug(String.format("Content Location: %s", contentLocation));
+      this.logger.debug(String.format("Acceptable Languages: %s", acceptableLanguages));
+      this.logger.debug(String.format("Acceptable Encodings: %s", acceptableEncodings));
+      this.logger.debug(String.format("Acceptable Media Types: %s", acceptableMediaTypes));
 
-	  this.logger.debug(String.format("Content Location: %s", contentLocation));
-	  this.logger.debug(String.format("Acceptable Languages: %s", acceptableLanguages));
-	  this.logger.debug(String.format("Acceptable Encodings: %s", acceptableEncodings));
-	  this.logger.debug(String.format("Acceptable Media Types: %s", acceptableMediaTypes));
-      List<RepresentationMetadata> matches =
-          this.representationMetadataService.match(
-              contentLocation, acceptableMediaTypes, acceptableLanguages, acceptableEncodings);
-
-      // naively takes the first match, but should validate that the route
-      // matching alogrithm within jersey matches this logic. i want to make sure
-      // that i don't retreive the wrong metadata.
-      // NOTE - i am not even sure if jersey supports any different routing based on
-      // language or encoding. if it doesn't we should be good here.
+      // get all representation metadata by content location.
+      List<RepresentationMetadata> representationMetadata =
+          this.representationMetadataService.getAll(new URI(contentLocation.getPath()));
       this.logger.info(
-          String.format("Discovered %d representation metadata match(es).", matches.size()));
-      if (matches.size() > 0) {
-        representationMetadata = matches.get(0);
+          String.format(
+              "Retrieved %d metadata entries for '%s'.",
+              representationMetadata.size(), contentLocation.getPath()));
+
+      List<MediaType> metadataMediaTypes = new ArrayList<>();
+      List<Locale> metadataLanguages = new ArrayList<>();
+      List<String> metadataEncodings = new ArrayList<>();
+
+      for (RepresentationMetadata metadata : representationMetadata) {
+        metadataMediaTypes.add(metadata.getContentType());
+
+        if (metadata.getContentLanguage() == null) {
+          metadataLanguages.add(metadata.getContentLanguage());
+        }
+
+        if (metadata.getContentEncoding() == null) {
+          metadataEncodings.add(metadata.getContentEncoding());
+        }
       }
 
-      if (representationMetadata != null) {
+      Variant.VariantListBuilder vb = Variant.VariantListBuilder.newInstance();
+      List<Variant> variants =
+          vb.mediaTypes(metadataMediaTypes.toArray(new MediaType[metadataMediaTypes.size()]))
+              .languages(metadataLanguages.toArray(new Locale[metadataLanguages.size()]))
+              .encodings(metadataEncodings.toArray(new String[metadataEncodings.size()]))
+              .add()
+              .build();
+      this.logger.info(String.format("Generated %d varient combinations.", variants.size()));
+      this.logger.info(variants.toString());
+
+      RepresentationMetadata match = null;
+      while (variants.size() > 0) {
+
+        // determine the most optimal variant.
+        Variant optimal = requestContext.getRequest().selectVariant(variants);
+        if (optimal == null) {
+          this.logger.info("No optimal variants available.");
+          break;
+        }
+
+        // check if the most optimal variant is present in representation metadata.
+        for (RepresentationMetadata metadata : representationMetadata) {
+          boolean hasSameMediaType =
+              optimal.getMediaType() == null && metadata.getContentType() == null
+                  || optimal.getMediaType().equals(metadata.getContentType());
+          boolean hasSameLanguage =
+              optimal.getLanguage() == null && metadata.getContentLanguage() == null
+                  || optimal.getLanguage().equals(metadata.getContentLanguage());
+          boolean hasSameEncoding =
+              optimal.getEncoding() == null && metadata.getContentEncoding() == null
+                  || optimal.getEncoding().equals(metadata.getContentEncoding());
+
+          if (hasSameMediaType && hasSameLanguage && hasSameEncoding) {
+            match = metadata;
+            break;
+          }
+        }
+
+        // if so, we are done.
+        if (match != null) {
+          this.logger.info("Discovered representation metadata match.");
+          this.logger.info(match.toString());
+          break;
+        }
+
+        variants.remove(optimal);
+      }
+
+      if (match != null) {
         ResponseBuilder responseBuilder =
             requestContext
                 .getRequest()
-                .evaluatePreconditions(
-                    representationMetadata.getLastModified(),
-                    representationMetadata.getEntityTag());
+                .evaluatePreconditions(match.getLastModified(), match.getEntityTag());
 
         if (responseBuilder != null) {
           // https://tools.ietf.org/html/rfc7232#section-4.1
-          responseBuilder.header(
-              HttpHeaders.CONTENT_TYPE, representationMetadata.getContentType().toString());
-          responseBuilder.tag(representationMetadata.getEntityTag());
-          responseBuilder.lastModified(representationMetadata.getLastModified());
+          responseBuilder.header(HttpHeaders.CONTENT_TYPE, match.getContentType().toString());
+          responseBuilder.tag(match.getEntityTag());
+          responseBuilder.lastModified(match.getLastModified());
           Response response = responseBuilder.build();
 
           requestContext.abortWith(response);
