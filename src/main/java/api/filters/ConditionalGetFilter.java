@@ -97,10 +97,11 @@ public class ConditionalGetFilter extends RequestFilter {
       this.logger.info(variants.toString());
 
       RepresentationMetadata match = null;
+      Variant optimal = null;
       while (variants.size() > 0) {
 
         // determine the most optimal variant.
-        Variant optimal = requestContext.getRequest().selectVariant(variants);
+        optimal = requestContext.getRequest().selectVariant(variants);
         if (optimal == null) {
           this.logger.info("No optimal variants available.");
           break;
@@ -145,6 +146,7 @@ public class ConditionalGetFilter extends RequestFilter {
           responseBuilder.header(HttpHeaders.CONTENT_TYPE, match.getContentType().toString());
           responseBuilder.tag(match.getEntityTag());
           responseBuilder.lastModified(match.getLastModified());
+          responseBuilder.variants(optimal);
           Response response = responseBuilder.build();
 
           requestContext.abortWith(response);
