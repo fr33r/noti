@@ -62,9 +62,9 @@ public class ConditionalGetFilter extends RequestFilter {
       // debug.
       this.logger.info("Extracted proactive negotiation criteria.");
       this.logger.debug("Content Location: {}", contentLocation);
-      this.logger.debug("Acceptable Languages: %s", acceptableLanguages);
-      this.logger.debug("Acceptable Encodings: %s", acceptableEncodings);
-      this.logger.debug("Acceptable Media Types: %s", acceptableMediaTypes);
+      this.logger.debug("Acceptable Languages: {}", acceptableLanguages);
+      this.logger.debug("Acceptable Encodings: {}", acceptableEncodings);
+      this.logger.debug("Acceptable Media Types: {}", acceptableMediaTypes);
 
       // get all representation metadata by content location.
       List<RepresentationMetadata> representationMetadata =
