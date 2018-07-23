@@ -6,16 +6,16 @@ import io.dropwizard.setup.Environment;
 
 public final class ResourceModule extends NotiModule {
 
-	public ResourceModule(NotiConfiguration configuration, Environment environment) {
-		super(configuration, environment);
-	}
+  public ResourceModule(NotiConfiguration configuration, Environment environment) {
+    super(configuration, environment);
+  }
 
-	@Override
-	public void configure() {
+  @Override
+  public void configure() {
 
-		//register Jersey resources with environment;
-		this.getEnvironment().jersey().register(NotificationResource.class);
-		this.getEnvironment().jersey().register(AudienceResource.class);
-		this.getEnvironment().jersey().register(TargetResource.class);
-	}
+    // register Jersey resources with environment;
+    this.getEnvironment().jersey().register(NotificationResource.class);
+    this.getEnvironment().jersey().register(AudienceResource.class);
+    this.getEnvironment().jersey().register(TargetResource.class);
+  }
 }

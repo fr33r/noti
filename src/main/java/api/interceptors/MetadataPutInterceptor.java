@@ -25,18 +25,18 @@ import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 
 @Priority(Priorities.HEADER_DECORATOR)
-public final class MetadataGetInterceptor extends WriterInterceptor {
+public final class MetadataPutInterceptor extends WriterInterceptor {
 
   private final RepresentationMetadataService representationMetadataService;
   private final Logger logger;
-  private Tracer tracer;
+  private final Tracer tracer;
   private Calendar calendar;
 
   @Inject
-  public MetadataGetInterceptor(
+  public MetadataPutInterceptor(
       RepresentationMetadataService representationMetadataService,
       Tracer tracer,
-      @Named("api.interceptors.MetadataGetInterceptor") Logger logger) {
+      @Named("api.interceptors.MetadataPutInterceptor") Logger logger) {
     this.representationMetadataService = representationMetadataService;
     this.tracer = tracer;
     this.logger = logger;
@@ -48,24 +48,24 @@ public final class MetadataGetInterceptor extends WriterInterceptor {
 
     Span span =
         this.tracer
-            .buildSpan("MetadataGetInterceptor#aroundWriteTo")
+            .buildSpan("MetadataPutInterceptor#aroundWriteTo")
             .asChildOf(this.tracer.activeSpan())
             .start();
     try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
 
       boolean statusIsServerError = writerInterceptorContext.getResponse().getStatus() / 100 == 5;
       boolean statusIsClientError = writerInterceptorContext.getResponse().getStatus() / 100 == 4;
-      boolean statusIsNotModified = writerInterceptorContext.getResponse().getStatus() == 304;
+      boolean statusIsPreconditionFailed =
+          writerInterceptorContext.getResponse().getStatus() == 412;
 
       // guard: don't proceed if response is an error or is a response to conditional request.
-      if (statusIsServerError || statusIsClientError || statusIsNotModified) {
+      if (statusIsServerError || statusIsClientError || statusIsPreconditionFailed) {
         writerInterceptorContext.proceed();
         return;
       }
 
-      // guard: don't proceed if request is not an HTTP GET or HEAD request.
-      if (!writerInterceptorContext.getRequest().getMethod().equalsIgnoreCase("GET")
-          && !writerInterceptorContext.getRequest().getMethod().equalsIgnoreCase("HEAD")) {
+      // guard: don't proceed if request is not an HTTP PUT request.
+      if (!writerInterceptorContext.getRequest().getMethod().equalsIgnoreCase("PUT")) {
         writerInterceptorContext.proceed();
         return;
       }
@@ -112,12 +112,6 @@ public final class MetadataGetInterceptor extends WriterInterceptor {
       this.logger.debug("Content Language: {}", language);
       this.logger.debug("Content Encoding: {}", encodings);
 
-      // set the Last-Modified and ETag response headers.
-      writerInterceptorContext.getHeaders().putSingle(HttpHeaders.LAST_MODIFIED, lastModified);
-      writerInterceptorContext.getHeaders().putSingle(HttpHeaders.ETAG, entityTag);
-
-      this.logger.debug("Set 'Last-Modified' header to {}", lastModified);
-      this.logger.debug("Set 'ETag' header to {}", entityTag);
     } catch (Exception x) {
       this.logger.error("Encountered an issue when persisting representation metadata.", x);
       return;

@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -28,7 +29,9 @@ public class ConditionalGetFilter extends RequestFilter {
 
   @Inject
   public ConditionalGetFilter(
-      RepresentationMetadataService representationMetadataService, Tracer tracer, Logger logger) {
+      RepresentationMetadataService representationMetadataService,
+      Tracer tracer,
+      @Named("api.filters.ConditionalGetFilter") Logger logger) {
     this.representationMetadataService = representationMetadataService;
     this.tracer = tracer;
     this.logger = logger;
@@ -57,18 +60,19 @@ public class ConditionalGetFilter extends RequestFilter {
       List<String> acceptableEncodings = requestContext.getAcceptableEncodings();
 
       // debug.
-      this.logger.debug(String.format("Content Location: %s", contentLocation));
-      this.logger.debug(String.format("Acceptable Languages: %s", acceptableLanguages));
-      this.logger.debug(String.format("Acceptable Encodings: %s", acceptableEncodings));
-      this.logger.debug(String.format("Acceptable Media Types: %s", acceptableMediaTypes));
+      this.logger.info("Extracted proactive negotiation criteria.");
+      this.logger.debug("Content Location: {}", contentLocation);
+      this.logger.debug("Acceptable Languages: %s", acceptableLanguages);
+      this.logger.debug("Acceptable Encodings: %s", acceptableEncodings);
+      this.logger.debug("Acceptable Media Types: %s", acceptableMediaTypes);
 
       // get all representation metadata by content location.
       List<RepresentationMetadata> representationMetadata =
           this.representationMetadataService.getAll(new URI(contentLocation.getPath()));
       this.logger.info(
-          String.format(
-              "Retrieved %d metadata entries for '%s'.",
-              representationMetadata.size(), contentLocation.getPath()));
+          "Discovered {} metadata entries with a content location of '{}'.",
+          representationMetadata.size(),
+          contentLocation.getPath());
 
       List<MediaType> metadataMediaTypes = new ArrayList<>();
       List<Locale> metadataLanguages = new ArrayList<>();
@@ -93,8 +97,8 @@ public class ConditionalGetFilter extends RequestFilter {
               .encodings(metadataEncodings.toArray(new String[metadataEncodings.size()]))
               .add()
               .build();
-      this.logger.info(String.format("Generated %d varient combinations.", variants.size()));
-      this.logger.info(variants.toString());
+      this.logger.info("Generated {} varient combinations.", variants.size());
+      this.logger.debug(variants.toString());
 
       RepresentationMetadata match = null;
       Variant optimal = null;
@@ -128,7 +132,7 @@ public class ConditionalGetFilter extends RequestFilter {
         // if so, we are done.
         if (match != null) {
           this.logger.info("Discovered representation metadata match.");
-          this.logger.info(match.toString());
+          this.logger.debug(match.toString());
           break;
         }
 
@@ -147,10 +151,16 @@ public class ConditionalGetFilter extends RequestFilter {
           responseBuilder.tag(match.getEntityTag());
           responseBuilder.lastModified(match.getLastModified());
           responseBuilder.variants(optimal);
-          Response response = responseBuilder.build();
 
+          this.logger.debug("Set 'Content-Type' header to {}", match.getContentType().toString());
+          this.logger.debug("Set 'ETag' header to {}", match.getEntityTag());
+          this.logger.debug("Set 'Last-Modified' header to {}", match.getLastModified());
+
+          Response response = responseBuilder.build();
           requestContext.abortWith(response);
         }
+      } else {
+        this.logger.info("No match for representation metadata found.");
       }
     } catch (Exception x) {
       this.logger.error("Encountered an issue when persisting representation metadata.", x);
