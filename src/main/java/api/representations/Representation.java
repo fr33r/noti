@@ -190,11 +190,6 @@ public class Representation {
     return this.location;
   }
 
-  @JsonIgnore
-  public void setLocation(URI location) {
-    this.location = location;
-  }
-
   /**
    * Alters the canonical URI used to identify this representation.
    *
@@ -206,21 +201,8 @@ public class Representation {
    * @param location The desired canonical URI identifying this representation.
    */
   @JsonIgnore
-  public EntityTag getEntityTag() {
-    // should i really use JSON serialization here?
-    // what if i just mark this as abstract and then
-    // the child classes are responsbile for including
-    // all parts that should play into the ETag?
-    try {
-      ObjectMapper mapper = new ObjectMapper();
-      byte[] serializedBytes = mapper.writeValueAsBytes(this);
-      MessageDigest digest = MessageDigest.getInstance("MD5");
-      byte[] hashedBytes = digest.digest(serializedBytes);
-      String hashedBytesBase64 = Base64.getEncoder().encodeToString(hashedBytes);
-      return new EntityTag(hashedBytesBase64);
-    } catch (Exception x) {
-      throw new RuntimeException(x);
-    }
+  public void setLocation(URI location) {
+    this.location = location;
   }
 
   /**
