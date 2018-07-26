@@ -27,7 +27,7 @@ public final class Notification extends Representation {
   private Set<Audience> audiences;
 
   /** Constructs a new {@link Notification} representation. */
-  public Notification() {
+  private Notification() {
     super(MediaType.APPLICATION_XML_TYPE);
 
     this.uuid = null;
@@ -37,38 +37,6 @@ public final class Notification extends Representation {
     this.status = null;
     this.targets = new HashSet<>();
     this.audiences = new HashSet<>();
-  }
-
-  /**
-   * Constructs a fully initialized instances of {@link Notification}.
-   *
-   * @param uuid The universally unique identifier of the Notification resource.
-   * @param content The information being communicated within the notification.
-   * @param status The status of the notification in terms of its delivery to its audiences and
-   *     targets.
-   * @param targets Explicit recipients that should receive this notification.
-   * @param audiences Broader audiences that should receive this notification.
-   * @param sendAt States when the notification should be sent to its targets and audiences.
-   * @param sentAt States when the notification was sent to all of its targets and all of its
-   *     audiences.
-   */
-  public Notification(
-      final UUID uuid,
-      final String content,
-      final NotificationStatus status,
-      final Set<Target> targets,
-      final Set<Audience> audiences,
-      final Date sendAt,
-      final Date sentAt) {
-    super(MediaType.APPLICATION_XML_TYPE);
-
-    this.uuid = uuid;
-    this.content = content;
-    this.status = status;
-    this.sendAt = sendAt;
-    this.sentAt = sentAt;
-    this.targets = targets == null ? new HashSet<>() : targets;
-    this.audiences = audiences == null ? new HashSet<>() : audiences;
   }
 
   /**
