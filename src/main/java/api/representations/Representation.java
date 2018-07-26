@@ -1,15 +1,19 @@
 package api.representations;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
-import java.security.MessageDigest;
-import java.util.Base64;
 import java.util.Date;
 import java.util.Locale;
-import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
 
+/**
+ * A resource representation as described in the <a
+ * href='https://tools.ietf.org/html/rfc7231#section-3'>HTTP 1.1 specification. </a>
+ *
+ * <p>See <a href='https://tools.ietf.org/html/rfc7231#section-3'>RFC7231 Section 3 </a>
+ *
+ * @author Jon Freer
+ */
 public class Representation {
 
   private MediaType mediaType;
@@ -20,9 +24,11 @@ public class Representation {
 
   private Representation() {}
 
-  // the idea here is to create a representation
-  // that doesn't have any metadata - although
-  // a media type must be provided.
+  /**
+   * Constructs a new {@link Representation}.
+   *
+   * @param mediaType The media type of the {@link Representation}.
+   */
   protected Representation(final MediaType mediaType) {
     this.mediaType = mediaType;
     this.location = null;
@@ -31,6 +37,11 @@ public class Representation {
     this.lastModified = null;
   }
 
+  /**
+   * A builder of {@link Representation} instances.
+   *
+   * @author Jon Freer
+   */
   public abstract static class Builder {
     private MediaType mediaType;
     private URI location;
@@ -38,68 +49,139 @@ public class Representation {
     private Date lastModified;
     private Locale language;
 
+    /**
+     * Constructs a builder of {@link Representation} instances.
+     *
+     * @param mediaType The desired media type of the {@link Representation} being built.
+     */
     public Builder(MediaType mediaType) {
       this.mediaType(mediaType);
     }
 
+    /**
+     * Sets the media type of the {@link Representation} being built.
+     *
+     * @param mediaType The desired media type of the {@link Representation} being built.
+     * @return The updated {@link Representation} builder.
+     */
     private Builder mediaType(MediaType mediaType) {
       this.mediaType = mediaType;
       return this;
     }
 
+    /**
+     * Retrieves the media type of the {@link Representation} being built.
+     *
+     * @return The media type of the {@link Representation} being built.
+     */
     protected MediaType mediaType() {
       return this.mediaType;
     }
 
+    /**
+     * Sets the content location of the {@link Representation} being built.
+     *
+     * @param location The desired content location of the {@link Representation} being built.
+     * @return The updated {@link Representation} builder.
+     */
     public Builder location(URI location) {
       this.location = location;
       return this;
     }
 
+    /**
+     * Retrieves the content location of the {@link Representation} being built.
+     *
+     * @return The content location of the {@link Representation} being built.
+     */
     protected URI location() {
       return this.location;
     }
 
+    /**
+     * Sets the content encoding of the {@link Representation} being built.
+     *
+     * @param encoding The desired content encoding of the {@link Representation} being built.
+     * @return The updated {@link Representation} builder.
+     */
     public Builder encoding(String encoding) {
       this.encoding = encoding;
       return this;
     }
 
+    /**
+     * Retrieves the content encoding of the {@link Representation} being built.
+     *
+     * @return The content encoding of the {@link Representation} being built.
+     */
     protected String encoding() {
       return this.encoding;
     }
 
+    /**
+     * Sets the last modified date and time of the {@link Representation} being built.
+     *
+     * @param lastModified The desired date and time indicating the when the {@link Representation}
+     *     was last modified.
+     * @return The updated {@link Representation} builder.
+     */
     public Builder lastModified(Date lastModified) {
       this.lastModified = lastModified;
       return this;
     }
 
+    /**
+     * Retrieves the last modified date and time of the {@link Representation} being built.
+     *
+     * @return The last modified date and time of the {@link Representation} being built.
+     */
     protected Date lastModified() {
       return lastModified;
     }
 
+    /**
+     * Sets the content language of the {@link Representation} being built.
+     *
+     * @param language The desired content language fo the {@link Representation} being built.
+     * @return The updated {@link Representation} builder.
+     */
     public Builder language(Locale language) {
       this.language = language;
       return this;
     }
 
+    /**
+     * Retrieves the content language of the {@link Representation} being built.
+     *
+     * @return The content language of the {@link Representation} being built.
+     */
     protected Locale language() {
       return this.language;
     }
 
+    /**
+     * Builds the {@link Representation} instance.
+     *
+     * @return The {@link Representation} instance.
+     */
     public abstract Representation build();
   }
 
+  /**
+   * Retrieves the media type of the {@link Representation}.
+   *
+   * @return The media type of the {@link Representation}.
+   */
   @JsonIgnore
   public MediaType getMediaType() {
     return this.mediaType;
   }
 
   /**
-   * Retreives the canonical URI used to identify this representation.
+   * Retrieves the canonical URI used to identify this representation.
    *
-   * <p><see> The <a href='https://tools.ietf.org/html/rfc7231#section-3.1.4.2'>Content-Location</a>
-   * header as described in RFC7231. </see>
+   * <p>See the <a href='https://tools.ietf.org/html/rfc7231#section-3.1.4.2'>Content-Location</a>
+   * header as described in RFC7231.
    *
    * @return The canonical URI identifying this representation.
    */
@@ -114,12 +196,14 @@ public class Representation {
   }
 
   /**
-   * Retrieves the Entity Tag (ETag) for the representation.
+   * Alters the canonical URI used to identify this representation.
    *
-   * <p><see> The <a href='https://tools.ietf.org/html/rfc7232#section-2.3'>ETag</a> header as
-   * described in RFC7231. </see>
+   * <p>See the <a href='https://tools.ietf.org/html/rfc7231#section-3.1.4.2'>Content-Location</a>
+   * header as described in RFC7231. See the <a
+   * href='https://tools.ietf.org/html/rfc7231#section-3.1.2.1'>Content codings</a> as described in
+   * RFC7231.
    *
-   * @return The ETag for the representation.
+   * @param location The desired canonical URI identifying this representation.
    */
   @JsonIgnore
   public EntityTag getEntityTag() {
@@ -142,10 +226,10 @@ public class Representation {
   /**
    * Retrieves the coding scheme used for the representation.
    *
-   * <p><see> The <a href='https://tools.ietf.org/html/rfc7231#section-3.1.2.2'>Content-Encoding</a>
-   * header as described in RFC7231. </see> <see> <a
+   * <p>See the <a href='https://tools.ietf.org/html/rfc7231#section-3.1.2.2'>Content-Encoding</a>
+   * header as described in RFC7231. See the <a
    * href='https://tools.ietf.org/html/rfc7231#section-3.1.2.1'>Content codings</a> as described in
-   * RFC7231. </see>
+   * RFC7231.
    *
    * @return The coding scheme used to encode the representation.
    */
@@ -157,12 +241,12 @@ public class Representation {
   /**
    * Alters the coding scheme that was used to encode used for the representation.
    *
-   * <p><see> The <a href='https://tools.ietf.org/html/rfc7231#section-3.1.2.2'>Content-Encoding</a>
-   * header as described in RFC7231. </see> <see> <a
+   * <p>See the <a href='https://tools.ietf.org/html/rfc7231#section-3.1.2.2'>Content-Encoding</a>
+   * header as described in RFC7231. See the <a
    * href='https://tools.ietf.org/html/rfc7231#section-3.1.2.1'>Content codings</a> as described in
-   * RFC7231. </see>
+   * RFC7231.
    *
-   * @param encoding The name of the coding scheme used to encode the representation.
+   * @param encoding The desired coding scheme used to encode the representation.
    */
   @JsonIgnore
   public void setEncoding(String encoding) {
@@ -172,10 +256,10 @@ public class Representation {
   /**
    * Retrieves the language of the target audience of the representation.
    *
-   * <p><see> The <a href='https://tools.ietf.org/html/rfc7231#section-3.1.3.2'>Content-Language</a>
-   * header as discussed in RFC7231. </see> <see> <a
+   * <p>See the <a href="https://tools.ietf.org/html/rfc7231#section-3.1.3.2">Content-Language</a>
+   * header as discussed in RFC7231. See the <a
    * href='https://tools.ietf.org/html/rfc7231#section-3.1.3.1'>Language tags</a> as discussed in
-   * RFC7231. </see>
+   * RFC7231.
    *
    * @return The language of the target audience of the representation.
    */
@@ -187,12 +271,12 @@ public class Representation {
   /**
    * Alters the language of the target audience of the representation.
    *
-   * <p><see> The <a href='https://tools.ietf.org/html/rfc7231#section-3.1.3.2'>Content-Language</a>
-   * header as discussed in RFC7231. </see> <see> <a
+   * <p>The <a href='https://tools.ietf.org/html/rfc7231#section-3.1.3.2'>Content-Language</a>
+   * header as discussed in RFC7231. See the <a
    * href='https://tools.ietf.org/html/rfc7231#section-3.1.3.1'>Language tags</a> as discussed in
-   * RFC7231. </see>
+   * RFC7231.
    *
-   * @param language The language for the target audience of the representation.
+   * @param language The desired language for the target audience of the representation.
    */
   @JsonIgnore
   public void setLanguage(Locale language) {
@@ -200,20 +284,15 @@ public class Representation {
   }
 
   /**
-   * Retrieves the date and time that this representation was last modified. Note - the date and
-   * time that the representation was last modified might not be known, since this information may
-   * not be tracked for the representation (in the event that a representation metadata store cannot
-   * be accessed, for example). Therefore, client code should not expect every representation to
-   * return a not non-null value for this method. Note - the date and time by the HTTP RFC only has
-   * a one-second time granularity. It is strongly suggested that HTTP clients utilize ETag as it
-   * should always be available, (every representation will have an ETag) and it's more precise.
+   * Retrieves the last modified date and time of the representation. A representation may not have
+   * a last modified date and time if the representation's metadata is not being tracked in a
+   * persistent store.
    *
-   * <p><see> reference for Last-Modified header. </see> <see> reference for ETag header. </see>
-   * <see> reference for HTTP RFC. </see> <see> reference for date and time format. </see>
+   * <p>See the <a href='https://tools.ietf.org/html/rfc7232#section-2.2'>Last-Modified</a> header
+   * as discussed in RFC7231.
    *
-   * @return The date and time the representation was last modified (in X format). In the event that
-   *     a date and time of when the representation was last modified is not known, a value of
-   *     {@code null} will be returned.
+   * @return The date and time that the representation was last modified if available; {@code null}
+   *     otherwise.
    */
   @JsonIgnore
   public Date getLastModified() {
@@ -223,7 +302,10 @@ public class Representation {
   /**
    * Alters the data and time that the this representation was last modified.
    *
-   * @param lastModified The date and time that the representation was last modified.
+   * <p>See the <a href='https://tools.ietf.org/html/rfc7232#section-2.2'>Last-Modified</a> header
+   * as discussed in RFC7231.
+   *
+   * @param lastModified The desired date and time that the representation was last modified.
    */
   @JsonIgnore
   public void setLastModified(Date lastModified) {
