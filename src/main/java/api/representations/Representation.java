@@ -14,7 +14,7 @@ import javax.ws.rs.core.MediaType;
  *
  * @author Jon Freer
  */
-public class Representation {
+public abstract class Representation {
 
   private MediaType mediaType;
   private URI location;
