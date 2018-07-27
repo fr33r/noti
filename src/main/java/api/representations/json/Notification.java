@@ -84,7 +84,7 @@ public final class Notification extends Representation {
     /**
      * Sets the status of the {@link Notification} representation being built.
      *
-     * @param status The desired status of the {@link Notification} representation bing built.
+     * @param status The desired status of the {@link Notification} representation being built.
      * @return The updated {@link Notification} builder.
      */
     public Builder status(NotificationStatus status) {
