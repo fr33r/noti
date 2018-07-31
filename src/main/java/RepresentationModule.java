@@ -1,7 +1,7 @@
-import api.representations.JSONRepresentationFactory;
+import api.representations.json.JSONRepresentationFactory;
 import api.representations.RepresentationFactory;
-import api.representations.SirenRepresentationFactory;
-import api.representations.XMLRepresentationFactory;
+import api.representations.siren.SirenRepresentationFactory;
+import api.representations.xml.XMLRepresentationFactory;
 import configuration.NotiConfiguration;
 import io.dropwizard.setup.Environment;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;

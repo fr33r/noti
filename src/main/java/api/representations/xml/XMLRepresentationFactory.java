@@ -1,6 +1,7 @@
-package api.representations;
+package api.representations.xml;
 
-
+import api.representations.Representation;
+import api.representations.RepresentationFactory;
 import application.Audience;
 import application.Notification;
 import application.Target;

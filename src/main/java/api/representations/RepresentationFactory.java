@@ -1,6 +1,5 @@
 package api.representations;
 
-
 import application.Audience;
 import application.Notification;
 import application.Target;

@@ -1,6 +1,7 @@
-package api.representations;
+package api.representations.json;
 
-
+import api.representations.Representation;
+import api.representations.RepresentationFactory;
 import application.Audience;
 import application.Notification;
 import application.Target;
