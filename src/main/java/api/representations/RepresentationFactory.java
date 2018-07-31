@@ -56,7 +56,7 @@ public abstract class RepresentationFactory {
    *
    * @param location The content location of the audience representation.
    * @param language The content language of the audience representation.
-   * @param notification The target state expressed by the audience representation
+   * @param audience The audience state expressed by the audience representation
    *     being constructed.
    * @return The audience representation.
    */
@@ -68,7 +68,7 @@ public abstract class RepresentationFactory {
    *
    * @param location The content location of the target representation.
    * @param language The content language of the target representation.
-   * @param notification The target state expressed by the target representation
+   * @param target The target state expressed by the target representation
    *     being constructed.
    * @return The target representation.
    */

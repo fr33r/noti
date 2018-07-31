@@ -5,7 +5,7 @@ import java.util.UUID;
 import javax.ws.rs.core.MediaType;
 
 /**
- * Defines the {@link application/json} representation of a Target resource.
+ * Defines the {@code application/json} representation of a Target resource.
  *
  * @author Jon Freer
  */
@@ -61,7 +61,7 @@ public final class Target extends Representation {
     /**
      * Sets the phone number of the {@link Target} representation being built.
      *
-     * @param name The desired phone number of the {@link Target} representation being built.
+     * @param phoneNumber The desired phone number of the {@link Target} representation being built.
      * @return The updated {@link Target} builder.
      */
     public Builder phoneNumber(String phoneNumber) {

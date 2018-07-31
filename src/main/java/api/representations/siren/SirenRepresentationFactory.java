@@ -32,7 +32,7 @@ import siren.factories.LinkBuilderFactory;
  * Defines the factory responsible for constructing {@code application/vnd.siren+json}
  * representations.
  *
- * @auther Jon Freer
+ * @author Jon Freer
  */
 public final class SirenRepresentationFactory extends RepresentationFactory {
 

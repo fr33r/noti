@@ -19,7 +19,7 @@ import javax.ws.rs.core.MediaType;
 /**
  * Defines the factory responsible for constructing {code application/json} representations.
  *
- * @auther Jon Freer
+ * @author Jon Freer
  */
 @Named("JSONRepresentationFactory")
 public final class JSONRepresentationFactory extends RepresentationFactory {

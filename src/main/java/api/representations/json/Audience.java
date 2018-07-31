@@ -65,7 +65,7 @@ public final class Audience extends Representation {
      * Appends the provided {@link Target} to the list of members for the {@link Audience}
      * representation.
      *
-     * @param target The {@link Target} to append to the list of members for the {@link Audience}
+     * @param member The {@link Target} to append to the list of members for the {@link Audience}
      *     representation.
      * @return The updated {@link Audience} builder.
      */

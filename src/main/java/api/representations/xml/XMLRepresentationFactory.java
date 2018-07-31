@@ -19,7 +19,7 @@ import javax.ws.rs.core.MediaType;
 /**
  * Defines the factory responsible for constructing {code application/xml} representations.
  *
- * @auther Jon Freer
+ * @author Jon Freer
  */
 @Named("XMLRepresentationFactory")
 public final class XMLRepresentationFactory extends RepresentationFactory {
