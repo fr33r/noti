@@ -37,8 +37,7 @@ public final class Target extends Representation {
     }
 
     /**
-     * Sets the universally unique identifier of the {@link Target} representation being
-     * built.
+     * Sets the universally unique identifier of the {@link Target} representation being built.
      *
      * @param uuid The desired {@link UUID} of the {@link Target} representation being built.
      * @return The updated {@link Target} builder.

@@ -40,8 +40,7 @@ public final class Audience extends Representation {
     }
 
     /**
-     * Sets the universally unique identifier of the {@link Audience} representation being
-     * built.
+     * Sets the universally unique identifier of the {@link Audience} representation being built.
      *
      * @param uuid The desired {@link UUID} of the {@link Audience} representation being built.
      * @return The updated {@link Audience} builder.
@@ -66,8 +65,8 @@ public final class Audience extends Representation {
      * Appends the provided {@link Target} to the list of members for the {@link Audience}
      * representation.
      *
-     * @param target The {@link Target} to append to the list of members for the {@link
-     *     Audience} representation.
+     * @param target The {@link Target} to append to the list of members for the {@link Audience}
+     *     representation.
      * @return The updated {@link Audience} builder.
      */
     public Builder addMember(Target member) {
@@ -106,9 +105,9 @@ public final class Audience extends Representation {
   }
 
   /**
-   * Retrieves the universally unique identifier for this audience representation. 
+   * Retrieves the universally unique identifier for this audience representation.
    *
-   * @return The universally unique identifier for this audience representation. 
+   * @return The universally unique identifier for this audience representation.
    */
   public UUID getUUID() {
     return this.uuid;
@@ -142,20 +141,20 @@ public final class Audience extends Representation {
   }
 
   /**
-   * Retrieves the members of the audience representation. 
+   * Retrieves the members of the audience representation.
    *
-   * @return The members of the audience representation. 
+   * @return The members of the audience representation.
    */
   public Set<Target> getMembers() {
     return this.members;
   }
 
   /**
-   * Alters the list of members of the audience representation that identify
-   * the individual members within the audience. 
+   * Alters the list of members of the audience representation that identify the individual members
+   * within the audience.
    *
-   * @return The list of members of the audience representation that identify
-   * the individual members within the audience. 
+   * @return The list of members of the audience representation that identify the individual members
+   *     within the audience.
    */
   private void setMembers(Set<Target> members) {
     this.members = members;
