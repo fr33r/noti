@@ -16,11 +16,21 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.core.MediaType;
 
+/**
+ * Defines the factory responsible for constructing {code application/json} representations.
+ *
+ * @auther Jon Freer
+ */
 @Named("JSONRepresentationFactory")
 public final class JSONRepresentationFactory extends RepresentationFactory {
 
   private final Tracer tracer;
 
+  /**
+   * Constructs a new {@link JSONRepresentationFactory}.
+   *
+   * @param tracer The tracer conforming to the OpenTracing standard utilized for instrumentation.
+   */
   @Inject
   public JSONRepresentationFactory(Tracer tracer) {
     super(MediaType.APPLICATION_JSON_TYPE);
@@ -28,8 +38,15 @@ public final class JSONRepresentationFactory extends RepresentationFactory {
     this.tracer = tracer;
   }
 
-  // perhaps create a RepresentationMetadata class to encapsulate
-  // the metadata and prevent future signature changes.
+  /**
+   * Constructs a {@link Notification} representation.
+   *
+   * @param location The content location of the {@link Notification} representation.
+   * @param language The content language of the {@link Notification} representation.
+   * @param notification The notification state expressed by the {@link Notification} representation
+   *     being constructed.
+   * @return The {@link Notification} representation.
+   */
   @Override
   public Representation createNotificationRepresentation(
       URI location, Locale language, Notification notification) {
@@ -55,9 +72,6 @@ public final class JSONRepresentationFactory extends RepresentationFactory {
       api.representations.json.NotificationStatus status =
           api.representations.json.NotificationStatus.valueOf(notification.getStatus().toString());
 
-      // how can i set the metadata for representations, when the
-      // metadata is retrieved after contruction of the representation
-      // in the resource class?
       api.representations.Representation representation =
           new api.representations.json.Notification.Builder()
               .uuid(notification.getUUID())
@@ -77,6 +91,15 @@ public final class JSONRepresentationFactory extends RepresentationFactory {
     }
   }
 
+  /**
+   * Constructs a {@link Audience} representation.
+   *
+   * @param location The content location of the {@link Audience} representation.
+   * @param language The content language of the {@link Audience} representation.
+   * @param audience The audience state expressed by the {@link Audience} representation being
+   *     constructed.
+   * @return The {@link Audience} representation.
+   */
   @Override
   public Representation createAudienceRepresentation(
       URI location, Locale language, Audience audience) {
@@ -107,6 +130,15 @@ public final class JSONRepresentationFactory extends RepresentationFactory {
     }
   }
 
+  /**
+   * Constructs a {@link Target} representation.
+   *
+   * @param location The content location of the {@link Target} representation.
+   * @param language The content language of the {@link Target} representation.
+   * @param target The target state expressed by the {@link Target} representation being
+   *     constructed.
+   * @return The {@link Target} representation.
+   */
   @Override
   public Representation createTargetRepresentation(URI location, Locale language, Target target) {
     Span span =

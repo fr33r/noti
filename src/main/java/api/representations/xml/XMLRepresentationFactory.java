@@ -16,11 +16,21 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.core.MediaType;
 
+/**
+ * Defines the factory responsible for constructing {code application/xml} representations.
+ *
+ * @auther Jon Freer
+ */
 @Named("XMLRepresentationFactory")
 public final class XMLRepresentationFactory extends RepresentationFactory {
 
   private final Tracer tracer;
 
+  /**
+   * Constructs a new {@link XMLRepresentationFactory}.
+   *
+   * @param tracer The tracer conforming to the OpenTracing standard utilized for instrumentation.
+   */
   @Inject
   public XMLRepresentationFactory(Tracer tracer) {
     super(MediaType.APPLICATION_XML_TYPE);
@@ -28,6 +38,15 @@ public final class XMLRepresentationFactory extends RepresentationFactory {
     this.tracer = tracer;
   }
 
+  /**
+   * Constructs a {@link Notification} representation.
+   *
+   * @param location The content location of the {@link Notification} representation.
+   * @param language The content language of the {@link Notification} representation.
+   * @param notification The notification state expressed by the {@link Notification} representation
+   *     being constructed.
+   * @return The {@link Notification} representation.
+   */
   @Override
   public Representation createNotificationRepresentation(
       URI location, Locale language, Notification notification) {
@@ -70,6 +89,15 @@ public final class XMLRepresentationFactory extends RepresentationFactory {
     }
   }
 
+  /**
+   * Constructs a {@link Audience} representation.
+   *
+   * @param location The content location of the {@link Audience} representation.
+   * @param language The content language of the {@link Audience} representation.
+   * @param audience The audience state expressed by the {@link Audience} representation being
+   *     constructed.
+   * @return The {@link Audience} representation.
+   */
   @Override
   public Representation createAudienceRepresentation(
       URI location, Locale language, Audience audience) {
@@ -97,6 +125,15 @@ public final class XMLRepresentationFactory extends RepresentationFactory {
     }
   }
 
+  /**
+   * Constructs a {@link Target} representation.
+   *
+   * @param location The content location of the {@link Target} representation.
+   * @param language The content language of the {@link Target} representation.
+   * @param target The target state expressed by the {@link Target} representation being
+   *     constructed.
+   * @return The {@link Target} representation.
+   */
   @Override
   public Representation createTargetRepresentation(URI location, Locale language, Target target) {
     Span span =
