@@ -332,4 +332,92 @@ public final class Notification extends Representation {
   private void setAudiences(Set<Audience> audiences) {
     this.audiences = audiences;
   }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == null || obj.getClass() != this.getClass()) return false;
+    Notification notification = (Notification) obj;
+
+    boolean sameUUID =
+        notification.getUUID() == null && this.getUUID() == null
+            || notification.getUUID() != null
+                && this.getUUID() != null
+                && notification.getUUID().equals(this.getUUID());
+    boolean sameContent =
+        notification.getContent() == null && this.getContent() == null
+            || notification.getContent() != null
+                && this.getContent() != null
+                && notification.getContent().equals(this.getContent());
+    boolean sameStatus =
+        notification.getStatus() == null && this.getStatus() == null
+            || notification.getStatus() != null
+                && this.getStatus() != null
+                && notification.getStatus().equals(this.getStatus());
+    boolean sameSendAt =
+        notification.getSendAt() == null && this.getSendAt() == null
+            || notification.getSendAt() != null
+                && this.getSendAt() != null
+                && notification.getSendAt().equals(this.getSendAt());
+    boolean sameSentAt =
+        notification.getSentAt() == null && this.getSentAt() == null
+            || notification.getSentAt() != null
+                && this.getSentAt() != null
+                && notification.getSentAt().equals(this.getSentAt());
+    boolean sameTargets =
+        notification.getTargets() == null && this.getTargets() == null
+            || notification.getTargets() != null
+                && this.getTargets() != null
+                && notification.getTargets().equals(this.getTargets());
+    boolean sameAudiences =
+        notification.getAudiences() == null && this.getAudiences() == null
+            || notification.getAudiences() != null
+                && this.getAudiences() != null
+                && notification.getAudiences().equals(this.getAudiences());
+
+    return sameUUID
+        && sameContent
+        && sameStatus
+        && sameSendAt
+        && sameSentAt
+        && sameTargets
+        && sameAudiences;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public int hashCode() {
+    final int prime = 17;
+    int hashCode = 1;
+
+    if (this.getUUID() != null) {
+      hashCode = hashCode * prime + this.getUUID().hashCode();
+    }
+
+    if (this.getContent() != null) {
+      hashCode = hashCode * prime + this.getContent().hashCode();
+    }
+
+    if (this.getStatus() != null) {
+      hashCode = hashCode * prime + this.getStatus().hashCode();
+    }
+
+    if (this.getSendAt() != null) {
+      hashCode = hashCode * prime + this.getSendAt().hashCode();
+    }
+
+    if (this.getSentAt() != null) {
+      hashCode = hashCode * prime + this.getSentAt().hashCode();
+    }
+
+    if (this.getTargets() != null) {
+      hashCode = hashCode * prime + this.getTargets().hashCode();
+    }
+
+    if (this.getAudiences() != null) {
+      hashCode = hashCode * prime + this.getAudiences().hashCode();
+    }
+
+    return hashCode;
+  }
 }

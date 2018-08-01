@@ -118,41 +118,47 @@ public final class Audience extends Representation {
     this.members = members;
   }
 
-  /**
-   * Determines if the provided instance is equal to the calling instance.
-   *
-   * @param obj The instance to compare to the calling instance for equality.
-   * @return {@code true} if the two instances are equal; {@code false} otherwise.
-   */
+  /** {@inheritDoc} */
   @Override
   public boolean equals(Object obj) {
     if (obj == null || this.getClass() != obj.getClass()) return false;
 
     Audience audience = (Audience) obj;
-    boolean nameIsEqual =
-        (this.name == null && audience.name == null)
-            || (this.name != null && audience.name != null && this.name.equals(audience.name));
-    boolean membersAreEqual = this.members.equals(audience.members);
+    boolean sameUUID =
+        this.getUUID() == null && audience.getUUID() == null
+            || this.getUUID() != null
+                && audience.getUUID() != null
+                && this.getUUID().equals(audience.getUUID());
+    boolean sameName =
+        this.getName() == null && audience.getName() == null
+            || this.getName() != null
+                && audience.getName() != null
+                && this.name.equals(audience.getName());
+    boolean sameMembers =
+        this.getMembers() == null && audience.getMembers() == null
+            || this.getMembers() != null
+                && audience.getMembers() != null
+                && this.getMembers().equals(audience.getMembers());
 
-    return nameIsEqual && membersAreEqual;
+    return sameUUID && sameName && sameMembers;
   }
 
-  /**
-   * Generates hash code for this instance.
-   *
-   * @return The hash code represented as an integer.
-   */
+  /** {@inheritDoc} */
   @Override
   public int hashCode() {
     int hashCode = 1;
     final int prime = 17;
 
-    if (this.name != null) {
-      hashCode = hashCode * prime + this.name.hashCode();
+    if (this.getUUID() != null) {
+      hashCode = hashCode * prime + this.getUUID().hashCode();
     }
 
-    if (this.members != null) {
-      hashCode = hashCode * prime + this.members.hashCode();
+    if (this.getName() != null) {
+      hashCode = hashCode * prime + this.getName().hashCode();
+    }
+
+    if (this.getMembers() != null) {
+      hashCode = hashCode * prime + this.getMembers().hashCode();
     }
 
     return hashCode;

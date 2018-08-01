@@ -129,4 +129,25 @@ public final class SirenEntityRepresentation extends Representation {
   public List<EntityBase> getEntities() {
     return this.sirenEntity.getEntities();
   }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == null || obj.getClass() != this.getClass()) return false;
+    SirenEntityRepresentation representation = (SirenEntityRepresentation) obj;
+    return this.sirenEntity.equals(representation.sirenEntity);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public int hashCode() {
+    final int prime = 17;
+    int hashCode = 1;
+
+    if (this.sirenEntity != null) {
+      return this.sirenEntity.hashCode();
+    }
+
+    return hashCode;
+  }
 }

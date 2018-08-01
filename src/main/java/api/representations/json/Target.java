@@ -141,4 +141,51 @@ public final class Target extends Representation {
   private void setPhoneNumber(String phoneNumber) {
     this.phoneNumber = phoneNumber;
   }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == null || obj.getClass() != this.getClass()) return false;
+
+    Target target = (Target) obj;
+
+    boolean sameUUID =
+        this.getUUID() == null && target.getUUID() == null
+            || this.getUUID() != null
+                && target.getUUID() != null
+                && this.getUUID().equals(target.getUUID());
+    boolean sameName =
+        this.getName() == null && target.getName() == null
+            || this.getName() != null
+                && target.getName() != null
+                && this.getName().equals(target.getName());
+    boolean samePhoneNumber =
+        this.getPhoneNumber() == null && target.getPhoneNumber() == null
+            || this.getPhoneNumber() != null
+                && target.getPhoneNumber() != null
+                && this.getPhoneNumber().equals(target.getPhoneNumber());
+
+    return sameUUID && sameName && samePhoneNumber;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public int hashCode() {
+    final int prime = 17;
+    int hashCode = 1;
+
+    if (this.getUUID() != null) {
+      hashCode = hashCode * prime + this.getUUID().hashCode();
+    }
+
+    if (this.getName() != null) {
+      hashCode = hashCode * prime + this.getName().hashCode();
+    }
+
+    if (this.getPhoneNumber() != null) {
+      hashCode = hashCode * prime + this.getPhoneNumber().hashCode();
+    }
+
+    return hashCode;
+  }
 }
