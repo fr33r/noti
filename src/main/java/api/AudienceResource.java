@@ -15,25 +15,66 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+/**
+ * Defines the abstraction that exposes various HTTP operations on the audience resource.
+ *
+ * @author jonfreer
+ */
 @Path("/audiences")
 public interface AudienceResource {
 
+  /**
+   * Handles HTTP GET requests for the audience resource with the unique identifier provided.
+   *
+   * @param headers The headers from the HTTP request.
+   * @param uriInfo Information about the URI of the HTTP request.
+   * @param uuid The universally unique identifier for the audience resource being retrieved.
+   * @return The HTTP {@link Response}, including the representation of the requested audience
+   *     resource.
+   */
   @GET
   @Path("{uuid}")
   @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/vnd.siren+json"})
   Response get(
       @Context HttpHeaders headers, @Context UriInfo uriInfo, @PathParam("uuid") String uuid);
 
+  /**
+   * Handles HTTP POST requests for the collection of audience resources.
+   *
+   * @param headers The headers from the HTTP request.
+   * @param uriInfo Information about the URI of the HTTP request.
+   * @param audience The representation of the audience resource to be created.
+   * @return The HTTP {@link Response}, including the representation of the requested audience
+   *     resource.
+   */
   @POST
   @Consumes({MediaType.APPLICATION_JSON})
   Response createAndAppend(
       @Context HttpHeaders headers, @Context UriInfo uriInfo, Audience audience);
 
+  /**
+   * Handles HTTP PUT requests for the audience resource with the unique identifier provided.
+   *
+   * @param headers The headers from the HTTP request.
+   * @param uriInfo Information about the URI of the HTTP request.
+   * @param audience The representation of the audience resource to replace the current existing
+   *     state.
+   * @return The HTTP {@link Response}, including the representation of the requested audience
+   *     resource.
+   */
   @PUT
   @Path("{uuid}")
   @Consumes({MediaType.APPLICATION_JSON})
   Response replace(@Context HttpHeaders headers, @Context UriInfo uriInfo, Audience audience);
 
+  /**
+   * Handles HTTP DELETE requests for the audience resource with the unique identifier provided.
+   *
+   * @param uuid The universally unique identifier for the audience resource being retrieved.
+   * @param uriInfo Information about the URI of the HTTP request.
+   * @return The HTTP {@link Response}, including the representation of the requested audience
+   *     resource.
+   */
   @DELETE
   @Path("{uuid}")
   @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/vnd.siren+json"})

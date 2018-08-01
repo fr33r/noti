@@ -16,7 +16,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 /**
- * Defines the contract that exposes various HTTP operations on the notification resource.
+ * Defines the abstraction that exposes various HTTP operations on the notification resource.
  *
  * @author jonfreer
  */
@@ -26,9 +26,11 @@ public interface NotificationResource {
   /**
    * Handles HTTP GET requests for the notification with the unique identifier provided.
    *
-   * @param uuid The unique identifier for the notification resource being retrieved.
-   * @return An instance of {@link Response} representing the HTTP response, including the
-   *     representation of requested notification resource.
+   * @param headers The headers from the HTTP request.
+   * @param uriInfo Information about the URI of the HTTP request.
+   * @param uuid The universally unique identifier for the notification resource being retrieved.
+   * @return The HTTP {@link Response}, including the representation of the requested notification
+   *     resource.
    */
   @GET
   @Path("{uuid}")
@@ -39,10 +41,10 @@ public interface NotificationResource {
   /**
    * Handles HTTP POST requests for the collection of notification resources.
    *
-   * @param uriInfo Information about the request URI, so that it can be leveraged when constructing
-   *     the response.
+   * @param uriInfo Information about the URI of the HTTP request.
    * @param notification The representation of the notification resource to be created.
-   * @return An instance of {@link Response} representing the HTTP response.
+   * @return The HTTP {@link Response}, including the representation of the requested notification
+   *     resource.
    */
   @POST
   @Consumes({MediaType.APPLICATION_JSON})
@@ -50,13 +52,14 @@ public interface NotificationResource {
       @Context HttpHeaders headers, @Context UriInfo uriInfo, Notification notification);
 
   /**
-   * Handles HTTP PUT requests for the notification with the unique identifier provided.
+   * Handles HTTP PUT requests for the notification resource with the unique identifier provided.
    *
-   * @param uriInfo Information about the request URI, so that it can be leveraged when constructing
-   *     the response.
+   * @param headers The headers from the HTTP request.
+   * @param uriInfo Information about the URI of the HTTP request.
    * @param notification The representation of the notification resource to replace the current
    *     existing state.
-   * @return An instance of {@link Response} representing the HTTP response.
+   * @return The HTTP {@link Response}, including the representation of the requested notification
+   *     resource.
    */
   @PUT
   @Path("{uuid}")
@@ -65,10 +68,12 @@ public interface NotificationResource {
       @Context HttpHeaders headers, @Context UriInfo uriInfo, Notification notification);
 
   /**
-   * Handles HTTP DELETE requests for the notification with the unique identifier provided.
+   * Handles HTTP DELETE requests for the notification resource with the unique identifier provided.
    *
-   * @param uuid The unique identifier for the notification resource being deleted.
-   * @return An instance of {@link Response} representing the HTTP response.
+   * @param uuid The universally unique identifier for the notification resource being retrieved.
+   * @param uriInfo Information about the URI of the HTTP request.
+   * @return The HTTP {@link Response}, including the representation of the requested notification
+   *     resource.
    */
   @DELETE
   @Path("{uuid}")

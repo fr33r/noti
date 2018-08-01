@@ -16,18 +16,21 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 /**
- * Represents a Target resource. Handles interactions with the Target resource.
+ * Defines the abstraction that exposes various HTTP operations on the target resource.
  *
- * @author Jon Freer
+ * @author jonfreer
  */
 @Path("/targets")
 public interface TargetResource {
 
   /**
-   * @param headers
-   * @param uriInfo
-   * @param uuid
-   * @return An instance of {@link Response} representing the HTTP response.
+   * Handles HTTP GET requests for the targte with the unique identifier provided.
+   *
+   * @param headers The headers from the HTTP request.
+   * @param uriInfo Information about the URI of the HTTP request.
+   * @param uuid The universally unique identifier for the target resource being retrieved.
+   * @return The HTTP {@link Response}, including the representation of the requested target
+   *     resource.
    */
   @GET
   @Path("{uuid}")
@@ -36,32 +39,38 @@ public interface TargetResource {
       @Context HttpHeaders headers, @Context UriInfo uriInfo, @PathParam("uuid") String uuid);
 
   /**
-   * @param headers
-   * @param uriInfo
-   * @param target
-   * @return An instance of {@link Response} representing the HTTP response.
+   * Handles HTTP POST requests for the collection of target resources.
+   *
+   * @param uriInfo Information about the URI of the HTTP request.
+   * @param target The representation of the target resource to be created.
+   * @return The HTTP {@link Response}, including the representation of the requested target
+   *     resource.
    */
   @POST
   @Consumes({MediaType.APPLICATION_JSON})
-  @Produces({MediaType.APPLICATION_JSON})
   Response createAndAppend(@Context HttpHeaders headers, @Context UriInfo uriInfo, Target target);
 
   /**
-   * @param headers
-   * @param uriInfo
-   * @param target
-   * @return An instance of {@link Response} representing the HTTP response.
+   * Handles HTTP PUT requests for the target resource with the unique identifier provided.
+   *
+   * @param headers The headers from the HTTP request.
+   * @param uriInfo Information about the URI of the HTTP request.
+   * @param target The representation of the target resource to replace the current existing state.
+   * @return The HTTP {@link Response}, including the representation of the requested target
+   *     resource.
    */
   @PUT
   @Path("{uuid}")
   @Consumes({MediaType.APPLICATION_JSON})
-  @Produces({MediaType.APPLICATION_JSON})
   Response replace(@Context HttpHeaders headers, @Context UriInfo uriInfo, Target target);
 
   /**
-   * @param uriInfo
-   * @param uuid
-   * @return An instance of {@link Response} representing the HTTP response.
+   * Handles HTTP DELETE requests for the target resource with the unique identifier provided.
+   *
+   * @param uuid The universally unique identifier for the target resource being retrieved.
+   * @param uriInfo Information about the URI of the HTTP request.
+   * @return The HTTP {@link Response}, including the representation of the requested target
+   *     resource.
    */
   @DELETE
   @Path("{uuid}")
