@@ -2,19 +2,17 @@ package application;
 
 import java.util.UUID;
 
-import application.Audience;
-
 public interface AudienceService {
 
-	UUID createAudience(Audience audience);
+  UUID createAudience(Audience audience);
 
-	Audience getAudience(UUID uuid);
+  Audience getAudience(UUID uuid);
 
-	void replaceAudience(Audience audience);
+  void replaceAudience(Audience audience);
 
-	void deleteAudience(UUID uuid);
+  void deleteAudience(UUID uuid);
 
-	void associateMemberToAudience(UUID audienceUUID, UUID memberUUID);
+  void associateMemberToAudience(UUID audienceUUID, UUID memberUUID);
 
-	void disassociateMemberFromAudience(UUID audienceUUID, UUID memberUUID);
+  void disassociateMemberFromAudience(UUID audienceUUID, UUID memberUUID);
 }

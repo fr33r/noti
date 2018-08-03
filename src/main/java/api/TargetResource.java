@@ -41,6 +41,7 @@ public interface TargetResource {
   /**
    * Handles HTTP POST requests for the collection of target resources.
    *
+   * @param headers The headers from the HTTP request.
    * @param uriInfo Information about the URI of the HTTP request.
    * @param target The representation of the target resource to be created.
    * @return The HTTP {@link Response}, including the representation of the requested target

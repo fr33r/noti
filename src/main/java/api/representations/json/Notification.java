@@ -333,7 +333,12 @@ public final class Notification extends Representation {
     this.audiences = audiences;
   }
 
-  /** {@inheritDoc} */
+  /**
+   * {@inheritDoc}
+   *
+   * @param obj {@inheritDoc}
+   * @return {@inheritDoc}
+   */
   @Override
   public boolean equals(Object obj) {
     if (obj == null || obj.getClass() != this.getClass()) return false;
@@ -384,7 +389,11 @@ public final class Notification extends Representation {
         && sameAudiences;
   }
 
-  /** {@inheritDoc} */
+  /**
+   * {@inheritDoc}
+   *
+   * @return {@inheritDoc}
+   */
   @Override
   public int hashCode() {
     final int prime = 17;

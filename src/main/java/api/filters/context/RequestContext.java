@@ -1,7 +1,5 @@
 package api.filters.context;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
@@ -207,27 +205,6 @@ public class RequestContext implements api.filters.RequestContext {
       encodings.add(part);
     }
     return encodings;
-  }
-
-  // TODO - validate that the input stream has been written to at this point.
-  @Override
-  public byte[] getEntityBytes() throws IOException {
-
-    InputStream is = this.getEntityStream();
-    try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-
-      final int bufferSize = 2048;
-      final int done = -1;
-      byte[] buffer = new byte[bufferSize];
-      int numBytesRead;
-
-      while ((numBytesRead = is.read(buffer, 0, buffer.length)) != done) {
-        baos.write(buffer, 0, numBytesRead);
-      }
-      baos.flush();
-
-      return baos.toByteArray();
-    }
   }
 
   @Override

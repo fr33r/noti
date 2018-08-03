@@ -2,39 +2,42 @@ package application;
 
 import java.util.UUID;
 
-import application.Notification;
-
 /**
- * Defines the contract for all application services that wish to provide
- * application behavior related to notifications.
- * @author jonfreer
+ * Defines the abstraction that exposes various application operations for notifications.
+ *
+ * @author Jon Freer
  */
 public interface NotificationService {
 
-	/**
-	 * Retrieves the notification with the provided unique identifier.
-	 * @param uuid The unique identifier for the notification to retrieve.
-	 * @return A representation of the notification with the unique identifier provided.
-	 */
-	Notification getNotification(UUID uuid);
+  /**
+   * Retrieves an existing {@link application.Notification}.
+   *
+   * @param uuid The universally unique identifer of the {@link application.Notification} being
+   *     retrieved.
+   * @return The {@link application.Notification} with the universally unique identifer provided.
+   */
+  Notification getNotification(UUID uuid);
 
-	/**
-	 * Creates a new notification with the representation provided.
-	 * @param notification The representation of the notification to create.
-	 * @return The unique identifier assigned to the newly created notification.
-	 */
-	UUID createNotification(Notification notification);
+  /**
+   * Creates a new {@link application.Notification}.
+   *
+   * @param notification The state of the {@link application.Notification} to create.
+   * @return The universally unique identifer of the newly created {@link application.Notification}.
+   */
+  UUID createNotification(Notification notification);
 
-	/**
-	 * Replaces the existing state of a notification with the representation provided.
-	 * @param notification The representation of the notification to overwrite the existing state.
-	 */
-	void updateNotification(Notification notification);
+  /**
+   * Replaces the current state of the {@link application.Notification} with the state provided.
+   *
+   * @param notification The desired state of the {@link application.Notification}.
+   */
+  void updateNotification(Notification notification);
 
-	/**
-	 * Deletes an existing notification.
-	 * @param uuid The unique identifier for the notification to delete.
-	 */
-	void deleteNotification(UUID uuid);
+  /**
+   * Deletes an existing {@link application.Notification}.
+   *
+   * @param uuid The universally unique identifier of the {@link application.Notification} to
+   *     delete.
+   */
+  void deleteNotification(UUID uuid);
 }
-

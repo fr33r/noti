@@ -160,7 +160,12 @@ public final class Audience extends Representation {
     this.members = members;
   }
 
-  /** {@inheritDoc} */
+  /**
+   * {@inheritDoc}
+   *
+   * @param obj {@inheritDoc}
+   * @return {@inheritDoc}
+   */
   @Override
   public boolean equals(Object obj) {
     if (obj == null || this.getClass() != obj.getClass()) return false;
@@ -185,7 +190,11 @@ public final class Audience extends Representation {
     return sameUUID && sameName && sameMembers;
   }
 
-  /** {@inheritDoc} */
+  /**
+   * {@inheritDoc}
+   *
+   * @return {@inheritDoc}
+   */
   @Override
   public int hashCode() {
     int hashCode = 1;

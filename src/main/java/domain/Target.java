@@ -1,68 +1,70 @@
 package domain;
 
 import java.util.UUID;
-import java.util.Set;
-import java.util.HashSet;
 
-public class Target extends Entity<UUID> implements Cloneable{
+public class Target extends Entity<UUID> implements Cloneable {
 
-	private String name;
-	private PhoneNumber phoneNumber;
+  private String name;
+  private PhoneNumber phoneNumber;
 
-	public Target(String name, PhoneNumber phoneNumber) {
-		super();
-		this.name = name;
-		this.phoneNumber = phoneNumber;
-	}
-	
-	public Target(UUID uuid, String name, PhoneNumber phoneNumber) {
-		super(uuid);
-		this.name = name;
-		this.phoneNumber = phoneNumber;
-	}
+  public Target(String name, PhoneNumber phoneNumber) {
+    super();
+    this.name = name;
+    this.phoneNumber = phoneNumber;
+  }
 
-	public Target(Target target){
-		super(target.getId());
-		this.name = target.getName();
-		this.phoneNumber = target.getPhoneNumber();
-	}
+  public Target(UUID uuid, String name, PhoneNumber phoneNumber) {
+    super(uuid);
+    this.name = name;
+    this.phoneNumber = phoneNumber;
+  }
 
-	@Override
-	public boolean isAggregateRoot() {
-		return true;
-	}
+  public Target(Target target) {
+    super(target.getId());
+    this.name = target.getName();
+    this.phoneNumber = target.getPhoneNumber();
+  }
 
-	public PhoneNumber getPhoneNumber(){
-		return this.phoneNumber;
-	}
+  @Override
+  public boolean isAggregateRoot() {
+    return true;
+  }
 
-	public String getName() {
-		return this.name;
-	}
+  public PhoneNumber getPhoneNumber() {
+    return this.phoneNumber;
+  }
 
-	@Override
-	public Object clone() {
+  public String getName() {
+    return this.name;
+  }
 
-		Target target = null;
+  @Override
+  public Object clone() {
 
-		try {
-			target = (Target)super.clone();
-		} catch (CloneNotSupportedException ex) {
-			//not possible;
-		}
+    Target target = null;
 
-		return target;
-	}
+    try {
+      target = (Target) super.clone();
+    } catch (CloneNotSupportedException ex) {
+      // not possible;
+    }
 
-	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder();
+    return target;
+  }
 
-		builder
-			.append("[")
-			.append("name=").append(this.name).append(", ")
-			.append("phoneNumber=").append(this.phoneNumber).append(", ")
-			.append("]");
-		return builder.toString();
-	}
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+
+    builder
+        .append("[")
+        .append("name=")
+        .append(this.name)
+        .append(", ")
+        .append("phoneNumber=")
+        .append(this.phoneNumber)
+        .append(", ")
+        .append("]");
+    return builder.toString();
+  }
 }

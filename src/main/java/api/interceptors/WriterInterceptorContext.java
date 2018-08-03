@@ -10,6 +10,7 @@ public interface WriterInterceptorContext extends javax.ws.rs.ext.WriterIntercep
    * Get the entity bytes.
    *
    * @return A byte array containing the entity.
+   * @throws IOException {@inheritDoc}
    */
   byte[] getEntityBytes() throws IOException;
 

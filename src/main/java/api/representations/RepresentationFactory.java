@@ -19,8 +19,7 @@ public abstract class RepresentationFactory {
   /**
    * Constructs a new {@link RepresentationFactory}.
    *
-   * @param mediaType The media type of the representations that
-   * the factory produces.
+   * @param mediaType The media type of the representations that the factory produces.
    */
   public RepresentationFactory(MediaType mediaType) {
     this.mediaType = mediaType;
@@ -44,8 +43,8 @@ public abstract class RepresentationFactory {
    *
    * @param location The content location of the notification representation.
    * @param language The content language of the notification representation.
-   * @param notification The notification state expressed by the notification representation
-   *     being constructed.
+   * @param notification The notification state expressed by the notification representation being
+   *     constructed.
    * @return The notification representation.
    */
   public abstract Representation createNotificationRepresentation(
@@ -56,8 +55,7 @@ public abstract class RepresentationFactory {
    *
    * @param location The content location of the audience representation.
    * @param language The content language of the audience representation.
-   * @param audience The audience state expressed by the audience representation
-   *     being constructed.
+   * @param audience The audience state expressed by the audience representation being constructed.
    * @return The audience representation.
    */
   public abstract Representation createAudienceRepresentation(
@@ -68,8 +66,7 @@ public abstract class RepresentationFactory {
    *
    * @param location The content location of the target representation.
    * @param language The content language of the target representation.
-   * @param target The target state expressed by the target representation
-   *     being constructed.
+   * @param target The target state expressed by the target representation being constructed.
    * @return The target representation.
    */
   public abstract Representation createTargetRepresentation(

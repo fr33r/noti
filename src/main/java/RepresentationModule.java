@@ -1,5 +1,5 @@
-import api.representations.json.JSONRepresentationFactory;
 import api.representations.RepresentationFactory;
+import api.representations.json.JSONRepresentationFactory;
 import api.representations.siren.SirenRepresentationFactory;
 import api.representations.xml.XMLRepresentationFactory;
 import configuration.NotiConfiguration;

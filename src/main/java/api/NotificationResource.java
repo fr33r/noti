@@ -41,6 +41,7 @@ public interface NotificationResource {
   /**
    * Handles HTTP POST requests for the collection of notification resources.
    *
+   * @param headers The headers from the HTTP request.
    * @param uriInfo Information about the URI of the HTTP request.
    * @param notification The representation of the notification resource to be created.
    * @return The HTTP {@link Response}, including the representation of the requested notification

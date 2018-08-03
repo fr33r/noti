@@ -142,7 +142,12 @@ public final class Target extends Representation {
     this.phoneNumber = phoneNumber;
   }
 
-  /** {@inheritDoc} */
+  /**
+   * {@inheritDoc}
+   *
+   * @param obj {@inheritDoc}
+   * @return {@inheritDoc}
+   */
   @Override
   public boolean equals(Object obj) {
     if (obj == null || obj.getClass() != this.getClass()) return false;
@@ -168,7 +173,11 @@ public final class Target extends Representation {
     return sameUUID && sameName && samePhoneNumber;
   }
 
-  /** {@inheritDoc} */
+  /**
+   * {@inheritDoc}
+   *
+   * @return {@inheritDoc}
+   */
   @Override
   public int hashCode() {
     final int prime = 17;
