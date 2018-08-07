@@ -6,6 +6,24 @@
 	<version>1.0.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>noti</name>
+	<description>
+		A RESTful API exposing resources used to power a notification system.
+	</description>
+	<url>https://github.com/freerjm/noti</url>
+	<inceptionYear>2017</inceptionYear>
+
+	<issueManagement>
+		<system>GitHub</system>
+		<url>https://github.com/freerjm/noti/issues</url>
+	</issueManagement>
+
+	<developers>
+		<developer>
+			<id>freerjm</id>
+			<name>Jon Freer</name>
+			<email>freerjm@miamioh.edu</email>
+		</developer>
+	</developers>
 
 	<build>
 		<plugins>
@@ -83,21 +101,8 @@
 				<executions>
 					<execution>
 						<goals>
-							<goal>format</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-
-			<!-- https://github.com/coveo/fmt-maven-plugin -->
-			<plugin>
-				<groupId>com.coveo</groupId>
-				<artifactId>fmt-maven-plugin</artifactId>
-				<version>2.5.1</version>
-				<executions>
-					<execution>
-						<goals>
 							<goal>check</goal>
+							<goal>format</goal>
 						</goals>
 					</execution>
 				</executions>
@@ -116,6 +121,14 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-project-info-reports-plugin</artifactId>
 				<version>2.9</version>
+				<configuration>
+					<!-- https://github.com/freerjm/noti/issues/30 -->
+					<!-- Unfortunately, the documentation on Apache's website must be incorrect. It states
+						 that <dependencyDetailsEnabled>false</dependencyDetailsEnabled> should be used. Instead,
+						 I had to use <dependencyLocationsEnabled>false</dependencyLocationsEnabled> as mentioned in
+						 http://java-drobnosti.blogspot.com/2012/12/maven-slow-generating-dependencies.html -->
+					<dependencyLocationsEnabled>false</dependencyLocationsEnabled>
+				</configuration>
 			</plugin>
 		</plugins>
 	</reporting>
