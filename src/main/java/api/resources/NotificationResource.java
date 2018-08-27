@@ -11,6 +11,7 @@ import io.opentracing.Span;
 import io.opentracing.Tracer;
 import java.net.URI;
 import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -62,6 +63,48 @@ public class NotificationResource implements api.NotificationResource {
     this.tracer = tracer;
     this.notificationFactory =
         new NotificationFactory(new TargetFactory(), new AudienceFactory(new TargetFactory()));
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @param headers {@inheritDoc}
+   * @param uriInfo {@inheritDoc}
+   * @param messageExternalID {@inheritDoc}
+   * @return {@inheritDoc}
+   */
+  @Override
+  public Response getCollection(HttpHeaders headers, UriInfo uriInfo, String messageExternalID) {
+    Span span = this.tracer.buildSpan("NotificationResource#get").start();
+    try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
+      URI location = uriInfo.getRequestUri();
+      Locale language = null;
+
+      Set<application.Notification> notifications =
+          this.notificationService.getNotifications(messageExternalID);
+
+      api.representations.Representation representation;
+      boolean json = headers.getAcceptableMediaTypes().contains(MediaType.APPLICATION_JSON_TYPE);
+      boolean xml = headers.getAcceptableMediaTypes().contains(MediaType.APPLICATION_XML_TYPE);
+
+      if (json) {
+        representation =
+            this.jsonRepresentationFactory.createNotificationCollectionRepresentation(
+                location, language, notifications);
+      } else if (xml) {
+        representation =
+            this.xmlRepresentationFactory.createNotificationCollectionRepresentation(
+                location, language, notifications);
+      } else {
+        representation =
+            this.sirenRepresentationFactory.createNotificationCollectionRepresentation(
+                location, language, notifications);
+      }
+
+      return Response.ok(representation).build();
+    } finally {
+      span.finish();
+    }
   }
 
   /**

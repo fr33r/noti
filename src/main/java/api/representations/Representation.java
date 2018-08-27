@@ -6,6 +6,8 @@ import java.util.Date;
 import java.util.Locale;
 import javax.ws.rs.core.MediaType;
 
+// import javax.xml.bind.annotation.XmlTransient;
+
 /**
  * A resource representation as described in the <a
  * href='https://tools.ietf.org/html/rfc7231#section-3'>HTTP 1.1 specification. </a>
@@ -173,6 +175,7 @@ public abstract class Representation {
    * @return The media type of the {@link Representation}.
    */
   @JsonIgnore
+  // @XmlTransient
   public MediaType getMediaType() {
     return this.mediaType;
   }
@@ -186,6 +189,7 @@ public abstract class Representation {
    * @return The canonical URI identifying this representation.
    */
   @JsonIgnore
+  // @XmlTransient
   public URI getLocation() {
     return this.location;
   }
@@ -201,6 +205,7 @@ public abstract class Representation {
    * @param location The desired canonical URI identifying this representation.
    */
   @JsonIgnore
+  // @XmlTransient
   public void setLocation(URI location) {
     this.location = location;
   }
@@ -216,6 +221,7 @@ public abstract class Representation {
    * @return The coding scheme used to encode the representation.
    */
   @JsonIgnore
+  // @XmlTransient
   public String getEncoding() {
     return this.encoding;
   }
@@ -231,6 +237,7 @@ public abstract class Representation {
    * @param encoding The desired coding scheme used to encode the representation.
    */
   @JsonIgnore
+  // @XmlTransient
   public void setEncoding(String encoding) {
     this.encoding = encoding;
   }
@@ -246,6 +253,7 @@ public abstract class Representation {
    * @return The language of the target audience of the representation.
    */
   @JsonIgnore
+  // @XmlTransient
   public Locale getLanguage() {
     return this.language;
   }
@@ -261,6 +269,7 @@ public abstract class Representation {
    * @param language The desired language for the target audience of the representation.
    */
   @JsonIgnore
+  // @XmlTransient
   public void setLanguage(Locale language) {
     this.language = language;
   }
@@ -277,6 +286,7 @@ public abstract class Representation {
    *     otherwise.
    */
   @JsonIgnore
+  // @XmlTransient
   public Date getLastModified() {
     return this.lastModified;
   }
@@ -290,6 +300,7 @@ public abstract class Representation {
    * @param lastModified The desired date and time that the representation was last modified.
    */
   @JsonIgnore
+  // @XmlTransient
   public void setLastModified(Date lastModified) {
     this.lastModified = lastModified;
   }

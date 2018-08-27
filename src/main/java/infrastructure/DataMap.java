@@ -62,6 +62,15 @@ public class DataMap {
     return columnNames;
   }
 
+  public List<String> getAllColumnNamesWithAliases() {
+    List<String> columnNames = new ArrayList<>();
+    for (ColumnMap map : this.columnMap) {
+      String columnName = String.format("%s.%s", this.getTableAlias(), map.getColumnName());
+      columnNames.add(columnName);
+    }
+    return columnNames;
+  }
+
   /**
    * Retrieves the corresponding domain object field name for the given database column name.
    *
@@ -74,8 +83,7 @@ public class DataMap {
         return map.getFieldName();
       }
     }
-    throw new IllegalArgumentException(
-        String.format("no column mapping with column name '%s' found.", columnName));
+    return null;
   }
 
   /**
@@ -90,18 +98,16 @@ public class DataMap {
         return map.getColumnName();
       }
     }
-    throw new IllegalArgumentException(
-        String.format("no column mapping with field name '%s' found.", fieldName));
+    return null;
   }
 
-  public int getColumnTypeForColumn(String columnName) {
+  public Integer getColumnTypeForColumn(String columnName) {
     for (ColumnMap map : this.columnMap) {
       if (map.getColumnName().equals(columnName)) {
         return map.getColumnType();
       }
     }
-    throw new IllegalArgumentException(
-        String.format("no column mapping with column name '%s' found.", columnName));
+    return null;
   }
 
   /**

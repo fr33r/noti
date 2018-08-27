@@ -8,6 +8,7 @@ import io.opentracing.Tracer;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -35,6 +36,11 @@ public final class TargetRepository extends SQLRepository implements Repository<
     this.tracer = tracer;
   }
 
+  @Override
+  public Set<Target> get(Query<Target> query) {
+    return query.execute();
+  }
+
   /** Retrieves the entity from the repository by a representation of the entity's identity. */
   @Override
   public Target get(UUID uuid) {
@@ -49,7 +55,9 @@ public final class TargetRepository extends SQLRepository implements Repository<
 
       getTargetStatement.setString(1, uuid.toString());
       try (ResultSet targetRs = getTargetStatement.executeQuery()) {
-        target = this.targetFactory.reconstitute(targetRs);
+        if (targetRs.next()) {
+          target = this.targetFactory.reconstitute(targetRs);
+        }
       }
       return target;
     } catch (SQLException x) {

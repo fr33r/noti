@@ -9,6 +9,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -22,6 +23,21 @@ import javax.ws.rs.core.UriInfo;
  */
 @Path("/notifications")
 public interface NotificationResource {
+
+  /**
+   * Handles HTTP GET requests for the notification collection.
+   *
+   * @param headers The headers from the HTTP request.
+   * @param uriInfo Information about the URI of the HTTP request.
+   * @param messageExternalID The external identifier of a message associated with a notification.
+   * @return The HTTP {@link Response}, including the representations of the requested notification
+   *     collection.
+   */
+  @GET
+  Response getCollection(
+      @Context HttpHeaders headers,
+      @Context UriInfo uriInfo,
+      @QueryParam("messageExternalID") String messageExternalID);
 
   /**
    * Handles HTTP GET requests for the notification with the unique identifier provided.

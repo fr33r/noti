@@ -3,6 +3,7 @@ package infrastructure;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.Stack;
 
 /**
@@ -17,7 +18,7 @@ public abstract class Query<T> {
   private QueryExpression limitExpression;
   private QueryExpression skipExpression;
   private List<QueryArgument> args;
-  private DataMap dataMap;
+  private List<DataMap> dataMaps;
   private int index;
 
   public static class QueryArgument<T> {
@@ -51,9 +52,9 @@ public abstract class Query<T> {
    * @param dataMap The {@link DataMap} necessary to map domain object fields to their underlying
    *     representations.
    */
-  public Query(DataMap dataMap) {
+  public Query() {
     this.expression = new Stack<>();
-    this.dataMap = dataMap;
+    this.dataMaps = this.getDataMaps();
     this.args = new ArrayList<>();
     this.index = 0;
   }
@@ -64,9 +65,7 @@ public abstract class Query<T> {
    *
    * @return The {@link DataMap}.
    */
-  protected DataMap getDataMap() {
-    return this.dataMap;
-  }
+  protected abstract List<DataMap> getDataMaps();
 
   /**
    * Constructs a {@link StringExpression} within the {@link Query}.
@@ -75,7 +74,7 @@ public abstract class Query<T> {
    * @return The {@link StringExpression}.
    */
   public QueryExpression string(String string) {
-    this.args.add(new QueryArgument<String>(this.index++, string, Types.VARCHAR));
+    this.args.add(new QueryArgument<String>(++this.index, string, Types.VARCHAR));
     QueryExpression ex = new StringExpression(string);
     ex.usePlaceholders(true);
     return ex;
@@ -88,7 +87,7 @@ public abstract class Query<T> {
    * @return The {@link BooleanLiteralExpression}.
    */
   public QueryExpression bool(boolean bool) {
-    this.args.add(new QueryArgument<Boolean>(this.index++, bool, Types.BOOLEAN));
+    this.args.add(new QueryArgument<Boolean>(++this.index, bool, Types.BOOLEAN));
     QueryExpression ex = new BooleanLiteralExpression(bool);
     ex.usePlaceholders(true);
     return ex;
@@ -101,7 +100,7 @@ public abstract class Query<T> {
    * @return The {@link IntegerExpression}.
    */
   public QueryExpression integer(int integer) {
-    this.args.add(new QueryArgument<Integer>(this.index++, integer, Types.INTEGER));
+    this.args.add(new QueryArgument<Integer>(++this.index, integer, Types.INTEGER));
     QueryExpression ex = new IntegerExpression(integer);
     ex.usePlaceholders(true);
     return ex;
@@ -114,7 +113,7 @@ public abstract class Query<T> {
    * @return The {@link FloatExpression}.
    */
   public QueryExpression floatingPoint(float floatingPoint) {
-    this.args.add(new QueryArgument<Float>(this.index++, floatingPoint, Types.FLOAT));
+    this.args.add(new QueryArgument<Float>(++this.index, floatingPoint, Types.FLOAT));
     QueryExpression ex = new FloatExpression(floatingPoint);
     ex.usePlaceholders(true);
     return ex;
@@ -128,8 +127,14 @@ public abstract class Query<T> {
    * @return The {@link ColumnExpression}.
    */
   public QueryExpression field(String name) {
-    String columnName = this.getDataMap().getColumnNameForField(name);
-    return new ColumnExpression(columnName);
+    for (DataMap map : this.dataMaps) {
+      String columnName = map.getColumnNameForField(name);
+      if (columnName != null) {
+        return new ColumnExpression(map.getTableAlias(), columnName);
+      }
+    }
+    throw new IllegalArgumentException(
+        String.format("no mapping with field name '%s' found.", name));
   }
 
   /**
@@ -242,7 +247,7 @@ public abstract class Query<T> {
    * @param amount The number of results to skip.
    */
   public void skip(Integer amount) {
-    this.args.add(new QueryArgument<Integer>(this.index++, amount, Types.INTEGER));
+    this.args.add(new QueryArgument<Integer>(++this.index, amount, Types.INTEGER));
     QueryExpression ex = new IntegerExpression(amount);
     ex.usePlaceholders(true);
     this.skipExpression = ex;
@@ -263,7 +268,7 @@ public abstract class Query<T> {
    * @param amount The number of results to retrieve.
    */
   public void limit(Integer amount) {
-    this.args.add(new QueryArgument<Integer>(this.index++, amount, Types.INTEGER));
+    this.args.add(new QueryArgument<Integer>(++this.index, amount, Types.INTEGER));
     QueryExpression ex = new IntegerExpression(amount);
     ex.usePlaceholders(true);
     this.limitExpression = ex;
@@ -297,7 +302,7 @@ public abstract class Query<T> {
    * @return The underlying conditional {@link QueryExpression}.
    */
   protected QueryExpression getQueryExpression() {
-    return this.expression.pop();
+    return this.expression.size() > 0 ? this.expression.pop() : null;
   }
 
   /**
@@ -341,5 +346,5 @@ public abstract class Query<T> {
    *
    * @return A collection of results satisfying the {@link Query}.
    */
-  public abstract List<T> execute();
+  public abstract Set<T> execute();
 }

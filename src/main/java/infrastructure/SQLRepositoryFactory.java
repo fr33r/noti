@@ -11,13 +11,15 @@ import java.util.UUID;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.jvnet.hk2.annotations.Service;
+import org.slf4j.Logger;
 
 @Service
 public class SQLRepositoryFactory extends RepositoryFactory {
 
-  private EntitySQLFactory<Notification, UUID> notificationFactory;
-  private EntitySQLFactory<Target, UUID> targetFactory;
-  private EntitySQLFactory<Audience, UUID> audienceFactory;
+  private final EntitySQLFactory<Notification, UUID> notificationFactory;
+  private final EntitySQLFactory<Target, UUID> targetFactory;
+  private final EntitySQLFactory<Audience, UUID> audienceFactory;
+  private final Logger logger;
   private final Tracer tracer;
 
   @Inject
@@ -25,11 +27,13 @@ public class SQLRepositoryFactory extends RepositoryFactory {
       @Named("NotificationSQLFactory") EntitySQLFactory<Notification, UUID> notificationFactory,
       @Named("TargetSQLFactory") EntitySQLFactory<Target, UUID> targetFactory,
       @Named("AudienceSQLFactory") EntitySQLFactory<Audience, UUID> audienceFactory,
-      Tracer tracer) {
+      Tracer tracer,
+      Logger logger) {
     this.notificationFactory = notificationFactory;
     this.targetFactory = targetFactory;
     this.audienceFactory = audienceFactory;
     this.tracer = tracer;
+    this.logger = logger;
   }
 
   @Override
@@ -43,6 +47,12 @@ public class SQLRepositoryFactory extends RepositoryFactory {
       return new NotificationRepository(
           unitOfWork,
           this.notificationFactory,
+          new NotificationDataMapper(
+              unitOfWork,
+              this.notificationFactory,
+              this.targetFactory,
+              this.audienceFactory,
+              this.logger),
           this.tracer); // both of these inherit from SQLRepository!
     } finally {
       span.finish();

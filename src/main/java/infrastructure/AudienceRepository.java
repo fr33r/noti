@@ -39,6 +39,11 @@ public final class AudienceRepository extends SQLRepository implements Repositor
     this.tracer = tracer;
   }
 
+  @Override
+  public Set<Audience> get(Query<Audience> query) {
+    return query.execute();
+  }
+
   /**
    * Retrieves the aggregate from the repository by utilizing the representation of the aggregate
    * root's identity.
@@ -64,7 +69,9 @@ public final class AudienceRepository extends SQLRepository implements Repositor
 
       try (final ResultSet audienceRS = getAudienceStatement.executeQuery();
           final ResultSet membersRs = getAudienceMembersStatement.executeQuery()) {
-        audience = this.audienceFactory.reconstitute(audienceRS, membersRs);
+        if (audienceRS.next()) {
+          audience = this.audienceFactory.reconstitute(audienceRS, membersRs);
+        }
       }
       return audience;
     } catch (SQLException x) {
@@ -90,7 +97,6 @@ public final class AudienceRepository extends SQLRepository implements Repositor
 
     try (final Scope scope = this.tracer.scopeManager().activate(span, false)) {
       Audience existingAudience = this.get(audience.getId());
-      ;
       if (existingAudience == null) {
         this.add(audience);
       } else {

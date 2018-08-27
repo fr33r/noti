@@ -13,6 +13,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -24,6 +25,7 @@ public final class NotificationRepository extends SQLRepository
     implements Repository<Notification, UUID> {
 
   private final EntitySQLFactory<Notification, UUID> notificationFactory;
+  private final NotificationDataMapper notificationDataMapper;
   private final Tracer tracer;
 
   /**
@@ -36,11 +38,24 @@ public final class NotificationRepository extends SQLRepository
   public NotificationRepository(
       SQLUnitOfWork unitOfWork,
       EntitySQLFactory<Notification, UUID> notificationFactory,
+      NotificationDataMapper notificationDataMapper,
       Tracer tracer) {
     super(unitOfWork);
 
     this.notificationFactory = notificationFactory;
+    this.notificationDataMapper = notificationDataMapper;
     this.tracer = tracer;
+  }
+
+  /**
+   * Retrieves the notifications matching the provided {@link Query}.
+   *
+   * @param query The {@link Query} to match against.
+   * @return The collection of notifications matching the provided {@link Query}.
+   */
+  @Override
+  public Set<Notification> get(final Query<Notification> query) {
+    return query.execute();
   }
 
   /** Retrieves the entity from the repository by a representation of the entity's identity. */
@@ -84,9 +99,12 @@ public final class NotificationRepository extends SQLRepository
           final ResultSet messagesRS = getMessagesStatement.executeQuery();
           final ResultSet audiencesRS = getAudiencesStatement.executeQuery();
           final ResultSet membersRS = getAudienceMembersStatement.executeQuery()) {
-        notification =
-            this.notificationFactory.reconstitute(
-                notificationRS, targetsRS, messagesRS, audiencesRS, membersRS);
+
+        if (notificationRS.next()) {
+          notification =
+              this.notificationFactory.reconstitute(
+                  notificationRS, targetsRS, messagesRS, audiencesRS, membersRS);
+        }
       }
       return notification;
     } catch (SQLException x) {

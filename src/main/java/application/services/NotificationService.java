@@ -3,24 +3,32 @@ package application.services;
 import domain.Message;
 import domain.Notification;
 import domain.NotificationFactory;
+import infrastructure.MessageMetadata;
 import infrastructure.MessageQueueService;
+import infrastructure.Query;
+import infrastructure.QueryFactory;
 import infrastructure.Repository;
 import infrastructure.RepositoryFactory;
 import infrastructure.SQLUnitOfWork;
 import infrastructure.SQLUnitOfWorkFactory;
+import io.opentracing.Tracer;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.UUID;
 import javax.inject.Inject;
 
 public final class NotificationService implements application.NotificationService {
 
-  private SQLUnitOfWorkFactory unitOfWorkFactory;
-  private RepositoryFactory repositoryFactory;
-  private NotificationFactory notificationFactory;
-  private application.NotificationFactory applicationNotificationFactory;
-  private MessageQueueService smsQueueService;
+  private final SQLUnitOfWorkFactory unitOfWorkFactory;
+  private final RepositoryFactory repositoryFactory;
+  private final NotificationFactory notificationFactory;
+  private final application.NotificationFactory applicationNotificationFactory;
+  private final MessageQueueService smsQueueService;
+  private final QueryFactory<domain.Notification> queryFactory;
+  private final Tracer tracer;
 
   @Inject
   public NotificationService(
@@ -28,12 +36,44 @@ public final class NotificationService implements application.NotificationServic
       RepositoryFactory repositoryFactory,
       MessageQueueService smsQueueService,
       NotificationFactory notificationFactory,
-      application.NotificationFactory applicationNotificationFactory) {
+      application.NotificationFactory applicationNotificationFactory,
+      QueryFactory<domain.Notification> queryFactory,
+      Tracer tracer) {
     this.unitOfWorkFactory = unitOfWorkFactory;
     this.repositoryFactory = repositoryFactory;
     this.smsQueueService = smsQueueService;
     this.notificationFactory = notificationFactory;
     this.applicationNotificationFactory = applicationNotificationFactory;
+    this.queryFactory = queryFactory;
+    this.tracer = tracer;
+  }
+
+  public Set<application.Notification> getNotifications(String externalMessageID) {
+    SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+    try {
+      Repository<Notification, UUID> notificationRepository =
+          this.repositoryFactory.createNotificationRepository(unitOfWork);
+
+      Query<domain.Notification> query = this.queryFactory.createQuery(unitOfWork);
+
+      if (externalMessageID != null) {
+        query.add(
+            query.equalTo(
+                query.field(MessageMetadata.EXTERNAL_ID), query.string(externalMessageID)));
+      }
+      Set<domain.Notification> notifications_dm = notificationRepository.get(query);
+
+      Set<application.Notification> notifications = new HashSet<>();
+
+      for (domain.Notification notification : notifications_dm) {
+        notifications.add(this.applicationNotificationFactory.createFrom(notification));
+      }
+
+      return notifications;
+    } catch (Exception x) {
+      unitOfWork.undo();
+      throw new RuntimeException(x);
+    }
   }
 
   /**

@@ -161,4 +161,28 @@ public final class JSONRepresentationFactory extends RepresentationFactory {
       span.finish();
     }
   }
+
+  @Override
+  public Representation createNotificationCollectionRepresentation(
+      URI location, Locale language, Set<Notification> notifications) {
+    Span span =
+        this.tracer
+            .buildSpan("JSONRepresentationFactory#createNotificationCollectionRepresentation")
+            .asChildOf(this.tracer.activeSpan())
+            .start();
+    try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
+
+      api.representations.json.NotificationCollection.Builder builder =
+          new api.representations.json.NotificationCollection.Builder();
+      for (Notification notification : notifications) {
+        Representation notificationRepresentation =
+            this.createNotificationRepresentation(location, language, notification);
+        builder.addNotification(notificationRepresentation);
+      }
+      api.representations.Representation collectionRepresentation = builder.build();
+      return collectionRepresentation;
+    } finally {
+      span.finish();
+    }
+  }
 }
