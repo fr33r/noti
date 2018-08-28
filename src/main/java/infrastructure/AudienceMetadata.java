@@ -12,10 +12,10 @@ import java.sql.Types;
  */
 public final class AudienceMetadata extends MetadataMapper {
 
-  /** Represents the {@link Audience} {@code UUID} field. */
+  /** Represents the {@link domain.Audience} {@code UUID} field. */
   public static final String UUID = "uuid";
 
-  /** Represents the {@link Audience} {@code name} field. */
+  /** Represents the {@link domain.Audience} {@code name} field. */
   public static final String NAME = "name";
 
   /** Construcs new {@link AudienceMetadata}. */

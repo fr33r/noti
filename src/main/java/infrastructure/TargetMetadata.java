@@ -12,13 +12,13 @@ import java.sql.Types;
  */
 public final class TargetMetadata extends MetadataMapper {
 
-  /** Represents the {@link Target} {@code UUID} field. */
+  /** Represents the {@link domain.Target} {@code UUID} field. */
   public static final String UUID = "uuid";
 
-  /** Represents the {@link Target} {@code phone number} field. */
+  /** Represents the {@link domain.Target} {@code phone number} field. */
   public static final String PHONE_NUMBER = "phoneNumber";
 
-  /** Represents the {@link Target} {@code name} field. */
+  /** Represents the {@link domain.Target} {@code name} field. */
   public static final String NAME = "name";
 
   /** Construcs new {@link TargetMetadata}. */
