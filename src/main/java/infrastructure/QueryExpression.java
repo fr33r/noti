@@ -31,7 +31,7 @@ public abstract class QueryExpression {
   /**
    * Specifies whether to utilize a placeholder within the expression.
    *
-   * @param usePlaceholder Indicates whether to utilize placeholders within the expression.
+   * @param usePlaceholders Indicates whether to utilize placeholders within the expression.
    */
   public void usePlaceholders(boolean usePlaceholders) {
     this.usePlaceholders = usePlaceholders;

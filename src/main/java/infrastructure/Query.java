@@ -46,12 +46,7 @@ public abstract class Query<T> {
     }
   }
 
-  /**
-   * Constructs a new {@link Query}.
-   *
-   * @param dataMap The {@link DataMap} necessary to map domain object fields to their underlying
-   *     representations.
-   */
+  /** Constructs a new {@link Query}. */
   public Query() {
     this.expression = new Stack<>();
     this.dataMaps = this.getDataMaps();
@@ -193,7 +188,7 @@ public abstract class Query<T> {
   }
 
   /**
-   * Constructs a {@NotEqualToExpression} between the two given operands.
+   * Constructs a {@link NotEqualToExpression} between the two given operands.
    *
    * @param first The first operand.
    * @param second The second operand.
@@ -208,8 +203,8 @@ public abstract class Query<T> {
    *
    * @param expression The expression to add to the {@link Query}.
    */
-  public void add(QueryExpression operand) {
-    this.expression.push(operand);
+  public void add(QueryExpression expression) {
+    this.expression.push(expression);
   }
 
   /**

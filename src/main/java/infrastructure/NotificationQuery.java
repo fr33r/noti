@@ -13,18 +13,18 @@ import java.util.Set;
  */
 public final class NotificationQuery extends Query<Notification> {
 
-  private final NotificationDataMapper notificationMapper;
+  private final NotificationDataMapper notificationDataMapper;
 
   /**
    * Constructs a new {@link NotificationQuery}.
    *
-   * @param NotificationDataMapper The data mapper responsible for mapping the {@link Notification}
+   * @param notificationDataMapper The data mapper responsible for mapping the {@link Notification}
    *     domain objects to the database.
    */
-  public NotificationQuery(NotificationDataMapper notificationMapper) {
+  public NotificationQuery(NotificationDataMapper notificationDataMapper) {
     super();
 
-    this.notificationMapper = notificationMapper;
+    this.notificationDataMapper = notificationDataMapper;
   }
 
   @Override
@@ -50,6 +50,7 @@ public final class NotificationQuery extends Query<Notification> {
     String skip = this.getSkipExpression() != null ? this.getSkipExpression().interpret() : null;
     String limit = this.getLimitExpression() != null ? this.getLimitExpression().interpret() : null;
 
-    return this.notificationMapper.find(condition, orderBy, skip, limit, this.getQueryArguments());
+    return this.notificationDataMapper.find(
+        condition, orderBy, skip, limit, this.getQueryArguments());
   }
 }
