@@ -17,7 +17,7 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Responsible for retrieving and persisting {@link Notification} entities.
+ * Represents a {@link Notification} collection.
  *
  * @author jonfreer
  */
@@ -29,10 +29,12 @@ public final class NotificationRepository extends SQLRepository
   private final Tracer tracer;
 
   /**
-   * Constructs a instance of {@link NotificationRepository}.
+   * Constructs a new {@link NotificationRepository}.
    *
    * @param unitOfWork The unit of work that this repository will contribute to.
    * @param notificationFactory The factory that reconstitutes {@link Notification} entities.
+   * @param notificationDataMapper The data mapper that maps {@link Notification} entites to the
+   *     database.
    * @param tracer The tracer conforming to the OpenTracing standard utilized for instrumentation.
    */
   public NotificationRepository(
@@ -58,7 +60,12 @@ public final class NotificationRepository extends SQLRepository
     return query.execute();
   }
 
-  /** Retrieves the entity from the repository by a representation of the entity's identity. */
+  /**
+   * Retrieves the {@link Notification} identified by the universally unique identifier provided.
+   *
+   * @param uuid The universally unique identifier of the {@link Notification} to retrieve.
+   * @return The {@link Notification} with the universally unique identifier provided.
+   */
   @Override
   public Notification get(final UUID uuid) {
     final Span span =
@@ -115,8 +122,11 @@ public final class NotificationRepository extends SQLRepository
   }
 
   /**
-   * Places the entity provided into the repository. If the entity provided already exists in the
-   * repository, it's state is replaced with the state provided.
+   * Places the {@link Notification} provided into the repository. In the event the {@link
+   * Notification} provided already exists in the repository, the prexisting one will be replaced
+   * with the one provided.
+   *
+   * @param notification The notification to put into the repository.
    */
   @Override
   public void put(final Notification notification) {
@@ -162,7 +172,11 @@ public final class NotificationRepository extends SQLRepository
     }
   }
 
-  /** Inserts the entity provided into the repository. */
+  /**
+   * Adds the provided {@link Notification} into the repository.
+   *
+   * @param notification The notification to add into the repository.
+   */
   @Override
   public void add(final Notification notification) {
     final Span span =
@@ -239,7 +253,11 @@ public final class NotificationRepository extends SQLRepository
     }
   }
 
-  /** Removes the entity from the repository with the representation of the identity provided. */
+  /**
+   * Removes the {@link Notification} with the universally unique identifier provided.
+   *
+   * @param uuid The universally unique identifier of the {@link Notification} to retrieve.
+   */
   @Override
   public void remove(final UUID uuid) {
     final Span span =

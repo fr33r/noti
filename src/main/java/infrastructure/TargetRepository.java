@@ -12,9 +12,9 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Responsible for retrieving and persisting {@link Target} entities.
+ * Represents a {@link Target} collection.
  *
- * @author jonfreer
+ * @author Jon Freer
  */
 public final class TargetRepository extends SQLRepository implements Repository<Target, UUID> {
 
@@ -22,7 +22,7 @@ public final class TargetRepository extends SQLRepository implements Repository<
   private final Tracer tracer;
 
   /**
-   * Constructs a instance of {@link TargetRepository}.
+   * Constructs a new {@link TargetRepository}.
    *
    * @param unitOfWork The unit of work that this repository will contribute to.
    * @param targetFactory The factory that reconstitutes {@link Target} entities.
@@ -36,12 +36,23 @@ public final class TargetRepository extends SQLRepository implements Repository<
     this.tracer = tracer;
   }
 
+  /**
+   * Retrieves the target matching the provided {@link Query}.
+   *
+   * @param query The {@link Query} to match against.
+   * @return The collection target matching the provided {@link Query}.
+   */
   @Override
   public Set<Target> get(Query<Target> query) {
     return query.execute();
   }
 
-  /** Retrieves the entity from the repository by a representation of the entity's identity. */
+  /**
+   * Retrieves the {@link Target} identified by the universally unique identifier provided.
+   *
+   * @param uuid The universally unique identifier of the {@link Target} to retrieve.
+   * @return The {@link Target} with the universally unique identifier provided.
+   */
   @Override
   public Target get(UUID uuid) {
     Span span =
@@ -68,8 +79,11 @@ public final class TargetRepository extends SQLRepository implements Repository<
   }
 
   /**
-   * Places the entity provided into the repository. If the entity provided already exists in the
-   * repository, it's state is replaced with the state provided.
+   * Places the {@link Target} provided into the repository. In the event the {@link Target}
+   * provided already exists in the repository, the prexisting one will be replaced with the one
+   * provided.
+   *
+   * @param target The target to put into the repository.
    */
   @Override
   public void put(Target target) {
@@ -99,7 +113,11 @@ public final class TargetRepository extends SQLRepository implements Repository<
     }
   }
 
-  /** Inserts the entity provided into the repository. */
+  /**
+   * Adds the provided {@link Target} into the repository.
+   *
+   * @param target The target to add into the repository.
+   */
   @Override
   public void add(Target target) {
     Span span =
@@ -122,7 +140,11 @@ public final class TargetRepository extends SQLRepository implements Repository<
     }
   }
 
-  /** Removes the entity from the repository with the representation of the identity provided. */
+  /**
+   * Removes the {@link Target} with the universally unique identifier provided.
+   *
+   * @param uuid The universally unique identifier of the {@link Target} to retrieve.
+   */
   @Override
   public void remove(UUID uuid) {
     Span span =

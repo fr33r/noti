@@ -14,7 +14,7 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Response for retrieving and persisting the aggregate rooted by the {@link Audience} entity.
+ * Represents a {@link Audience} collection.
  *
  * @author Jon Freer
  */
@@ -27,28 +27,33 @@ public final class AudienceRepository extends SQLRepository implements Repositor
    * Constructs an instance of {@link AudienceRepository}.
    *
    * @param unitOfWork The unit of work that this repository will contribue to.
-   * @param audienceFactory The factory that reconstitutes the aggregate rooted by the {@link
-   *     Audience} entity.
+   * @param audienceFactory The factory that reconstitutes {@link Audience} entities.
    * @param tracer The tracer conforming to the OpenTracing standard utilized for instrumentation.
    */
   public AudienceRepository(
       SQLUnitOfWork unitOfWork, EntitySQLFactory<Audience, UUID> audienceFactory, Tracer tracer) {
     super(unitOfWork);
-    // if(audience is not an aggregate root) throw;
+
     this.audienceFactory = audienceFactory;
     this.tracer = tracer;
   }
 
+  /**
+   * Retrieves the audiences matching the provided {@link Query}.
+   *
+   * @param query The {@link Query} to match against.
+   * @return The collection audiences matching the provided {@link Query}.
+   */
   @Override
   public Set<Audience> get(Query<Audience> query) {
     return query.execute();
   }
 
   /**
-   * Retrieves the aggregate from the repository by utilizing the representation of the aggregate
-   * root's identity.
+   * Retrieves the {@link Audience} identified by the universally unique identifier provided.
    *
-   * @param uuid The representation of the aggregate root's identity.
+   * @param uuid The universally unique identifier of the {@link Audience} to retrieve.
+   * @return The {@link Audience} with the universally unique identifier provided.
    */
   @Override
   public Audience get(final UUID uuid) {
@@ -82,8 +87,11 @@ public final class AudienceRepository extends SQLRepository implements Repositor
   }
 
   /**
-   * Places the aggregate into the repository. If the aggregate already exists in the repository,
-   * it's state is replaced with the state provided.
+   * Places the {@link Audience} provided into the repository. In the event the {@link Audience}
+   * provided already exists in the repository, the prexisting one will be replaced with the one
+   * provided.
+   *
+   * @param audience The audience to put into the repository.
    */
   @Override
   public void put(final Audience audience) {
@@ -164,9 +172,9 @@ public final class AudienceRepository extends SQLRepository implements Repositor
   }
 
   /**
-   * Inserts the aggregate root provided into the repository.
+   * Adds the provided {@link Audience} into the repository.
    *
-   * @param audience The aggregate to be inserted into the repository.
+   * @param audience The audience to add into the repository.
    */
   @Override
   public void add(final Audience audience) {
@@ -199,11 +207,9 @@ public final class AudienceRepository extends SQLRepository implements Repositor
   }
 
   /**
-   * Removes the aggregate from the repository with the aggregate root with the representation of
-   * the identify provided.
+   * Removes the {@link Audience} with the universally unique identifier provided.
    *
-   * @param uuid The representation of the identity of the aggregate root of the aggregate to be
-   *     removed.
+   * @param uuid The universally unique identifier of the {@link Audience} to retrieve.
    */
   @Override
   public void remove(final UUID uuid) {
