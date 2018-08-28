@@ -3,7 +3,7 @@ package infrastructure;
 import java.sql.Types;
 
 /**
- * Metadata defining the mappings between {@link Notification} and its corresponding database
+ * Metadata defining the mappings between {@link domain.Notification} and its corresponding database
  * schema.
  *
  * <p>Implementation of Metadata Mapper pattern.
@@ -12,10 +12,19 @@ import java.sql.Types;
  */
 public final class NotificationMetadata extends MetadataMapper {
 
+  /** Represents the {@link Notification} {@code UUID} field. */
   public static final String UUID = "uuid";
+
+  /** Represents the {@link Notification} {@code content} field. */
   public static final String CONTENT = "content";
+
+  /** Represents the {@link Notification} {@code sendAt} field. */
   public static final String SEND_AT = "sendAt";
+
+  /** Represents the {@link Notification} {@code sentAt} field. */
   public static final String SENT_AT = "sentAt";
+
+  /** Represents the {@link Notification} {@code status} field. */
   public static final String STATUS = "status";
 
   /** Constructs new {@link NotificationMetadata}. */
