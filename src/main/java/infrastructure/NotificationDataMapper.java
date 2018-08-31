@@ -359,11 +359,15 @@ final class NotificationDataMapper extends DataMapper {
   }
 
   private String dissociateTargetSQL() {
-    return "DELETE FROM NOTIFICATION_TARGET WHERE NOTIFICATION_UUID = ?";
+    String sql = "DELETE FROM NOTIFICATION_TARGET WHERE NOTIFICATION_UUID = ?";
+    this.logger.debug(sql);
+    return sql;
   }
 
   private String dissociateAudienceSQL() {
-    return "DELETE FROM NOTIFICATION_AUDIENCE WHERE NOTIFICATION_UUID = ?";
+    String sql = "DELETE FROM NOTIFICATION_AUDIENCE WHERE NOTIFICATION_UUID = ?";
+    this.logger.debug(sql);
+    return sql;
   }
 
   Set<Notification> find(
@@ -545,6 +549,7 @@ final class NotificationDataMapper extends DataMapper {
     }
   }
 
+  // TODO - should do a diff between targets and audiences.
   void update(final Notification notification) {
 
     String notificationSQL = this.updateNotificationSQL();
@@ -592,16 +597,17 @@ final class NotificationDataMapper extends DataMapper {
         final PreparedStatement deleteAudienceAssociationsStatement =
             this.getUnitOfWork().createPreparedStatement(deleteAudienceAssociationsSQL)) {
 
-      deleteMessagesStatement.setString(1, uuid.toString());
+      int index = 1;
+      deleteMessagesStatement.setString(index, uuid.toString());
       deleteMessagesStatement.executeUpdate();
 
-      deleteTargetAssociationsStatement.setString(1, uuid.toString());
+      deleteTargetAssociationsStatement.setString(index, uuid.toString());
       deleteTargetAssociationsStatement.executeUpdate();
 
-      deleteAudienceAssociationsStatement.setString(1, uuid.toString());
+      deleteAudienceAssociationsStatement.setString(index, uuid.toString());
       deleteAudienceAssociationsStatement.executeUpdate();
 
-      deleteNotificationStatement.setString(1, uuid.toString());
+      deleteNotificationStatement.setString(index, uuid.toString());
       deleteNotificationStatement.executeUpdate();
 
     } catch (SQLException x) {
