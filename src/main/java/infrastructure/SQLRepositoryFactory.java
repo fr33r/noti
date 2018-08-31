@@ -85,6 +85,7 @@ public class SQLRepositoryFactory extends RepositoryFactory {
       return new AudienceRepository(
           unitOfWork,
           this.audienceFactory,
+          new AudienceDataMapper(unitOfWork, this.audienceFactory, this.logger),
           this.tracer); // both of these inherit from SQL repository!
     } finally {
       span.finish();
