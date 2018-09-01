@@ -5,6 +5,8 @@ import java.net.URI;
 import java.util.Date;
 import java.util.Locale;
 import javax.ws.rs.core.MediaType;
+import javax.xml.bind.annotation.XmlSeeAlso;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  * A resource representation as described in the <a
@@ -14,6 +16,12 @@ import javax.ws.rs.core.MediaType;
  *
  * @author Jon Freer
  */
+@XmlSeeAlso({
+  api.representations.xml.Notification.class,
+  api.representations.xml.NotificationCollection.class,
+  api.representations.xml.Audience.class,
+  api.representations.xml.Target.class
+})
 public abstract class Representation {
 
   private MediaType mediaType;
@@ -173,6 +181,7 @@ public abstract class Representation {
    * @return The media type of the {@link Representation}.
    */
   @JsonIgnore
+  @XmlTransient
   public MediaType getMediaType() {
     return this.mediaType;
   }
@@ -186,6 +195,7 @@ public abstract class Representation {
    * @return The canonical URI identifying this representation.
    */
   @JsonIgnore
+  @XmlTransient
   public URI getLocation() {
     return this.location;
   }
@@ -216,6 +226,7 @@ public abstract class Representation {
    * @return The coding scheme used to encode the representation.
    */
   @JsonIgnore
+  @XmlTransient
   public String getEncoding() {
     return this.encoding;
   }
@@ -246,6 +257,7 @@ public abstract class Representation {
    * @return The language of the target audience of the representation.
    */
   @JsonIgnore
+  @XmlTransient
   public Locale getLanguage() {
     return this.language;
   }
@@ -277,6 +289,7 @@ public abstract class Representation {
    *     otherwise.
    */
   @JsonIgnore
+  @XmlTransient
   public Date getLastModified() {
     return this.lastModified;
   }
@@ -290,6 +303,7 @@ public abstract class Representation {
    * @param lastModified The desired date and time that the representation was last modified.
    */
   @JsonIgnore
+  // @XmlTransient
   public void setLastModified(Date lastModified) {
     this.lastModified = lastModified;
   }

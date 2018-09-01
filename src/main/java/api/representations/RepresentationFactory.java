@@ -5,6 +5,7 @@ import application.Notification;
 import application.Target;
 import java.net.URI;
 import java.util.Locale;
+import java.util.Set;
 import javax.ws.rs.core.MediaType;
 
 /**
@@ -71,4 +72,7 @@ public abstract class RepresentationFactory {
    */
   public abstract Representation createTargetRepresentation(
       URI location, Locale language, Target target);
+
+  public abstract Representation createNotificationCollectionRepresentation(
+      URI location, Locale language, Set<Notification> notifications);
 }

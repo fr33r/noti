@@ -1,16 +1,18 @@
 package infrastructure;
 
-/** An abstract class representing a repository that interacts with a database. */
+/**
+ * Defines the abstraction representing a collection of entities.
+ *
+ * @author Jon Freer
+ */
 public abstract class SQLRepository {
 
   private SQLUnitOfWork unitOfWork;
 
   /**
-   * Constructs a {@link SQLRepository} instance, provided an instance of a class that implements
-   * the {@link infrastructure.SQLUnitOfWork} interface.
+   * Constructs a new {@link SQLRepository}.
    *
-   * @param unitOfWork The instance of {@link infrastructure.SQLUnitOfWork} needed to create a new
-   *     instance of any class inheriting from this class.
+   * @param unitOfWork The unit of work that this repository will contribue to.
    */
   public SQLRepository(SQLUnitOfWork unitOfWork) {
     this.unitOfWork = unitOfWork;

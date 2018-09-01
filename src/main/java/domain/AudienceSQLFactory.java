@@ -1,5 +1,6 @@
 package domain;
 
+import io.opentracing.Tracer;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -14,8 +15,12 @@ public class AudienceSQLFactory extends EntitySQLFactory<Audience, UUID> {
   private static final String nameColumn = "name";
   private static final String phoneNumberColumn = "phone_number";
 
+  private final Tracer tracer;
+
   @Inject
-  public AudienceSQLFactory() {}
+  public AudienceSQLFactory(Tracer tracer) {
+    this.tracer = tracer;
+  }
 
   public Audience reconstitute(Statement statement) {
     Audience audience = null;
@@ -66,12 +71,9 @@ public class AudienceSQLFactory extends EntitySQLFactory<Audience, UUID> {
   }
 
   private Audience extractAudience(ResultSet results) throws SQLException {
-    if (results.next()) {
-      String uuid = results.getString(uuidColumn);
-      String name = results.getString(nameColumn);
-      return new Audience(UUID.fromString(uuid), name, new HashSet<>());
-    }
-    return null;
+    String uuid = results.getString(uuidColumn);
+    String name = results.getString(nameColumn);
+    return new Audience(UUID.fromString(uuid), name, new HashSet<>());
   }
 
   private Set<Target> extractMembers(ResultSet results) throws SQLException {

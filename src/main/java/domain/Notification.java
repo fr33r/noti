@@ -117,7 +117,7 @@ public class Notification extends Entity<UUID> {
     this.sendAt = sendAt;
   }
 
-  private void directRecipients(Set<Target> targets) {
+  public void directRecipients(Set<Target> targets) {
     if (targets == null) {
       this.targets = new HashSet<>();
     } else {

@@ -124,7 +124,7 @@ public final class SMSQueueService implements MessageQueueService {
     Schema schema = parser.parse(schemaString);
 
     GenericRecord messageRecord = new GenericData.Record(schema);
-    messageRecord.put("notificationUUID", notification.getId());
+    messageRecord.put("notificationUUID", notification.getId().toString());
     messageRecord.put("messageID", messageID);
 
     // construct record to send to Kafka.
@@ -152,6 +152,5 @@ public final class SMSQueueService implements MessageQueueService {
     Future<RecordMetadata> future =
         this.producer.send(record, new ProducerCallback(this.metricRegistry, this.logger));
     future.get(100, TimeUnit.MILLISECONDS);
-    ;
   }
 }

@@ -49,13 +49,10 @@ public class TargetSQLFactory extends EntitySQLFactory<Target, UUID> {
   }
 
   private Target extractTarget(ResultSet results) throws SQLException {
-    if (results.next()) {
-      String uuid = results.getString(uuidColumn);
-      String name = results.getString(nameColumn);
-      String phoneNumber = results.getString(phoneNumberColumn);
-      return new Target(UUID.fromString(uuid), name, new PhoneNumber(phoneNumber));
-    }
-    return null;
+    String uuid = results.getString(uuidColumn);
+    String name = results.getString(nameColumn);
+    String phoneNumber = results.getString(phoneNumberColumn);
+    return new Target(UUID.fromString(uuid), name, new PhoneNumber(phoneNumber));
   }
 
   @Override

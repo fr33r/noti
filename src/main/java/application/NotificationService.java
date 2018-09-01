@@ -1,5 +1,6 @@
 package application;
 
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -40,4 +41,6 @@ public interface NotificationService {
    *     delete.
    */
   void deleteNotification(UUID uuid);
+
+  Set<Notification> getNotifications(String externalMessageID);
 }

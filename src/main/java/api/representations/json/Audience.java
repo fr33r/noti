@@ -18,8 +18,8 @@ public final class Audience extends Representation {
   private Set<Target> members;
 
   /** Constructs a new {@link Audience} representation. */
-  private Audience(final MediaType mediaType) {
-    super(mediaType);
+  private Audience() {
+    super(MediaType.APPLICATION_JSON_TYPE);
   }
 
   /**
@@ -92,7 +92,7 @@ public final class Audience extends Representation {
      */
     @Override
     public Representation build() {
-      Audience a = new Audience(this.mediaType());
+      Audience a = new Audience();
       a.setLocation(this.location());
       a.setEncoding(this.encoding());
       a.setLanguage(this.language());

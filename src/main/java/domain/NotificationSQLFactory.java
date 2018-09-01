@@ -1,5 +1,6 @@
 package domain;
 
+import io.opentracing.Tracer;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -41,8 +42,12 @@ public class NotificationSQLFactory extends EntitySQLFactory<Notification, UUID>
   private static final String audienceUUIDColumn = "audience_uuid";
   private static final Calendar utc = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 
+  private final Tracer tracer;
+
   @Inject
-  public NotificationSQLFactory() {}
+  public NotificationSQLFactory(Tracer tracer) {
+    this.tracer = tracer;
+  }
 
   public Notification reconstitute(Statement statement) {
 
@@ -106,29 +111,25 @@ public class NotificationSQLFactory extends EntitySQLFactory<Notification, UUID>
     Notification notification = null;
 
     // notification results.
-    if (results.next()) {
-      String uuid = results.getString(uuidColumn);
-      String content = results.getString(messageColumn);
-      Timestamp sentAtTimestamp = results.getTimestamp(sentAtColumn, utc);
-      Date sentAt = null;
-      if (sentAtTimestamp != null) {
-        sentAt = new Date(sentAtTimestamp.getTime());
-      }
-      String status = results.getString(statusColumn);
-      Timestamp sendAtTimestamp = results.getTimestamp(sendAtColumn, utc);
-      Date sendAt = null;
-      if (sendAtTimestamp != null) {
-        sendAt = new Date(sendAtTimestamp.getTime());
-      }
-
-      // compare persisted state with computed state. log error and adopt computed.
-      NotificationStatus statusEnum = NotificationStatus.valueOf(status);
-
-      NotificationBuilder builder = new NotificationBuilder();
-      return builder.identity(uuid).content(content).sendAt(sendAt).sentAt(sentAt).build();
+    String uuid = results.getString(uuidColumn);
+    String content = results.getString(messageColumn);
+    Timestamp sentAtTimestamp = results.getTimestamp(sentAtColumn, utc);
+    Date sentAt = null;
+    if (sentAtTimestamp != null) {
+      sentAt = new Date(sentAtTimestamp.getTime());
+    }
+    String status = results.getString(statusColumn);
+    Timestamp sendAtTimestamp = results.getTimestamp(sendAtColumn, utc);
+    Date sendAt = null;
+    if (sendAtTimestamp != null) {
+      sendAt = new Date(sendAtTimestamp.getTime());
     }
 
-    return notification;
+    // compare persisted state with computed state. log error and adopt computed.
+    NotificationStatus statusEnum = NotificationStatus.valueOf(status);
+
+    NotificationBuilder builder = new NotificationBuilder();
+    return builder.identity(uuid).content(content).sendAt(sendAt).sentAt(sentAt).build();
   }
 
   private Set<Message> extractMessages(ResultSet results) throws SQLException {

@@ -1,6 +1,7 @@
 package infrastructure;
 
 import domain.Entity;
+import java.util.Set;
 
 /**
  * Responsible for retrieving and persisting an entities, while emulating a collection.
@@ -40,4 +41,12 @@ public interface Repository<T extends Entity<I>, I> {
    * @param id The representation of the identity of the entity to be removed.
    */
   void remove(I id);
+
+  /**
+   * Retrieves the entities matching the provided {@link Query}.
+   *
+   * @param query The {@link Query} to match against.
+   * @return The entities matching the provided {@link Query}.
+   */
+  Set<T> get(Query<T> query);
 }

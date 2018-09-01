@@ -11,6 +11,7 @@ import io.opentracing.Tracer;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Locale;
+import java.util.Set;
 import javax.inject.Inject;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
@@ -340,5 +341,68 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
     } finally {
       span.finish();
     }
+  }
+
+  @Override
+  public Representation createNotificationCollectionRepresentation(
+      URI location, Locale language, Set<Notification> notifications) {
+
+    Representation representation = null;
+
+    Span span =
+        this.tracer
+            .buildSpan("SirenRepresentationFactory#createNotificationCollectionRepresentation")
+            .asChildOf(this.tracer.activeSpan())
+            .start();
+    try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
+
+      Link.Builder linkBuilder = this.linkBuilderFactory.create();
+      Link self = linkBuilder.rel(Relation.SELF).href(location).build();
+
+      Action.Builder actionBuilder = this.actionBuilderFactory.create();
+      Action create =
+          actionBuilder
+              .name("create-notification")
+              .title("Create Notification")
+              .method(HttpMethod.POST)
+              .href(location)
+              .build();
+
+      EmbeddedLinkSubEntity.Builder embeddedLinkSubEntityBuilder =
+          this.embeddedLinkSubEntityBuilderFactory.create();
+
+      Entity.Builder entityBuilder = this.entityBuilderFactory.create();
+
+      for (Notification notification : notifications) {
+        EmbeddedLinkSubEntity notificationSubEntity =
+            embeddedLinkSubEntityBuilder
+                .klass("notification")
+                .title("Notification")
+                .rel(Relation.ITEM)
+                .href(
+                    UriBuilder.fromUri(location)
+                        .replacePath("/notifications/{uuid}/")
+                        .build(notification.getUUID()))
+                .build();
+        entityBuilder.subEntity(notificationSubEntity);
+        embeddedLinkSubEntityBuilder.clear();
+      }
+
+      Entity entity =
+          entityBuilder.klass("notificationCollection").link(self).actions(create).build();
+
+      representation =
+          new api.representations.siren.SirenEntityRepresentation.Builder()
+              .entity(entity)
+              .location(location)
+              .language(language)
+              .build();
+
+    } catch (URISyntaxException x) {
+    } finally {
+      span.finish();
+    }
+
+    return representation;
   }
 }
