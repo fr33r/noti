@@ -108,8 +108,6 @@ public class NotificationSQLFactory extends EntitySQLFactory<Notification, UUID>
   }
 
   private Notification extractNotification(ResultSet results) throws SQLException {
-    Notification notification = null;
-
     // notification results.
     String uuid = results.getString(uuidColumn);
     String content = results.getString(messageColumn);
