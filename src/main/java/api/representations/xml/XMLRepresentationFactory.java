@@ -171,8 +171,7 @@ public final class XMLRepresentationFactory extends RepresentationFactory {
             this.createNotificationRepresentation(location, language, notification);
         builder.addNotification(notificationRepresentation);
       }
-      api.representations.Representation collectionRepresentation = builder.build();
-      return collectionRepresentation;
+      return builder.build();
     } finally {
       span.finish();
     }
