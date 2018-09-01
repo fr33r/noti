@@ -5,6 +5,7 @@ import domain.Target;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -43,9 +44,119 @@ final class TargetDataMapper extends DataMapper {
             .append(" INNER JOIN NOTIFICATION_TARGET AS NT ON NT.TARGET_UUID = ")
             .append(targetDataMap.getTableAlias())
             .append(".")
-            .append(TargetMetadata.UUID)
+            .append(targetDataMap.getColumnNameForField(TargetMetadata.UUID))
             .append(" WHERE NT.NOTIFICATION_UUID = ?;");
 
+    String sql = sb.toString();
+    this.logger.debug(sql);
+    return sql;
+  }
+
+  private String findTargetSQL() {
+    DataMap targetDataMap = this.targetMetadata.getDataMap();
+
+    List<String> columnNames = targetDataMap.getAllColumnNames();
+    String columns = String.join(", ", columnNames);
+
+    StringBuilder sb =
+        new StringBuilder()
+            .append("SELECT ")
+            .append(columns)
+            .append(" FROM ")
+            .append(targetDataMap.getTableName())
+            .append(" AS ")
+            .append(targetDataMap.getTableAlias())
+            .append(" WHERE ")
+            .append(targetDataMap.getTableAlias())
+            .append(".")
+            .append(targetDataMap.getColumnNameForField(TargetMetadata.UUID))
+            .append(" = ?");
+
+    String sql = sb.toString();
+    this.logger.debug(sql);
+    return sql;
+  }
+
+  private String insertTargetSQL() {
+    DataMap targetDataMap = this.targetMetadata.getDataMap();
+
+    List<String> columnNames = targetDataMap.getAllColumnNames();
+    String columns = String.join(", ", columnNames);
+    List<String> placeholderList = new ArrayList<>();
+    for (int i = 0; i < columnNames.size(); i++) {
+      placeholderList.add("?");
+    }
+    String placeholders = String.join(", ", placeholderList);
+
+    StringBuilder sb =
+        new StringBuilder()
+            .append("INSERT INTO ")
+            .append(targetDataMap.getTableName())
+            .append(" (")
+            .append(columns)
+            .append(") VALUES (")
+            .append(placeholders)
+            .append(")");
+
+    String sql = sb.toString();
+    this.logger.debug(sql);
+    return sql;
+  }
+
+  private String updateTargetSQL() {
+    DataMap targetDataMap = this.targetMetadata.getDataMap();
+
+    List<String> columnNames = targetDataMap.getAllColumnNames();
+    String columns = String.join(", ", columnNames);
+
+    StringBuilder sb =
+        new StringBuilder()
+            .append("UPDATE ")
+            .append(targetDataMap.getTableName())
+            .append(" SET ")
+            .append(targetDataMap.getColumnNameForField(TargetMetadata.NAME))
+            .append(" = ?,")
+            .append(targetDataMap.getColumnNameForField(TargetMetadata.PHONE_NUMBER))
+            .append(" = ?")
+            .append(" WHERE ")
+            .append(targetDataMap.getColumnNameForField(TargetMetadata.UUID))
+            .append(" = ?");
+
+    String sql = sb.toString();
+    this.logger.debug(sql);
+    return sql;
+  }
+
+  private String deleteTargetSQL() {
+    DataMap targetDataMap = this.targetMetadata.getDataMap();
+
+    List<String> columnNames = targetDataMap.getAllColumnNames();
+    String columns = String.join(", ", columnNames);
+
+    StringBuilder sb =
+        new StringBuilder()
+            .append("DELETE FROM ")
+            .append(targetDataMap.getTableName())
+            .append(" WHERE ")
+            .append(targetDataMap.getColumnNameForField(TargetMetadata.UUID))
+            .append(" = ?");
+
+    String sql = sb.toString();
+    this.logger.debug(sql);
+    return sql;
+  }
+
+  private String disassociateFromNotificationSQL() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("DELETE FROM NOTIFICATION_TARGET WHERE TARGET_UUID = ?");
+    String sql = sb.toString();
+    this.logger.debug(sql);
+    return sql;
+  }
+
+  private String disassociateFromAudienceSQL() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("DELETE FROM AUDIENCE_TARGET WHERE TARGET_UUID = ?");
     String sql = sb.toString();
     this.logger.debug(sql);
     return sql;
@@ -65,6 +176,88 @@ final class TargetDataMapper extends DataMapper {
         }
       }
       return targets;
+    } catch (SQLException x) {
+      throw new RuntimeException(x);
+    }
+  }
+
+  Target find(final UUID uuid) {
+
+    final String targetSQL = this.findTargetSQL();
+
+    Target target = null;
+    try (PreparedStatement getTargetStatement =
+        this.getUnitOfWork().createPreparedStatement(targetSQL)) {
+
+      int index = 1;
+      getTargetStatement.setString(index, uuid.toString());
+      try (ResultSet targetRs = getTargetStatement.executeQuery()) {
+        if (targetRs.next()) {
+          target = this.targetFactory.reconstitute(targetRs);
+        }
+      }
+      return target;
+    } catch (SQLException x) {
+      throw new RuntimeException(x);
+    }
+  }
+
+  void insert(final Target target) {
+
+    final String insertTargetSQL = this.insertTargetSQL();
+
+    try (PreparedStatement insertTargetStatement =
+        this.getUnitOfWork().createPreparedStatement(insertTargetSQL)) {
+
+      int index = 0;
+      insertTargetStatement.setString(++index, target.getId().toString());
+      insertTargetStatement.setString(++index, target.getName());
+      insertTargetStatement.setString(++index, target.getPhoneNumber().toE164());
+      insertTargetStatement.executeUpdate();
+    } catch (SQLException x) {
+      throw new RuntimeException(x);
+    }
+  }
+
+  void update(final Target target) {
+
+    final String updateTargetSQL = this.updateTargetSQL();
+
+    try (PreparedStatement updateTargetStatement =
+        this.getUnitOfWork().createPreparedStatement(updateTargetSQL)) {
+
+      int index = 0;
+      updateTargetStatement.setString(++index, target.getName());
+      updateTargetStatement.setString(++index, target.getPhoneNumber().toE164());
+      updateTargetStatement.setString(++index, target.getId().toString());
+      updateTargetStatement.executeUpdate();
+    } catch (SQLException x) {
+      throw new RuntimeException(x);
+    }
+  }
+
+  void delete(final UUID uuid) {
+
+    final String deleteTargetSQL = this.deleteTargetSQL();
+    final String disassociateFromNotificationSQL = this.disassociateFromNotificationSQL();
+    final String disassociateFromAudienceSQL = this.disassociateFromAudienceSQL();
+
+    try (PreparedStatement disassociateFromNotificationStatement =
+            this.getUnitOfWork().createPreparedStatement(disassociateFromNotificationSQL);
+        PreparedStatement disassociateFromAudienceStatement =
+            this.getUnitOfWork().createPreparedStatement(disassociateFromAudienceSQL);
+        PreparedStatement deleteTargetStatement =
+            this.getUnitOfWork().createPreparedStatement(deleteTargetSQL)) {
+
+      int index = 1;
+      disassociateFromNotificationStatement.setString(index, uuid.toString());
+      disassociateFromNotificationStatement.executeUpdate();
+
+      disassociateFromAudienceStatement.setString(index, uuid.toString());
+      disassociateFromAudienceStatement.executeUpdate();
+
+      deleteTargetStatement.setString(index, uuid.toString());
+      deleteTargetStatement.executeUpdate();
     } catch (SQLException x) {
       throw new RuntimeException(x);
     }

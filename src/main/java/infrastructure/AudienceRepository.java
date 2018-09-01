@@ -47,7 +47,16 @@ public final class AudienceRepository extends SQLRepository implements Repositor
    */
   @Override
   public Set<Audience> get(Query<Audience> query) {
-    return query.execute();
+    final Span span =
+        this.tracer
+            .buildSpan("AudienceRepostory#get(query)")
+            .asChildOf(this.tracer.activeSpan())
+            .start();
+    try (final Scope scope = this.tracer.scopeManager().activate(span, false)) {
+      return query.execute();
+    } finally {
+      span.finish();
+    }
   }
 
   /**
@@ -59,7 +68,10 @@ public final class AudienceRepository extends SQLRepository implements Repositor
   @Override
   public Audience get(final UUID uuid) {
     final Span span =
-        this.tracer.buildSpan("AudienceRepository#get").asChildOf(this.tracer.activeSpan()).start();
+        this.tracer
+            .buildSpan("AudienceRepository#get(uuid)")
+            .asChildOf(this.tracer.activeSpan())
+            .start();
     try (final Scope scope = this.tracer.scopeManager().activate(span, false)) {
       return this.audienceDataMapper.find(uuid);
     } finally {

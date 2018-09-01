@@ -68,7 +68,10 @@ public class SQLRepositoryFactory extends RepositoryFactory {
             .start();
     try (final Scope scope = this.tracer.scopeManager().activate(span, false)) {
       return new TargetRepository(
-          unitOfWork, this.targetFactory, this.tracer); // both of these inherit from SQLRepository!
+          unitOfWork,
+          this.targetFactory,
+          new TargetDataMapper(unitOfWork, this.targetFactory, this.logger),
+          this.tracer); // both of these inherit from SQLRepository!
     } finally {
       span.finish();
     }
