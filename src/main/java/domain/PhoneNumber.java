@@ -79,8 +79,63 @@ public class PhoneNumber extends ValueObject {
 
   @Override
   public boolean equals(Object obj) {
-    // TODO Auto-generated method stub
-    return false;
+    if (obj == null || obj.getClass() != this.getClass()) return false;
+    PhoneNumber phoneNumber = (PhoneNumber) obj;
+
+    boolean sameInternationalCallingCode =
+        this.getInternationalCallingCode() == null
+                && phoneNumber.getInternationalCallingCode() == null
+            || this.getInternationalCallingCode() != null
+                && phoneNumber.getInternationalCallingCode() != null
+                && this.getInternationalCallingCode()
+                    .equals(phoneNumber.getInternationalCallingCode());
+
+    boolean sameAreaCode =
+        this.getAreaCode() == null && phoneNumber.getAreaCode() == null
+            || this.getAreaCode() != null
+                && phoneNumber.getAreaCode() != null
+                && this.getAreaCode().equals(phoneNumber.getAreaCode());
+
+    boolean sameCentralOfficeCode =
+        this.getCentralOfficeCode() == null && phoneNumber.getCentralOfficeCode() == null
+            || this.getCentralOfficeCode() != null
+                && phoneNumber.getCentralOfficeCode() != null
+                && this.getCentralOfficeCode().equals(phoneNumber.getCentralOfficeCode());
+
+    boolean sameStationNumber =
+        this.getStationNumber() == null && phoneNumber.getStationNumber() == null
+            || this.getStationNumber() != null
+                && phoneNumber.getStationNumber() != null
+                && this.getStationNumber().equals(phoneNumber.getStationNumber());
+
+    return sameInternationalCallingCode
+        && sameAreaCode
+        && sameCentralOfficeCode
+        && sameStationNumber;
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 17;
+    int hashCode = 1;
+
+    if (this.getInternationalCallingCode() != null) {
+      hashCode = hashCode * prime + this.getInternationalCallingCode().hashCode();
+    }
+
+    if (this.getAreaCode() != null) {
+      hashCode = hashCode * prime + this.getAreaCode().hashCode();
+    }
+
+    if (this.getCentralOfficeCode() != null) {
+      hashCode = hashCode * prime + this.getCentralOfficeCode().hashCode();
+    }
+
+    if (this.getStationNumber() != null) {
+      hashCode = hashCode * prime + this.getStationNumber().hashCode();
+    }
+
+    return hashCode;
   }
 
   public String toE164() {
