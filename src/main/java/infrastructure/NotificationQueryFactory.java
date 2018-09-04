@@ -23,7 +23,6 @@ public final class NotificationQueryFactory extends QueryFactory<Notification> {
 
   @Override
   public Query<Notification> createQuery(SQLUnitOfWork unitOfWork) {
-    NotificationMetadata metadata = new NotificationMetadata();
     NotificationDataMapper dataMapper =
         new NotificationDataMapper(
             unitOfWork,
