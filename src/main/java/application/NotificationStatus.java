@@ -28,6 +28,7 @@ public enum NotificationStatus {
    *
    * @return A textual representation of the notification status.
    */
+  @Override
   public String toString() {
     return this.status;
   }

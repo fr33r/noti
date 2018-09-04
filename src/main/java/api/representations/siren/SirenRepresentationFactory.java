@@ -82,12 +82,7 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
             .start();
     try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
       Link.Builder linkBuilder = this.linkBuilderFactory.create();
-
-      Link self = null;
-      try {
-        self = linkBuilder.rel(Relation.SELF).href(location).build();
-      } catch (URISyntaxException x) {
-      }
+      Link self = linkBuilder.rel(Relation.SELF).href(location).build();
 
       Action.Builder actionBuilder = this.actionBuilderFactory.create();
       Action delete =
@@ -102,34 +97,26 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
           this.embeddedLinkSubEntityBuilderFactory.create();
 
       Entity.Builder entityBuilder = this.entityBuilderFactory.create();
-      EmbeddedLinkSubEntity targetCollectionSubEntity = null;
-      EmbeddedLinkSubEntity audienceCollectionSubEntity = null;
 
-      try {
-        // create target collection entity.
-        targetCollectionSubEntity =
-            embeddedLinkSubEntityBuilder
-                .klasses("target", "collection")
-                .title("Target Collection")
-                .rel(Relation.COLLECTION)
-                .href(UriBuilder.fromUri(location).replacePath("/targets/").build())
-                .build();
-      } catch (URISyntaxException x) {
-      }
+      // create target collection entity.
+      EmbeddedLinkSubEntity targetCollectionSubEntity =
+          embeddedLinkSubEntityBuilder
+              .klasses("target", "collection")
+              .title("Target Collection")
+              .rel(Relation.COLLECTION)
+              .href(UriBuilder.fromUri(location).replacePath("/targets/").build())
+              .build();
 
       embeddedLinkSubEntityBuilder.clear();
 
-      try {
-        // create audience collection entity.
-        audienceCollectionSubEntity =
-            embeddedLinkSubEntityBuilder
-                .klasses("audience", "collection")
-                .title("Audience Collection")
-                .rel(Relation.COLLECTION)
-                .href(UriBuilder.fromUri(location).replacePath("/audiences/").build())
-                .build();
-      } catch (URISyntaxException x) {
-      }
+      // create audience collection entity.
+      EmbeddedLinkSubEntity audienceCollectionSubEntity =
+          embeddedLinkSubEntityBuilder
+              .klasses("audience", "collection")
+              .title("Audience Collection")
+              .rel(Relation.COLLECTION)
+              .href(UriBuilder.fromUri(location).replacePath("/audiences/").build())
+              .build();
 
       Entity entity =
           entityBuilder
@@ -149,6 +136,8 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
           .location(location)
           .language(language)
           .build();
+    } catch (URISyntaxException x) {
+      throw new RuntimeException(x);
     } finally {
       span.finish();
     }
@@ -173,12 +162,7 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
             .start();
     try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
       Link.Builder linkBuilder = this.linkBuilderFactory.create();
-
-      Link self = null;
-      try {
-        self = linkBuilder.rel(Relation.SELF).href(location).build();
-      } catch (URISyntaxException x) {
-      }
+      Link self = linkBuilder.rel(Relation.SELF).href(location).build();
 
       Action.Builder actionBuilder = this.actionBuilderFactory.create();
       Action delete =
@@ -252,6 +236,8 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
           .language(language)
           .build();
 
+    } catch (URISyntaxException x) {
+      throw new RuntimeException(x);
     } finally {
       span.finish();
     }
@@ -275,12 +261,7 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
             .start();
     try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
       Link.Builder linkBuilder = this.linkBuilderFactory.create();
-
-      Link self = null;
-      try {
-        self = linkBuilder.rel(Relation.SELF).href(location).build();
-      } catch (URISyntaxException x) {
-      }
+      Link self = linkBuilder.rel(Relation.SELF).href(location).build();
 
       Action.Builder actionBuilder = this.actionBuilderFactory.create();
       Action delete =
@@ -338,6 +319,8 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
           .language(language)
           .build();
 
+    } catch (URISyntaxException x) {
+      throw new RuntimeException(x);
     } finally {
       span.finish();
     }
@@ -399,6 +382,7 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
               .build();
 
     } catch (URISyntaxException x) {
+      throw new RuntimeException(x);
     } finally {
       span.finish();
     }
