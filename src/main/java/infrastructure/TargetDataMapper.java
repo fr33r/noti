@@ -106,9 +106,6 @@ final class TargetDataMapper extends DataMapper {
   private String updateTargetSQL() {
     DataMap targetDataMap = this.targetMetadata.getDataMap();
 
-    List<String> columnNames = targetDataMap.getAllColumnNames();
-    String columns = String.join(", ", columnNames);
-
     StringBuilder sb =
         new StringBuilder()
             .append("UPDATE ")
@@ -129,9 +126,6 @@ final class TargetDataMapper extends DataMapper {
 
   private String deleteTargetSQL() {
     DataMap targetDataMap = this.targetMetadata.getDataMap();
-
-    List<String> columnNames = targetDataMap.getAllColumnNames();
-    String columns = String.join(", ", columnNames);
 
     StringBuilder sb =
         new StringBuilder()

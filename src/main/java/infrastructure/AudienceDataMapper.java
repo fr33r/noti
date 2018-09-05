@@ -86,9 +86,6 @@ final class AudienceDataMapper extends DataMapper {
 
     DataMap audienceDataMap = this.audienceMetadata.getDataMap();
 
-    List<String> columnNames = audienceDataMap.getAllColumnNames();
-    String columns = String.join(", ", columnNames);
-
     StringBuilder sb =
         new StringBuilder()
             .append("UPDATE ")

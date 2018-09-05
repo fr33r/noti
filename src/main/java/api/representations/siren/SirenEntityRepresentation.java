@@ -145,7 +145,7 @@ public final class SirenEntityRepresentation extends Representation {
     int hashCode = 1;
 
     if (this.sirenEntity != null) {
-      return this.sirenEntity.hashCode();
+      hashCode = hashCode * prime + this.sirenEntity.hashCode();
     }
 
     return hashCode;

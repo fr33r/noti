@@ -297,7 +297,7 @@ public abstract class Query<T> {
    * @return The underlying conditional {@link QueryExpression}.
    */
   protected QueryExpression getQueryExpression() {
-    return this.expression.size() > 0 ? this.expression.pop() : null;
+    return !this.expression.isEmpty() ? this.expression.pop() : null;
   }
 
   /**

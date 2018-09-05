@@ -100,7 +100,6 @@ final class NotificationDataMapper extends DataMapper {
 
   private String findMessagesSQL() {
 
-    DataMap notificationDataMap = this.notificationMetadata.getDataMap();
     DataMap messageDataMap = this.messageMetadata.getDataMap();
 
     List<String> columnNames = messageDataMap.getAllColumnNamesWithAliases();
@@ -233,9 +232,6 @@ final class NotificationDataMapper extends DataMapper {
 
     DataMap notificationDataMap = this.notificationMetadata.getDataMap();
 
-    List<String> columnNames = notificationDataMap.getAllColumnNamesWithAliases();
-    String columns = String.join(", ", columnNames);
-
     StringBuilder sb =
         new StringBuilder()
             .append("UPDATE ")
@@ -322,9 +318,6 @@ final class NotificationDataMapper extends DataMapper {
   private String deleteNotificationSQL() {
 
     DataMap notificationDataMap = this.notificationMetadata.getDataMap();
-
-    List<String> columnNames = notificationDataMap.getAllColumnNamesWithAliases();
-    String columns = String.join(", ", columnNames);
 
     StringBuilder sb =
         new StringBuilder()

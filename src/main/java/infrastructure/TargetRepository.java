@@ -72,7 +72,6 @@ public final class TargetRepository extends SQLRepository implements Repository<
             .buildSpan("TargetRepository#get(uuid)")
             .asChildOf(this.tracer.activeSpan())
             .start();
-    Target target = null;
     try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
       return this.targetDataMapper.find(uuid);
     } finally {
