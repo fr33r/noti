@@ -48,7 +48,8 @@ public final class NotificationService implements application.NotificationServic
     this.tracer = tracer;
   }
 
-  public Set<application.Notification> getNotifications(String externalMessageID) {
+  public Set<application.Notification> getNotifications(
+      String externalMessageID, Integer skip, Integer take) {
     SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
     try {
       Repository<Notification, UUID> notificationRepository =
@@ -61,6 +62,17 @@ public final class NotificationService implements application.NotificationServic
             query.equalTo(
                 query.field(MessageMetadata.EXTERNAL_ID), query.string(externalMessageID)));
       }
+
+      // TODO - should find a way so that the order of which
+      // these method calls on query does not influence outcome.
+      if (take != null) {
+        query.limit(take);
+      }
+
+      if (skip != null) {
+        query.skip(skip);
+      }
+
       Set<domain.Notification> notifications_dm = notificationRepository.get(query);
 
       Set<application.Notification> notifications = new HashSet<>();
@@ -70,6 +82,19 @@ public final class NotificationService implements application.NotificationServic
       }
 
       return notifications;
+    } catch (Exception x) {
+      unitOfWork.undo();
+      throw new RuntimeException(x);
+    }
+  }
+
+  public Integer getNotificationCount() {
+
+    SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+    try {
+      Repository<Notification, UUID> notificationRepository =
+          this.repositoryFactory.createNotificationRepository(unitOfWork);
+      return notificationRepository.size();
     } catch (Exception x) {
       unitOfWork.undo();
       throw new RuntimeException(x);

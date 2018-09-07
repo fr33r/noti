@@ -10,6 +10,7 @@ import io.opentracing.Span;
 import io.opentracing.Tracer;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Date;
 import java.util.Locale;
 import java.util.Set;
 import javax.inject.Inject;
@@ -328,7 +329,12 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
 
   @Override
   public Representation createNotificationCollectionRepresentation(
-      URI location, Locale language, Set<Notification> notifications) {
+      URI location,
+      Locale language,
+      Set<Notification> notifications,
+      Integer skip,
+      Integer take,
+      Integer total) {
 
     Representation representation = null;
 
@@ -340,15 +346,44 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
     try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
 
       Link.Builder linkBuilder = this.linkBuilderFactory.create();
-      Link self = linkBuilder.rel(Relation.SELF).href(location).build();
+      Link self =
+          linkBuilder
+              .rel(Relation.SELF)
+              .title("Self")
+              .type(this.getMediaType().toString())
+              .klass("notification")
+              .href(location)
+              .build();
+
+      linkBuilder.clear();
+
+      Field.Builder<String> stringFieldBuilder = this.fieldBuilderFactory.create();
+      Field<String> contentField =
+          stringFieldBuilder
+              .name("content")
+              .title("Notification Content")
+              .type(FieldType.TEXT)
+              .build();
+      stringFieldBuilder.clear();
+
+      Field.Builder<Date> dateFieldBuilder = this.fieldBuilderFactory.create();
+      Field<Date> sendAtField =
+          dateFieldBuilder
+              .name("sendAt")
+              .title("Notification Desired Send Date/Time")
+              .type(FieldType.DATETIME)
+              .build();
+      dateFieldBuilder.clear();
 
       Action.Builder actionBuilder = this.actionBuilderFactory.create();
       Action create =
           actionBuilder
               .name("create-notification")
               .title("Create Notification")
+              .type(MediaType.APPLICATION_JSON)
               .method(HttpMethod.POST)
               .href(location)
+              .fields(contentField, sendAtField)
               .build();
 
       EmbeddedLinkSubEntity.Builder embeddedLinkSubEntityBuilder =
@@ -356,12 +391,60 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
 
       Entity.Builder entityBuilder = this.entityBuilderFactory.create();
 
+      boolean hasPreviousLink = this.hasPreviousLink(skip, take, total);
+      boolean hasNextLink = this.hasNextLink(skip, take, total);
+
+      if (hasPreviousLink) {
+        int prevSkip = skip - take >= 0 ? skip - take : 0;
+        int prevTake = skip - prevSkip < take ? skip - prevSkip : take;
+
+        URI prevHref =
+            UriBuilder.fromUri(location)
+                .replaceQueryParam("skip", prevSkip)
+                .replaceQueryParam("take", prevTake)
+                .build();
+
+        Link prevLink =
+            linkBuilder
+                .rel(Relation.PREV)
+                .title("previous")
+                .type(this.getMediaType().toString())
+                .href(prevHref)
+                .build();
+
+        entityBuilder.link(prevLink);
+        linkBuilder.clear();
+      }
+
+      if (hasNextLink) {
+        int nextSkip = skip + take;
+        int nextTake = take;
+
+        URI nextHref =
+            UriBuilder.fromUri(location)
+                .replaceQueryParam("skip", nextSkip)
+                .replaceQueryParam("take", nextTake)
+                .build();
+
+        Link nextLink =
+            linkBuilder
+                .rel(Relation.NEXT)
+                .title("next")
+                .type(this.getMediaType().toString())
+                .href(nextHref)
+                .build();
+
+        entityBuilder.link(nextLink);
+        linkBuilder.clear();
+      }
+
       for (Notification notification : notifications) {
         EmbeddedLinkSubEntity notificationSubEntity =
             embeddedLinkSubEntityBuilder
                 .klass("notification")
                 .title("Notification")
                 .rel(Relation.ITEM)
+                .type(this.getMediaType().toString())
                 .href(
                     UriBuilder.fromUri(location)
                         .replacePath("/notifications/{uuid}/")
@@ -372,7 +455,12 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
       }
 
       Entity entity =
-          entityBuilder.klass("notificationCollection").link(self).actions(create).build();
+          entityBuilder
+              .klass("notificationCollection")
+              .property("total", total)
+              .link(self)
+              .actions(create)
+              .build();
 
       representation =
           new api.representations.siren.SirenEntityRepresentation.Builder()
@@ -388,5 +476,24 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
     }
 
     return representation;
+  }
+
+  private boolean hasPreviousLink(Integer skip, Integer take, Integer total) {
+    boolean hasPrevious = false;
+    if (take != null && skip != null) {
+      hasPrevious = skip > 0;
+    }
+    return hasPrevious;
+  }
+
+  private boolean hasNextLink(Integer skip, Integer take, Integer total) {
+    boolean hasNext = false;
+    if (take != null) {
+      hasNext = total - take > 0;
+      if (skip != null) {
+        hasNext = total - (skip + take) > 0;
+      }
+    }
+    return hasNext;
   }
 }

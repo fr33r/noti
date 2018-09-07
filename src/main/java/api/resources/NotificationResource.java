@@ -74,14 +74,16 @@ public class NotificationResource implements api.NotificationResource {
    * @return {@inheritDoc}
    */
   @Override
-  public Response getCollection(HttpHeaders headers, UriInfo uriInfo, String messageExternalID) {
+  public Response getCollection(
+      HttpHeaders headers, UriInfo uriInfo, String messageExternalID, Integer skip, Integer take) {
     Span span = this.tracer.buildSpan("NotificationResource#get").start();
     try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
       URI location = uriInfo.getRequestUri();
       Locale language = null;
 
       Set<application.Notification> notifications =
-          this.notificationService.getNotifications(messageExternalID);
+          this.notificationService.getNotifications(messageExternalID, skip, take);
+      Integer total = this.notificationService.getNotificationCount();
 
       api.representations.Representation representation;
       boolean json = headers.getAcceptableMediaTypes().contains(MediaType.APPLICATION_JSON_TYPE);
@@ -90,15 +92,15 @@ public class NotificationResource implements api.NotificationResource {
       if (json) {
         representation =
             this.jsonRepresentationFactory.createNotificationCollectionRepresentation(
-                location, language, notifications);
+                location, language, notifications, skip, take, total);
       } else if (xml) {
         representation =
             this.xmlRepresentationFactory.createNotificationCollectionRepresentation(
-                location, language, notifications);
+                location, language, notifications, skip, take, total);
       } else {
         representation =
             this.sirenRepresentationFactory.createNotificationCollectionRepresentation(
-                location, language, notifications);
+                location, language, notifications, skip, take, total);
       }
 
       return Response.ok(representation).build();

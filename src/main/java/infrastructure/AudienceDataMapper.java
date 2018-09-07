@@ -204,6 +204,21 @@ final class AudienceDataMapper extends DataMapper {
     return sql;
   }
 
+  private String countAudiencesSQL() {
+    DataMap audienceDataMap = this.audienceMetadata.getDataMap();
+    StringBuilder sb =
+        new StringBuilder()
+            .append("SELECT ")
+            .append("COUNT(*) ")
+            .append("FROM ")
+            .append(audienceDataMap.getTableName())
+            .append(" AS ")
+            .append(audienceDataMap.getTableAlias());
+    String sql = sb.toString();
+    this.logger.debug(sql);
+    return sql;
+  }
+
   Set<Audience> findForNotification(UUID notificationUUID) {
 
     // define SQL.
@@ -377,6 +392,20 @@ final class AudienceDataMapper extends DataMapper {
 
       removeAudienceStatement.setString(index, uuid.toString());
       removeAudienceStatement.executeUpdate();
+    } catch (SQLException x) {
+      throw new RuntimeException(x);
+    }
+  }
+
+  int count() {
+
+    final String countAudiencesSQL = this.countAudiencesSQL();
+
+    try (final PreparedStatement countAudiencesStatement =
+            this.getUnitOfWork().createPreparedStatement(countAudiencesSQL);
+        final ResultSet rs = countAudiencesStatement.executeQuery()) {
+      int index = 1;
+      return rs.getInt(index);
     } catch (SQLException x) {
       throw new RuntimeException(x);
     }

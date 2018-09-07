@@ -156,7 +156,12 @@ public final class XMLRepresentationFactory extends RepresentationFactory {
 
   @Override
   public Representation createNotificationCollectionRepresentation(
-      URI location, Locale language, Set<Notification> notifications) {
+      URI location,
+      Locale language,
+      Set<Notification> notifications,
+      Integer skip,
+      Integer take,
+      Integer total) {
     Span span =
         this.tracer
             .buildSpan("XMLRepresentationFactory#createNotificationCollectionRepresentation")
@@ -171,7 +176,7 @@ public final class XMLRepresentationFactory extends RepresentationFactory {
             this.createNotificationRepresentation(location, language, notification);
         builder.addNotification(notificationRepresentation);
       }
-      return builder.build();
+      return builder.total(total).build();
     } finally {
       span.finish();
     }

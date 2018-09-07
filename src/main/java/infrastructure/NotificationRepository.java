@@ -143,4 +143,23 @@ public final class NotificationRepository extends SQLRepository
       span.finish();
     }
   }
+
+  /**
+   * Retrieves the number of notifications within the repository.
+   *
+   * @return The number of notifications within the repository.
+   */
+  @Override
+  public int size() {
+    final Span span =
+        this.tracer
+            .buildSpan("NotificationRepository#size")
+            .asChildOf(this.tracer.activeSpan())
+            .start();
+    try (final Scope scope = this.tracer.scopeManager().activate(span, false)) {
+      return this.notificationDataMapper.count();
+    } finally {
+      span.finish();
+    }
+  }
 }

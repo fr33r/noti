@@ -83,12 +83,12 @@ final class NotificationDataMapper extends DataMapper {
       sb.append(" ORDER BY ").append(orderBy);
     }
 
-    if (skip != null) {
-      sb.append(" OFFSET ").append(skip);
-    }
-
     if (take != null) {
       sb.append(" LIMIT ").append(take);
+    }
+
+    if (skip != null) {
+      sb.append(" OFFSET ").append(skip);
     }
 
     sb.append(";");
@@ -363,6 +363,21 @@ final class NotificationDataMapper extends DataMapper {
     return sql;
   }
 
+  private String countNotificationsSQL() {
+    DataMap notificationDataMap = this.notificationMetadata.getDataMap();
+    StringBuilder sb =
+        new StringBuilder()
+            .append("SELECT ")
+            .append("COUNT(*) ")
+            .append("FROM ")
+            .append(notificationDataMap.getTableName())
+            .append(" AS ")
+            .append(notificationDataMap.getTableAlias());
+    String sql = sb.toString();
+    this.logger.debug(sql);
+    return sql;
+  }
+
   Set<Notification> find(
       String conditions, String orderBy, String skip, String take, List<Query.QueryArgument> args) {
 
@@ -603,6 +618,21 @@ final class NotificationDataMapper extends DataMapper {
       deleteNotificationStatement.setString(index, uuid.toString());
       deleteNotificationStatement.executeUpdate();
 
+    } catch (SQLException x) {
+      throw new RuntimeException(x);
+    }
+  }
+
+  int count() {
+
+    final String countNotificationsSQL = this.countNotificationsSQL();
+
+    try (final PreparedStatement countNotificationsStatement =
+            this.getUnitOfWork().createPreparedStatement(countNotificationsSQL);
+        final ResultSet rs = countNotificationsStatement.executeQuery()) {
+      int index = 1;
+      rs.next();
+      return rs.getInt(index);
     } catch (SQLException x) {
       throw new RuntimeException(x);
     }

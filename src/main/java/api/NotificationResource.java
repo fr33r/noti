@@ -30,6 +30,8 @@ public interface NotificationResource {
    * @param headers The headers from the HTTP request.
    * @param uriInfo Information about the URI of the HTTP request.
    * @param messageExternalID The external identifier of a message associated with a notification.
+   * @param skip The number of notifications to skip when in the collection.
+   * @param take The maximum number of notifications to return in the response.
    * @return The HTTP {@link Response}, including the representations of the requested notification
    *     collection.
    */
@@ -37,7 +39,9 @@ public interface NotificationResource {
   Response getCollection(
       @Context HttpHeaders headers,
       @Context UriInfo uriInfo,
-      @QueryParam("messageExternalID") String messageExternalID);
+      @QueryParam("messageExternalID") String messageExternalID,
+      @QueryParam("skip") Integer skip,
+      @QueryParam("take") Integer take);
 
   /**
    * Handles HTTP GET requests for the notification with the unique identifier provided.
