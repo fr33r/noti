@@ -156,6 +156,21 @@ final class TargetDataMapper extends DataMapper {
     return sql;
   }
 
+  private String countTargetsSQL() {
+    DataMap targetDataMap = this.targetMetadata.getDataMap();
+    StringBuilder sb =
+        new StringBuilder()
+            .append("SELECT ")
+            .append("COUNT(*) ")
+            .append("FROM ")
+            .append(targetDataMap.getTableName())
+            .append(" AS ")
+            .append(targetDataMap.getTableAlias());
+    String sql = sb.toString();
+    this.logger.debug(sql);
+    return sql;
+  }
+
   Set<Target> findForNotification(UUID notificationUUID) {
 
     String sql = this.findTargetsForNotificationSQL();
@@ -252,6 +267,20 @@ final class TargetDataMapper extends DataMapper {
 
       deleteTargetStatement.setString(index, uuid.toString());
       deleteTargetStatement.executeUpdate();
+    } catch (SQLException x) {
+      throw new RuntimeException(x);
+    }
+  }
+
+  int count() {
+
+    final String countTargetsSQL = this.countTargetsSQL();
+
+    try (final PreparedStatement countTargetsStatement =
+            this.getUnitOfWork().createPreparedStatement(countTargetsSQL);
+        final ResultSet rs = countTargetsStatement.executeQuery()) {
+      int index = 1;
+      return rs.getInt(index);
     } catch (SQLException x) {
       throw new RuntimeException(x);
     }

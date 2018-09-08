@@ -133,4 +133,23 @@ public final class AudienceRepository extends SQLRepository implements Repositor
       span.finish();
     }
   }
+
+  /**
+   * Retrieves the number of audiences within the repository.
+   *
+   * @return The number of audiences within the repository.
+   */
+  @Override
+  public int size() {
+    final Span span =
+        this.tracer
+            .buildSpan("AudienceRepository#size")
+            .asChildOf(this.tracer.activeSpan())
+            .start();
+    try (final Scope scope = this.tracer.scopeManager().activate(span, false)) {
+      return this.audienceDataMapper.count();
+    } finally {
+      span.finish();
+    }
+  }
 }

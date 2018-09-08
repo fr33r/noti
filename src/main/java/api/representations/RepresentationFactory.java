@@ -52,7 +52,7 @@ public abstract class RepresentationFactory {
       URI location, Locale language, Notification notification);
 
   /**
-   * Constructs an audience epresentation.
+   * Constructs an audience representation.
    *
    * @param location The content location of the audience representation.
    * @param language The content language of the audience representation.
@@ -73,6 +73,23 @@ public abstract class RepresentationFactory {
   public abstract Representation createTargetRepresentation(
       URI location, Locale language, Target target);
 
+  /**
+   * Constructs a notification collection representation.
+   *
+   * @param location The content location of the notification collection representation.
+   * @param language The content language of the notification collection representation.
+   * @param notifications The notification collection state expressed by the notification collection
+   *     representation being constructed.
+   * @param skip The number of notifications skipped (in previous pages).
+   * @param take The maximum number of notifications in the current page of the collection.
+   * @param total The total number of notifications in the collection (not the current page).
+   * @return The notification collection representation.
+   */
   public abstract Representation createNotificationCollectionRepresentation(
-      URI location, Locale language, Set<Notification> notifications);
+      URI location,
+      Locale language,
+      Set<Notification> notifications,
+      Integer skip,
+      Integer take,
+      Integer total);
 }

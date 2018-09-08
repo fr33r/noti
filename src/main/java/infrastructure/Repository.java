@@ -49,4 +49,11 @@ public interface Repository<T extends Entity<I>, I> {
    * @return The entities matching the provided {@link Query}.
    */
   Set<T> get(Query<T> query);
+
+  /**
+   * Retrieves the number of entities within the repository.
+   *
+   * @return The number of entities within the repository.
+   */
+  int size();
 }

@@ -42,5 +42,7 @@ public interface NotificationService {
    */
   void deleteNotification(UUID uuid);
 
-  Set<Notification> getNotifications(String externalMessageID);
+  Set<Notification> getNotifications(String externalMessageID, Integer skip, Integer take);
+
+  Integer getNotificationCount();
 }
