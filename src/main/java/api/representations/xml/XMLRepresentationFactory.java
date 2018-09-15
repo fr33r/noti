@@ -3,6 +3,7 @@ package api.representations.xml;
 import api.representations.Representation;
 import api.representations.RepresentationFactory;
 import application.Audience;
+import application.Message;
 import application.Notification;
 import application.Target;
 import io.opentracing.Scope;
@@ -69,6 +70,13 @@ public final class XMLRepresentationFactory extends RepresentationFactory {
                 this.createAudienceRepresentation(null, null, audience));
       }
 
+      Set<api.representations.xml.Message> messages = new HashSet<>();
+      for (Message message : notification.getMessages()) {
+        messages.add(
+            (api.representations.xml.Message)
+                this.createMessageRepresentation(null, null, message));
+      }
+
       api.representations.xml.NotificationStatus status =
           api.representations.xml.NotificationStatus.valueOf(notification.getStatus().toString());
 
@@ -78,6 +86,7 @@ public final class XMLRepresentationFactory extends RepresentationFactory {
           .status(status)
           .targets(targets)
           .audiences(audiences)
+          .messages(messages)
           .sendAt(notification.getSendAt())
           .sentAt(notification.getSentAt())
           .language(language)
@@ -155,6 +164,36 @@ public final class XMLRepresentationFactory extends RepresentationFactory {
   }
 
   @Override
+  public Representation createMessageRepresentation(
+      URI location, Locale language, Message message) {
+    Span span =
+        this.tracer
+            .buildSpan("XMLRepresentationFactory#createMessageRepresentation")
+            .asChildOf(this.tracer.activeSpan())
+            .start();
+    try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
+      api.representations.xml.MessageStatus status =
+          api.representations.xml.MessageStatus.valueOf(message.getStatus().toString());
+
+      api.representations.Representation representation =
+          new api.representations.xml.Message.Builder()
+              .id(message.getID())
+              .from(message.getFrom())
+              .to(message.getTo())
+              .externalID(message.getExternalID())
+              .content(message.getContent())
+              .status(status)
+              .location(location)
+              .language(language)
+              .build();
+
+      return representation;
+    } finally {
+      span.finish();
+    }
+  }
+
+  @Override
   public Representation createNotificationCollectionRepresentation(
       URI location,
       Locale language,
@@ -169,12 +208,129 @@ public final class XMLRepresentationFactory extends RepresentationFactory {
             .start();
     try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
 
-      api.representations.xml.NotificationCollection.Builder builder =
-          new api.representations.xml.NotificationCollection.Builder();
+      api.representations.RepresentationCollection.Builder builder =
+          new api.representations.RepresentationCollection.Builder(this.getMediaType());
       for (Notification notification : notifications) {
         Representation notificationRepresentation =
             this.createNotificationRepresentation(location, language, notification);
-        builder.addNotification(notificationRepresentation);
+        builder.add(notificationRepresentation);
+      }
+      return builder.total(total).build();
+    } finally {
+      span.finish();
+    }
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @param location {@inheritDoc}
+   * @param language {@inheritDoc}
+   * @param targets {@inheritDoc}
+   * @param skip {@inheritDoc}
+   * @param take {@inheritDoc}
+   * @param total {@inheritDoc}
+   * @return {@inheritDoc}
+   */
+  @Override
+  public Representation createTargetCollectionRepresentation(
+      URI location,
+      Locale language,
+      Set<Target> targets,
+      Integer skip,
+      Integer take,
+      Integer total) {
+    Span span =
+        this.tracer
+            .buildSpan("XMLRepresentationFactory#createTargetCollectionRepresentation")
+            .asChildOf(this.tracer.activeSpan())
+            .start();
+    try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
+
+      api.representations.RepresentationCollection.Builder builder =
+          new api.representations.RepresentationCollection.Builder(this.getMediaType());
+      for (Target target : targets) {
+        Representation targetRepresentation =
+            this.createTargetRepresentation(location, language, target);
+        builder.add(targetRepresentation);
+      }
+      return builder.total(total).build();
+    } finally {
+      span.finish();
+    }
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @param location {@inheritDoc}
+   * @param language {@inheritDoc}
+   * @param audiences {@inheritDoc}
+   * @param skip {@inheritDoc}
+   * @param take {@inheritDoc}
+   * @param total {@inheritDoc}
+   * @return {@inheritDoc}
+   */
+  @Override
+  public Representation createAudienceCollectionRepresentation(
+      URI location,
+      Locale language,
+      Set<Audience> audiences,
+      Integer skip,
+      Integer take,
+      Integer total) {
+    Span span =
+        this.tracer
+            .buildSpan("XMLRepresentationFactory#createAudienceCollectionRepresentation")
+            .asChildOf(this.tracer.activeSpan())
+            .start();
+    try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
+
+      api.representations.RepresentationCollection.Builder builder =
+          new api.representations.RepresentationCollection.Builder(this.getMediaType());
+      for (Audience audience : audiences) {
+        Representation audienceRepresentation =
+            this.createAudienceRepresentation(location, language, audience);
+        builder.add(audienceRepresentation);
+      }
+      return builder.total(total).build();
+    } finally {
+      span.finish();
+    }
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @param location {@inheritDoc}
+   * @param language {@inheritDoc}
+   * @param messages {@inheritDoc}
+   * @param skip {@inheritDoc}
+   * @param take {@inheritDoc}
+   * @param total {@inheritDoc}
+   * @return {@inheritDoc}
+   */
+  @Override
+  public Representation createMessageCollectionRepresentation(
+      URI location,
+      Locale language,
+      Set<Message> messages,
+      Integer skip,
+      Integer take,
+      Integer total) {
+    Span span =
+        this.tracer
+            .buildSpan("XMLRepresentationFactory#createMessageCollectionRepresentation")
+            .asChildOf(this.tracer.activeSpan())
+            .start();
+    try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
+
+      api.representations.RepresentationCollection.Builder builder =
+          new api.representations.RepresentationCollection.Builder(this.getMediaType());
+      for (Message message : messages) {
+        Representation messageRepresentation =
+            this.createMessageRepresentation(location, language, message);
+        builder.add(messageRepresentation);
       }
       return builder.total(total).build();
     } finally {

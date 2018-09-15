@@ -8,16 +8,20 @@ public class NotificationFactory {
 
   private final TargetFactory targetFactory;
   private final AudienceFactory audienceFactory;
+  private final MessageFactory messageFactory;
 
   @Inject
-  public NotificationFactory(TargetFactory targetFactory, AudienceFactory audienceFactory) {
+  public NotificationFactory(
+      TargetFactory targetFactory, AudienceFactory audienceFactory, MessageFactory messageFactory) {
     this.targetFactory = targetFactory;
     this.audienceFactory = audienceFactory;
+    this.messageFactory = messageFactory;
   }
 
   public Notification createFrom(api.representations.json.Notification notification) {
     Set<Target> targets = new HashSet<>();
     Set<Audience> audiences = new HashSet<>();
+    Set<Message> messages = new HashSet<>();
 
     for (api.representations.json.Target target : notification.getTargets()) {
       targets.add(this.targetFactory.createFrom(target));
@@ -27,12 +31,17 @@ public class NotificationFactory {
       audiences.add(this.audienceFactory.createFrom(audience));
     }
 
+    for (api.representations.json.Message message : notification.getMessages()) {
+      messages.add(this.messageFactory.createFrom(message));
+    }
+
     return new Notification(
         notification.getUUID(),
         notification.getContent(),
         NotificationStatus.valueOf(notification.getStatus().toString()),
         targets,
         audiences,
+        messages,
         notification.getSendAt(),
         notification.getSentAt());
   }
@@ -40,6 +49,7 @@ public class NotificationFactory {
   public Notification createFrom(api.representations.xml.Notification notification) {
     Set<Target> targets = new HashSet<>();
     Set<Audience> audiences = new HashSet<>();
+    Set<Message> messages = new HashSet<>();
 
     for (api.representations.xml.Target target : notification.getTargets()) {
       targets.add(this.targetFactory.createFrom(target));
@@ -49,19 +59,23 @@ public class NotificationFactory {
       audiences.add(this.audienceFactory.createFrom(audience));
     }
 
+    for (api.representations.xml.Message message : notification.getMessages()) {
+      messages.add(this.messageFactory.createFrom(message));
+    }
+
     return new Notification(
         notification.getUUID(),
         notification.getContent(),
         NotificationStatus.valueOf(notification.getStatus().toString()),
         targets,
         audiences,
+        messages,
         notification.getSendAt(),
         notification.getSentAt());
   }
 
   public Notification createFrom(domain.Notification notification) {
     Set<Target> targets_sm = new HashSet<>();
-
     for (domain.Target target : notification.directRecipients()) {
       targets_sm.add(this.targetFactory.createFrom(target));
     }
@@ -71,15 +85,19 @@ public class NotificationFactory {
       audiences_sm.add(this.audienceFactory.createFrom(audience));
     }
 
-    Notification noti_sm =
-        new application.Notification(
-            notification.getId(),
-            notification.content(),
-            NotificationStatus.valueOf(notification.status().toString()),
-            targets_sm,
-            audiences_sm,
-            notification.sendAt(),
-            notification.sentAt());
-    return noti_sm;
+    Set<Message> messages_sm = new HashSet<>();
+    for (domain.Message message : notification.messages()) {
+      messages_sm.add(this.messageFactory.createFrom(message));
+    }
+
+    return new Notification(
+        notification.getId(),
+        notification.content(),
+        NotificationStatus.valueOf(notification.status().toString()),
+        targets_sm,
+        audiences_sm,
+        messages_sm,
+        notification.sendAt(),
+        notification.sentAt());
   }
 }

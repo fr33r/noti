@@ -45,4 +45,10 @@ public interface NotificationService {
   Set<Notification> getNotifications(String externalMessageID, Integer skip, Integer take);
 
   Integer getNotificationCount();
+
+  Set<Target> getNotificationDirectRecipients(UUID uuid, Integer skip, Integer take);
+
+  Set<Audience> getNotificationAudiences(UUID uuid, Integer skip, Integer take);
+
+  Set<Message> getNotificationMessages(UUID uuid, Integer skip, Integer take);
 }

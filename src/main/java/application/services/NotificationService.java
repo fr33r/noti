@@ -101,6 +101,100 @@ public final class NotificationService implements application.NotificationServic
     }
   }
 
+  public Set<application.Target> getNotificationDirectRecipients(
+      UUID uuid, Integer skip, Integer take) {
+    SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+    try {
+      Repository<Notification, UUID> notificationRepository =
+          this.repositoryFactory.createNotificationRepository(unitOfWork);
+      domain.Notification notification = notificationRepository.get(uuid);
+      if (notification == null) {
+        throw new RuntimeException(
+            String.format("Can't find notification with UUID of '%s'", uuid.toString()));
+      }
+      application.Notification noti = this.applicationNotificationFactory.createFrom(notification);
+      Set<application.Target> targets = noti.getTargets();
+      Set<application.Target> filteredTargets = new HashSet<>();
+      application.Target[] targetArray = new application.Target[targets.size()];
+      targets.toArray(targetArray);
+      for (int idx = 0; idx < targets.size(); idx++) {
+        if (skip != null && idx <= skip - 1) {
+          continue;
+        }
+        if (take != null && filteredTargets.size() >= take) {
+          break;
+        }
+        filteredTargets.add(targetArray[idx]);
+      }
+      return filteredTargets;
+    } catch (Exception x) {
+      unitOfWork.undo();
+      throw new RuntimeException(x);
+    }
+  }
+
+  public Set<application.Audience> getNotificationAudiences(UUID uuid, Integer skip, Integer take) {
+    SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+    try {
+      Repository<Notification, UUID> notificationRepository =
+          this.repositoryFactory.createNotificationRepository(unitOfWork);
+      domain.Notification notification = notificationRepository.get(uuid);
+      if (notification == null) {
+        throw new RuntimeException(
+            String.format("Can't find notification with UUID of '%s'", uuid.toString()));
+      }
+      application.Notification noti = this.applicationNotificationFactory.createFrom(notification);
+      Set<application.Audience> audiences = noti.getAudiences();
+      Set<application.Audience> filteredAudiences = new HashSet<>();
+      application.Audience[] audienceArray = new application.Audience[audiences.size()];
+      audiences.toArray(audienceArray);
+      for (int idx = 0; idx < audiences.size(); idx++) {
+        if (skip != null && idx <= skip - 1) {
+          continue;
+        }
+        if (take != null && filteredAudiences.size() >= take) {
+          break;
+        }
+        filteredAudiences.add(audienceArray[idx]);
+      }
+      return filteredAudiences;
+    } catch (Exception x) {
+      unitOfWork.undo();
+      throw new RuntimeException(x);
+    }
+  }
+
+  public Set<application.Message> getNotificationMessages(UUID uuid, Integer skip, Integer take) {
+    SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+    try {
+      Repository<Notification, UUID> notificationRepository =
+          this.repositoryFactory.createNotificationRepository(unitOfWork);
+      domain.Notification notification = notificationRepository.get(uuid);
+      if (notification == null) {
+        throw new RuntimeException(
+            String.format("Can't find notification with UUID of '%s'", uuid.toString()));
+      }
+      application.Notification noti = this.applicationNotificationFactory.createFrom(notification);
+      Set<application.Message> messages = noti.getMessages();
+      Set<application.Message> filteredMessages = new HashSet<>();
+      application.Message[] messageArray = new application.Message[messages.size()];
+      messages.toArray(messageArray);
+      for (int idx = 0; idx < messages.size(); idx++) {
+        if (skip != null && idx <= skip - 1) {
+          continue;
+        }
+        if (take != null && filteredMessages.size() >= take) {
+          break;
+        }
+        filteredMessages.add(messageArray[idx]);
+      }
+      return filteredMessages;
+    } catch (Exception x) {
+      unitOfWork.undo();
+      throw new RuntimeException(x);
+    }
+  }
+
   /**
    * {@inheritDoc}
    *

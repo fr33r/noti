@@ -25,6 +25,7 @@ public final class Notification extends Representation {
   private NotificationStatus status;
   private Set<Target> targets;
   private Set<Audience> audiences;
+  private Set<Message> messages;
 
   /** Constructs a new {@link Notification} representation. */
   private Notification() {
@@ -37,6 +38,7 @@ public final class Notification extends Representation {
     this.status = null;
     this.targets = new HashSet<>();
     this.audiences = new HashSet<>();
+    this.messages = new HashSet<>();
   }
 
   /**
@@ -53,12 +55,14 @@ public final class Notification extends Representation {
     private NotificationStatus status;
     private Set<Target> targets;
     private Set<Audience> audiences;
+    private Set<Message> messages;
 
     /** Constructs a builder of {@link Notification} instances. */
     public Builder() {
       super(MediaType.APPLICATION_XML_TYPE);
       this.targets = new HashSet<>();
       this.audiences = new HashSet<>();
+      this.messages = new HashSet<>();
     }
 
     /**
@@ -171,6 +175,11 @@ public final class Notification extends Representation {
       return this;
     }
 
+    public Builder messages(Set<Message> messages) {
+      this.messages = messages;
+      return this;
+    }
+
     /**
      * Builds the {@link Notification} instance.
      *
@@ -184,11 +193,13 @@ public final class Notification extends Representation {
       n.setLanguage(this.language());
       n.setLastModified(this.lastModified());
       n.setUUID(this.uuid);
+      n.setStatus(this.status);
       n.setContent(this.content);
       n.setSentAt(this.sentAt);
       n.setSendAt(this.sendAt);
       n.setTargets(this.targets);
       n.setAudiences(this.audiences);
+      n.setMessages(this.messages);
       return n;
     }
   }
@@ -346,6 +357,16 @@ public final class Notification extends Representation {
     this.audiences = audiences;
   }
 
+  @XmlElementWrapper(name = "messages")
+  @XmlElement(name = "message")
+  public Set<Message> getMessages() {
+    return this.messages;
+  }
+
+  private void setMessages(Set<Message> messages) {
+    this.messages = messages;
+  }
+
   /** {@inheritDoc} */
   @Override
   public boolean equals(Object obj) {
@@ -387,6 +408,11 @@ public final class Notification extends Representation {
             || notification.getAudiences() != null
                 && this.getAudiences() != null
                 && notification.getAudiences().equals(this.getAudiences());
+    boolean sameMessages =
+        notification.getMessages() == null && this.getMessages() == null
+            || notification.getMessages() != null
+                && this.getMessages() != null
+                && notification.getMessages().equals(this.getMessages());
 
     return sameUUID
         && sameContent
@@ -394,7 +420,8 @@ public final class Notification extends Representation {
         && sameSendAt
         && sameSentAt
         && sameTargets
-        && sameAudiences;
+        && sameAudiences
+        && sameMessages;
   }
 
   /** {@inheritDoc} */
@@ -429,6 +456,10 @@ public final class Notification extends Representation {
 
     if (this.getAudiences() != null) {
       hashCode = hashCode * prime + this.getAudiences().hashCode();
+    }
+
+    if (this.getMessages() != null) {
+      hashCode = hashCode * prime + this.getMessages().hashCode();
     }
 
     return hashCode;

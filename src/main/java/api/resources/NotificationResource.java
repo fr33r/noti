@@ -3,14 +3,19 @@ package api.resources;
 import api.representations.RepresentationFactory;
 import api.representations.json.Notification;
 import application.AudienceFactory;
+import application.Message;
+import application.MessageFactory;
 import application.NotificationFactory;
 import application.NotificationService;
+import application.Target;
 import application.TargetFactory;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import java.net.URI;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import javax.inject.Inject;
@@ -34,6 +39,7 @@ public class NotificationResource implements api.NotificationResource {
   private final RepresentationFactory sirenRepresentationFactory;
   private final NotificationFactory notificationFactory;
   private final Tracer tracer;
+  private final Map<MediaType, RepresentationFactory> representationIndustry;
 
   /**
    * Construct a new {@link NotificationResource}.
@@ -62,7 +68,15 @@ public class NotificationResource implements api.NotificationResource {
     this.sirenRepresentationFactory = sirenRepresentationFactory;
     this.tracer = tracer;
     this.notificationFactory =
-        new NotificationFactory(new TargetFactory(), new AudienceFactory(new TargetFactory()));
+        new NotificationFactory(
+            new TargetFactory(), new AudienceFactory(new TargetFactory()), new MessageFactory());
+    this.representationIndustry = new HashMap<>();
+    this.representationIndustry.put(
+        jsonRepresentationFactory.getMediaType(), jsonRepresentationFactory);
+    this.representationIndustry.put(
+        xmlRepresentationFactory.getMediaType(), xmlRepresentationFactory);
+    this.representationIndustry.put(
+        sirenRepresentationFactory.getMediaType(), sirenRepresentationFactory);
   }
 
   /**
@@ -85,24 +99,16 @@ public class NotificationResource implements api.NotificationResource {
           this.notificationService.getNotifications(messageExternalID, skip, take);
       Integer total = this.notificationService.getNotificationCount();
 
-      api.representations.Representation representation;
-      boolean json = headers.getAcceptableMediaTypes().contains(MediaType.APPLICATION_JSON_TYPE);
-      boolean xml = headers.getAcceptableMediaTypes().contains(MediaType.APPLICATION_XML_TYPE);
-
-      if (json) {
-        representation =
-            this.jsonRepresentationFactory.createNotificationCollectionRepresentation(
-                location, language, notifications, skip, take, total);
-      } else if (xml) {
-        representation =
-            this.xmlRepresentationFactory.createNotificationCollectionRepresentation(
-                location, language, notifications, skip, take, total);
-      } else {
-        representation =
-            this.sirenRepresentationFactory.createNotificationCollectionRepresentation(
-                location, language, notifications, skip, take, total);
+      api.representations.Representation representation = null;
+      for (MediaType acceptableMediaType : headers.getAcceptableMediaTypes()) {
+        if (this.representationIndustry.containsKey(acceptableMediaType)) {
+          RepresentationFactory representationFactory =
+              this.representationIndustry.get(acceptableMediaType);
+          representation =
+              representationFactory.createNotificationCollectionRepresentation(
+                  location, language, notifications, skip, take, total);
+        }
       }
-
       return Response.ok(representation).build();
     } finally {
       span.finish();
@@ -139,20 +145,15 @@ public class NotificationResource implements api.NotificationResource {
       application.Notification notification =
           this.notificationService.getNotification(UUID.fromString(uuid));
 
-      // TODO - change the following conditional blocks to honer q-value hierarchy.
-      api.representations.Representation representation;
-      if (headers.getAcceptableMediaTypes().contains(MediaType.APPLICATION_XML_TYPE)) {
-        representation =
-            this.xmlRepresentationFactory.createNotificationRepresentation(
-                requestURI, language, notification);
-      } else if (headers.getAcceptableMediaTypes().contains(MediaType.APPLICATION_JSON_TYPE)) {
-        representation =
-            this.jsonRepresentationFactory.createNotificationRepresentation(
-                requestURI, language, notification);
-      } else {
-        representation =
-            this.sirenRepresentationFactory.createNotificationRepresentation(
-                requestURI, language, notification);
+      api.representations.Representation representation = null;
+      for (MediaType acceptableMediaType : headers.getAcceptableMediaTypes()) {
+        if (this.representationIndustry.containsKey(acceptableMediaType)) {
+          RepresentationFactory representationFactory =
+              this.representationIndustry.get(acceptableMediaType);
+          representation =
+              representationFactory.createNotificationRepresentation(
+                  requestURI, language, notification);
+        }
       }
       return Response.ok(representation).build();
     } finally {
@@ -216,6 +217,112 @@ public class NotificationResource implements api.NotificationResource {
     try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
       this.notificationService.deleteNotification(UUID.fromString(uuid));
       return Response.noContent().build();
+    } finally {
+      span.finish();
+    }
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @param uuid {@inheritDoc}
+   * @param uriInfo {@inheritDoc}
+   * @return {@inheritDoc}
+   */
+  @Override
+  public Response getTargetCollection(
+      HttpHeaders headers, UriInfo uriInfo, String uuid, Integer skip, Integer take) {
+    Span span = this.tracer.buildSpan("NotificationResource#getTargetCollection").start();
+    try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
+      URI requestURI = uriInfo.getRequestUri();
+      Locale language = null;
+      Set<Target> notificationTargets =
+          this.notificationService.getNotificationDirectRecipients(
+              UUID.fromString(uuid), skip, take);
+      application.Notification notification =
+          this.notificationService.getNotification(UUID.fromString(uuid));
+      int totalTargets = notification.getTargets().size();
+      api.representations.Representation representation = null;
+      for (MediaType acceptableMediaType : headers.getAcceptableMediaTypes()) {
+        if (this.representationIndustry.containsKey(acceptableMediaType)) {
+          RepresentationFactory representationFactory =
+              this.representationIndustry.get(acceptableMediaType);
+          representation =
+              representationFactory.createTargetCollectionRepresentation(
+                  requestURI, language, notificationTargets, skip, take, totalTargets);
+        }
+      }
+      return Response.ok(representation).build();
+    } finally {
+      span.finish();
+    }
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @param uuid {@inheritDoc}
+   * @param uriInfo {@inheritDoc}
+   * @return {@inheritDoc}
+   */
+  @Override
+  public Response getAudienceCollection(
+      HttpHeaders headers, UriInfo uriInfo, String uuid, Integer skip, Integer take) {
+    Span span = this.tracer.buildSpan("NotificationResource#getAudienceCollection").start();
+    try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
+      URI requestURI = uriInfo.getRequestUri();
+      Locale language = null;
+      application.Notification notification =
+          this.notificationService.getNotification(UUID.fromString(uuid));
+      int audiencesTotal = notification.getAudiences().size();
+      Set<application.Audience> audiences =
+          this.notificationService.getNotificationAudiences(UUID.fromString(uuid), skip, take);
+      api.representations.Representation representation = null;
+      for (MediaType acceptableMediaType : headers.getAcceptableMediaTypes()) {
+        if (this.representationIndustry.containsKey(acceptableMediaType)) {
+          RepresentationFactory representationFactory =
+              this.representationIndustry.get(acceptableMediaType);
+          representation =
+              representationFactory.createAudienceCollectionRepresentation(
+                  requestURI, language, audiences, skip, take, audiencesTotal);
+        }
+      }
+      return Response.ok(representation).build();
+    } finally {
+      span.finish();
+    }
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @param uuid {@inheritDoc}
+   * @param uriInfo {@inheritDoc}
+   * @return {@inheritDoc}
+   */
+  @Override
+  public Response getMessageCollection(
+      HttpHeaders headers, UriInfo uriInfo, String uuid, Integer skip, Integer take) {
+    Span span = this.tracer.buildSpan("NotificationResource#getMessageCollection").start();
+    try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
+      URI requestURI = uriInfo.getRequestUri();
+      Locale language = null;
+      application.Notification notification =
+          this.notificationService.getNotification(UUID.fromString(uuid));
+      int messagesTotal = notification.getMessages().size();
+      Set<Message> messages =
+          this.notificationService.getNotificationMessages(UUID.fromString(uuid), skip, take);
+      api.representations.Representation representation = null;
+      for (MediaType acceptableMediaType : headers.getAcceptableMediaTypes()) {
+        if (this.representationIndustry.containsKey(acceptableMediaType)) {
+          RepresentationFactory representationFactory =
+              this.representationIndustry.get(acceptableMediaType);
+          representation =
+              representationFactory.createMessageCollectionRepresentation(
+                  requestURI, language, messages, skip, take, messagesTotal);
+        }
+      }
+      return Response.ok(representation).build();
     } finally {
       span.finish();
     }

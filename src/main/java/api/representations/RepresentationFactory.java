@@ -1,6 +1,7 @@
 package api.representations;
 
 import application.Audience;
+import application.Message;
 import application.Notification;
 import application.Target;
 import java.net.URI;
@@ -31,7 +32,7 @@ public abstract class RepresentationFactory {
    *
    * @return The media type of the representations that this factory produces.
    */
-  protected MediaType getMediaType() {
+  public MediaType getMediaType() {
     return this.mediaType;
   }
 
@@ -73,6 +74,9 @@ public abstract class RepresentationFactory {
   public abstract Representation createTargetRepresentation(
       URI location, Locale language, Target target);
 
+  public abstract Representation createMessageRepresentation(
+      URI location, Locale language, Message message);
+
   /**
    * Constructs a notification collection representation.
    *
@@ -89,6 +93,66 @@ public abstract class RepresentationFactory {
       URI location,
       Locale language,
       Set<Notification> notifications,
+      Integer skip,
+      Integer take,
+      Integer total);
+
+  /**
+   * Constructs a target collection representation.
+   *
+   * @param location The content location of the target collection representation.
+   * @param language The content language of the target collection representation.
+   * @param targets The target collection state expressed by the target collection representation
+   *     being constructed.
+   * @param skip The number of targets skipped (in previous pages).
+   * @param take The maximum number of targets in the current page of the collection.
+   * @param total The total number of target in the collection (not the current page).
+   * @return The target collection representation.
+   */
+  public abstract Representation createTargetCollectionRepresentation(
+      URI location,
+      Locale language,
+      Set<Target> targets,
+      Integer skip,
+      Integer take,
+      Integer total);
+
+  /**
+   * Constructs a audience collection representation.
+   *
+   * @param location The content location of the audience collection representation.
+   * @param language The content language of the audience collection representation.
+   * @param audiences The audience collection state expressed by the audience collection
+   *     representation being constructed.
+   * @param skip The number of audiences skipped (in previous pages).
+   * @param take The maximum number of audiences in the current page of the collection.
+   * @param total The total number of audience in the collection (not the current page).
+   * @return The audience collection representation.
+   */
+  public abstract Representation createAudienceCollectionRepresentation(
+      URI location,
+      Locale language,
+      Set<Audience> audiences,
+      Integer skip,
+      Integer take,
+      Integer total);
+
+  /**
+   * Constructs a message collection representation.
+   *
+   * @param location The content location of the message collection representation.
+   * @param language The content language of the message collection representation.
+   * @param messages The message collection state expressed by the message collection representation
+   *     being constructed.
+   * @param skip The number of messages skipped (in previous pages).
+   * @param take The maximum number of messages in the current page of the collection.
+   * @param total The total number of message in the collection (not the current page).
+   * @return The message collection representation.
+   */
+  public abstract Representation createMessageCollectionRepresentation(
+      URI location,
+      Locale language,
+      Set<Message> messages,
       Integer skip,
       Integer take,
       Integer total);
