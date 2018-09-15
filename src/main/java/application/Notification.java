@@ -9,17 +9,21 @@ import java.util.UUID;
  * Defines the general representation of a Notification resource. This representation can easily be
  * deserialized and serialized for the 'application/json' and 'application/xml' media types.
  *
+ * <p>//TODO - why do i even need this abstraction? is there really a problem with mapping between
+ * domain and HTTP representation?
+ *
  * @author Jon Freer
  */
 public class Notification {
 
-  private UUID uuid;
-  private String content;
-  private Date sentAt;
-  private Date sendAt;
-  private NotificationStatus status;
-  private Set<Target> targets;
-  private Set<Audience> audiences;
+  private final UUID uuid;
+  private final String content;
+  private final Date sentAt;
+  private final Date sendAt;
+  private final NotificationStatus status;
+  private final Set<Target> targets;
+  private final Set<Audience> audiences;
+  private final Set<Message> messages;
 
   /** Constructs an empty instance of {@link Notification}. */
   public Notification() {
@@ -30,6 +34,7 @@ public class Notification {
     this.status = null;
     this.targets = new HashSet<>();
     this.audiences = new HashSet<>();
+    this.messages = new HashSet<>();
   }
 
   /**
@@ -51,6 +56,7 @@ public class Notification {
       NotificationStatus status,
       Set<Target> targets,
       Set<Audience> audiences,
+      Set<Message> messages,
       Date sendAt,
       Date sentAt) {
     this.uuid = uuid;
@@ -60,6 +66,7 @@ public class Notification {
     this.sentAt = sentAt;
     this.targets = targets == null ? new HashSet<>() : targets;
     this.audiences = audiences == null ? new HashSet<>() : audiences;
+    this.messages = messages == null ? new HashSet<>() : messages;
   }
 
   /**
@@ -127,5 +134,9 @@ public class Notification {
    */
   public Set<Audience> getAudiences() {
     return this.audiences;
+  }
+
+  public Set<Message> getMessages() {
+    return this.messages;
   }
 }

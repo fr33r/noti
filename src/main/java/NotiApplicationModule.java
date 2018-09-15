@@ -1,4 +1,5 @@
 import application.AudienceFactory;
+import application.MessageFactory;
 import application.NotificationFactory;
 import application.TargetFactory;
 import application.services.AudienceService;
@@ -26,14 +27,13 @@ public final class NotiApplicationModule extends NotiModule {
               protected void configure() {
 
                 this.bind(NotificationService.class).to(application.NotificationService.class);
-
                 this.bind(TargetService.class).to(application.TargetService.class);
-
                 this.bind(AudienceService.class).to(application.AudienceService.class);
 
                 this.bindAsContract(NotificationFactory.class);
                 this.bindAsContract(TargetFactory.class);
                 this.bindAsContract(AudienceFactory.class);
+                this.bindAsContract(MessageFactory.class);
               }
             });
   }

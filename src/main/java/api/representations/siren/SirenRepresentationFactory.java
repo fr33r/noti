@@ -3,6 +3,7 @@ package api.representations.siren;
 import api.representations.Representation;
 import api.representations.RepresentationFactory;
 import application.Audience;
+import application.Message;
 import application.Notification;
 import application.Target;
 import io.opentracing.Scope;
@@ -83,7 +84,14 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
             .start();
     try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
       Link.Builder linkBuilder = this.linkBuilderFactory.create();
-      Link self = linkBuilder.rel(Relation.SELF).href(location).build();
+      Link self =
+          linkBuilder
+              .rel(Relation.SELF)
+              .title("Self")
+              .type(this.getMediaType().toString())
+              .klass("notification")
+              .href(location)
+              .build();
 
       Action.Builder actionBuilder = this.actionBuilderFactory.create();
       Action delete =
@@ -105,7 +113,11 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
               .klasses("target", "collection")
               .title("Target Collection")
               .rel(Relation.COLLECTION)
-              .href(UriBuilder.fromUri(location).replacePath("/targets/").build())
+              .type(this.getMediaType().toString())
+              .href(
+                  UriBuilder.fromUri(location)
+                      .replacePath("/notifications/{uuid}/targets/")
+                      .build(notification.getUUID()))
               .build();
 
       embeddedLinkSubEntityBuilder.clear();
@@ -116,7 +128,25 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
               .klasses("audience", "collection")
               .title("Audience Collection")
               .rel(Relation.COLLECTION)
-              .href(UriBuilder.fromUri(location).replacePath("/audiences/").build())
+              .type(this.getMediaType().toString())
+              .href(
+                  UriBuilder.fromUri(location)
+                      .replacePath("notifications/{uuid}/audiences/")
+                      .build(notification.getUUID()))
+              .build();
+
+      embeddedLinkSubEntityBuilder.clear();
+
+      EmbeddedLinkSubEntity messageCollectionSubEntity =
+          embeddedLinkSubEntityBuilder
+              .klasses("message", "collection")
+              .title("Message Collection")
+              .rel(Relation.COLLECTION)
+              .type(this.getMediaType().toString())
+              .href(
+                  UriBuilder.fromUri(location)
+                      .replacePath("notifications/{uuid}/messages/")
+                      .build(notification.getUUID()))
               .build();
 
       Entity entity =
@@ -129,7 +159,10 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
               .property("status", notification.getStatus().toString())
               .link(self)
               .actions(delete)
-              .subEntities(audienceCollectionSubEntity, targetCollectionSubEntity)
+              .subEntities(
+                  audienceCollectionSubEntity,
+                  targetCollectionSubEntity,
+                  messageCollectionSubEntity)
               .build();
 
       return new api.representations.siren.SirenEntityRepresentation.Builder()
@@ -163,7 +196,14 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
             .start();
     try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
       Link.Builder linkBuilder = this.linkBuilderFactory.create();
-      Link self = linkBuilder.rel(Relation.SELF).href(location).build();
+      Link self =
+          linkBuilder
+              .rel(Relation.SELF)
+              .title("Self")
+              .type(this.getMediaType().toString())
+              .klass("audience")
+              .href(location)
+              .build();
 
       Action.Builder actionBuilder = this.actionBuilderFactory.create();
       Action delete =
@@ -262,7 +302,14 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
             .start();
     try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
       Link.Builder linkBuilder = this.linkBuilderFactory.create();
-      Link self = linkBuilder.rel(Relation.SELF).href(location).build();
+      Link self =
+          linkBuilder
+              .rel(Relation.SELF)
+              .title("Self")
+              .type(this.getMediaType().toString())
+              .klass("target")
+              .href(location)
+              .build();
 
       Action.Builder actionBuilder = this.actionBuilderFactory.create();
       Action delete =
@@ -312,6 +359,51 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
               .property("name", target.getName())
               .link(self)
               .actions(delete, replace)
+              .build();
+
+      return new api.representations.siren.SirenEntityRepresentation.Builder()
+          .entity(entity)
+          .location(location)
+          .language(language)
+          .build();
+
+    } catch (URISyntaxException x) {
+      throw new RuntimeException(x);
+    } finally {
+      span.finish();
+    }
+  }
+
+  @Override
+  public Representation createMessageRepresentation(
+      URI location, Locale language, Message message) {
+    Span span =
+        this.tracer
+            .buildSpan("SirenRepresentationFactory#createMessageRepresentation")
+            .asChildOf(this.tracer.activeSpan())
+            .start();
+    try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
+      Link.Builder linkBuilder = this.linkBuilderFactory.create();
+      Link self =
+          linkBuilder
+              .rel(Relation.SELF)
+              .title("Self")
+              .type(this.getMediaType().toString())
+              .klass("message")
+              .href(location)
+              .build();
+
+      Entity.Builder entityBuilder = this.entityBuilderFactory.create();
+      Entity entity =
+          entityBuilder
+              .klass("message")
+              .property("id", message.getID())
+              .property("content", message.getContent())
+              .property("to", message.getTo())
+              .property("from", message.getFrom())
+              .property("status", message.getStatus())
+              .property("externalID", message.getExternalID())
+              .link(self)
               .build();
 
       return new api.representations.siren.SirenEntityRepresentation.Builder()
@@ -456,10 +548,375 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
 
       Entity entity =
           entityBuilder
-              .klass("notificationCollection")
+              .klass("notification")
+              .klass("collection")
               .property("total", total)
               .link(self)
               .actions(create)
+              .build();
+
+      representation =
+          new api.representations.siren.SirenEntityRepresentation.Builder()
+              .entity(entity)
+              .location(location)
+              .language(language)
+              .build();
+
+    } catch (URISyntaxException x) {
+      throw new RuntimeException(x);
+    } finally {
+      span.finish();
+    }
+
+    return representation;
+  }
+
+  @Override
+  public Representation createTargetCollectionRepresentation(
+      URI location,
+      Locale language,
+      Set<Target> targets,
+      Integer skip,
+      Integer take,
+      Integer total) {
+
+    Representation representation = null;
+
+    Span span =
+        this.tracer
+            .buildSpan("SirenRepresentationFactory#createTargetCollectionRepresentation")
+            .asChildOf(this.tracer.activeSpan())
+            .start();
+    try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
+
+      Link.Builder linkBuilder = this.linkBuilderFactory.create();
+      Link self =
+          linkBuilder
+              .rel(Relation.SELF)
+              .title("Self")
+              .type(this.getMediaType().toString())
+              .klass("target")
+              .href(location)
+              .build();
+
+      linkBuilder.clear();
+
+      EmbeddedLinkSubEntity.Builder embeddedLinkSubEntityBuilder =
+          this.embeddedLinkSubEntityBuilderFactory.create();
+
+      Entity.Builder entityBuilder = this.entityBuilderFactory.create();
+
+      boolean hasPreviousLink = this.hasPreviousLink(skip, take, total);
+      boolean hasNextLink = this.hasNextLink(skip, take, total);
+
+      if (hasPreviousLink) {
+        int prevSkip = skip - take >= 0 ? skip - take : 0;
+        int prevTake = skip - prevSkip < take ? skip - prevSkip : take;
+
+        URI prevHref =
+            UriBuilder.fromUri(location)
+                .replaceQueryParam("skip", prevSkip)
+                .replaceQueryParam("take", prevTake)
+                .build();
+
+        Link prevLink =
+            linkBuilder
+                .rel(Relation.PREV)
+                .title("previous")
+                .type(this.getMediaType().toString())
+                .href(prevHref)
+                .build();
+
+        entityBuilder.link(prevLink);
+        linkBuilder.clear();
+      }
+
+      if (hasNextLink) {
+        int nextSkip = skip + take;
+        int nextTake = take;
+
+        URI nextHref =
+            UriBuilder.fromUri(location)
+                .replaceQueryParam("skip", nextSkip)
+                .replaceQueryParam("take", nextTake)
+                .build();
+
+        Link nextLink =
+            linkBuilder
+                .rel(Relation.NEXT)
+                .title("next")
+                .type(this.getMediaType().toString())
+                .href(nextHref)
+                .build();
+
+        entityBuilder.link(nextLink);
+        linkBuilder.clear();
+      }
+
+      for (Target target : targets) {
+        EmbeddedLinkSubEntity targetSubEntity =
+            embeddedLinkSubEntityBuilder
+                .klass("target")
+                .title("Target")
+                .rel(Relation.ITEM)
+                .type(this.getMediaType().toString())
+                .href(
+                    UriBuilder.fromUri(location)
+                        .replacePath("/targets/{uuid}/")
+                        .build(target.getUUID()))
+                .build();
+        entityBuilder.subEntity(targetSubEntity);
+        embeddedLinkSubEntityBuilder.clear();
+      }
+
+      Entity entity =
+          entityBuilder
+              .klass("target")
+              .klass("collection")
+              .property("total", total)
+              .link(self)
+              .build();
+
+      representation =
+          new api.representations.siren.SirenEntityRepresentation.Builder()
+              .entity(entity)
+              .location(location)
+              .language(language)
+              .build();
+
+    } catch (URISyntaxException x) {
+      throw new RuntimeException(x);
+    } finally {
+      span.finish();
+    }
+
+    return representation;
+  }
+
+  @Override
+  public Representation createAudienceCollectionRepresentation(
+      URI location,
+      Locale language,
+      Set<Audience> audiences,
+      Integer skip,
+      Integer take,
+      Integer total) {
+
+    Representation representation = null;
+
+    Span span =
+        this.tracer
+            .buildSpan("SirenRepresentationFactory#createAudienceCollectionRepresentation")
+            .asChildOf(this.tracer.activeSpan())
+            .start();
+    try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
+
+      Link.Builder linkBuilder = this.linkBuilderFactory.create();
+      Link self =
+          linkBuilder
+              .rel(Relation.SELF)
+              .title("Self")
+              .type(this.getMediaType().toString())
+              .klass("audience")
+              .href(location)
+              .build();
+
+      linkBuilder.clear();
+
+      EmbeddedLinkSubEntity.Builder embeddedLinkSubEntityBuilder =
+          this.embeddedLinkSubEntityBuilderFactory.create();
+
+      Entity.Builder entityBuilder = this.entityBuilderFactory.create();
+
+      boolean hasPreviousLink = this.hasPreviousLink(skip, take, total);
+      boolean hasNextLink = this.hasNextLink(skip, take, total);
+
+      if (hasPreviousLink) {
+        int prevSkip = skip - take >= 0 ? skip - take : 0;
+        int prevTake = skip - prevSkip < take ? skip - prevSkip : take;
+
+        URI prevHref =
+            UriBuilder.fromUri(location)
+                .replaceQueryParam("skip", prevSkip)
+                .replaceQueryParam("take", prevTake)
+                .build();
+
+        Link prevLink =
+            linkBuilder
+                .rel(Relation.PREV)
+                .title("previous")
+                .type(this.getMediaType().toString())
+                .href(prevHref)
+                .build();
+
+        entityBuilder.link(prevLink);
+        linkBuilder.clear();
+      }
+
+      if (hasNextLink) {
+        int nextSkip = skip + take;
+        int nextTake = take;
+
+        URI nextHref =
+            UriBuilder.fromUri(location)
+                .replaceQueryParam("skip", nextSkip)
+                .replaceQueryParam("take", nextTake)
+                .build();
+
+        Link nextLink =
+            linkBuilder
+                .rel(Relation.NEXT)
+                .title("next")
+                .type(this.getMediaType().toString())
+                .href(nextHref)
+                .build();
+
+        entityBuilder.link(nextLink);
+        linkBuilder.clear();
+      }
+
+      for (Audience audience : audiences) {
+        EmbeddedLinkSubEntity audienceSubEntity =
+            embeddedLinkSubEntityBuilder
+                .klass("audience")
+                .title("Audience")
+                .rel(Relation.ITEM)
+                .type(this.getMediaType().toString())
+                .href(
+                    UriBuilder.fromUri(location)
+                        .replacePath("/audiences/{uuid}/")
+                        .build(audience.getUUID()))
+                .build();
+        entityBuilder.subEntity(audienceSubEntity);
+        embeddedLinkSubEntityBuilder.clear();
+      }
+
+      Entity entity =
+          entityBuilder
+              .klass("audience")
+              .klass("collection")
+              .property("total", total)
+              .link(self)
+              .build();
+
+      representation =
+          new api.representations.siren.SirenEntityRepresentation.Builder()
+              .entity(entity)
+              .location(location)
+              .language(language)
+              .build();
+
+    } catch (URISyntaxException x) {
+      throw new RuntimeException(x);
+    } finally {
+      span.finish();
+    }
+
+    return representation;
+  }
+
+  @Override
+  public Representation createMessageCollectionRepresentation(
+      URI location,
+      Locale language,
+      Set<Message> messages,
+      Integer skip,
+      Integer take,
+      Integer total) {
+
+    Representation representation = null;
+
+    Span span =
+        this.tracer
+            .buildSpan("SirenRepresentationFactory#createMessageCollectionRepresentation")
+            .asChildOf(this.tracer.activeSpan())
+            .start();
+    try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
+
+      Link.Builder linkBuilder = this.linkBuilderFactory.create();
+      Link self =
+          linkBuilder
+              .rel(Relation.SELF)
+              .title("Self")
+              .type(this.getMediaType().toString())
+              .klass("message")
+              .href(location)
+              .build();
+
+      linkBuilder.clear();
+
+      EmbeddedLinkSubEntity.Builder embeddedLinkSubEntityBuilder =
+          this.embeddedLinkSubEntityBuilderFactory.create();
+
+      Entity.Builder entityBuilder = this.entityBuilderFactory.create();
+
+      boolean hasPreviousLink = this.hasPreviousLink(skip, take, total);
+      boolean hasNextLink = this.hasNextLink(skip, take, total);
+
+      if (hasPreviousLink) {
+        int prevSkip = skip - take >= 0 ? skip - take : 0;
+        int prevTake = skip - prevSkip < take ? skip - prevSkip : take;
+
+        URI prevHref =
+            UriBuilder.fromUri(location)
+                .replaceQueryParam("skip", prevSkip)
+                .replaceQueryParam("take", prevTake)
+                .build();
+
+        Link prevLink =
+            linkBuilder
+                .rel(Relation.PREV)
+                .title("previous")
+                .type(this.getMediaType().toString())
+                .href(prevHref)
+                .build();
+
+        entityBuilder.link(prevLink);
+        linkBuilder.clear();
+      }
+
+      if (hasNextLink) {
+        int nextSkip = skip + take;
+        int nextTake = take;
+
+        URI nextHref =
+            UriBuilder.fromUri(location)
+                .replaceQueryParam("skip", nextSkip)
+                .replaceQueryParam("take", nextTake)
+                .build();
+
+        Link nextLink =
+            linkBuilder
+                .rel(Relation.NEXT)
+                .title("next")
+                .type(this.getMediaType().toString())
+                .href(nextHref)
+                .build();
+
+        entityBuilder.link(nextLink);
+        linkBuilder.clear();
+      }
+
+      for (Message message : messages) {
+
+        EmbeddedLinkSubEntity messageSubEntity =
+            embeddedLinkSubEntityBuilder
+                .klass("message")
+                .title("Message")
+                .rel(Relation.ITEM)
+                .type(this.getMediaType().toString())
+                .href(UriBuilder.fromUri(location).path("/{id}/").build(message.getID()))
+                .build();
+        entityBuilder.subEntity(messageSubEntity);
+        embeddedLinkSubEntityBuilder.clear();
+      }
+
+      Entity entity =
+          entityBuilder
+              .klass("message")
+              .klass("collection")
+              .property("total", total)
+              .link(self)
               .build();
 
       representation =

@@ -17,10 +17,11 @@ import javax.xml.bind.annotation.XmlTransient;
  * @author Jon Freer
  */
 @XmlSeeAlso({
+  api.representations.RepresentationCollection.class,
   api.representations.xml.Notification.class,
-  api.representations.xml.NotificationCollection.class,
   api.representations.xml.Audience.class,
-  api.representations.xml.Target.class
+  api.representations.xml.Target.class,
+  api.representations.xml.Message.class
 })
 public abstract class Representation {
 
@@ -30,7 +31,7 @@ public abstract class Representation {
   private Date lastModified;
   private Locale language;
 
-  private Representation() {}
+  protected Representation() {}
 
   /**
    * Constructs a new {@link Representation}.
