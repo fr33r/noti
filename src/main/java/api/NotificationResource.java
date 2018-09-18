@@ -140,24 +140,4 @@ public interface NotificationResource {
       @PathParam("uuid") String uuid,
       @QueryParam("skip") Integer skip,
       @QueryParam("take") Integer take);
-
-  /**
-   * Handles HTTP GET requests for the message collection associated with the notification resource
-   * with the unique identifier provided.
-   *
-   * @param headers The headers from the HTTP request.
-   * @param uuid The universally unique identifier for the notification resource being retrieved.
-   * @param uriInfo Information about the URI of the HTTP request.
-   * @return The HTTP {@link Response}, including the representation of the requested notification
-   *     resource.
-   */
-  @GET
-  @Path("{uuid}/messages")
-  @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/vnd.siren+json"})
-  Response getMessageCollection(
-      @Context HttpHeaders headers,
-      @Context UriInfo uriInfo,
-      @PathParam("uuid") String uuid,
-      @QueryParam("skip") Integer skip,
-      @QueryParam("take") Integer take);
 }

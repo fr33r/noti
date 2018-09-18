@@ -3,7 +3,6 @@ package api.resources;
 import api.representations.RepresentationFactory;
 import api.representations.json.Notification;
 import application.AudienceFactory;
-import application.Message;
 import application.MessageFactory;
 import application.NotificationFactory;
 import application.NotificationService;
@@ -285,41 +284,6 @@ public class NotificationResource implements api.NotificationResource {
           representation =
               representationFactory.createAudienceCollectionRepresentation(
                   requestURI, language, audiences, skip, take, audiencesTotal);
-        }
-      }
-      return Response.ok(representation).build();
-    } finally {
-      span.finish();
-    }
-  }
-
-  /**
-   * {@inheritDoc}
-   *
-   * @param uuid {@inheritDoc}
-   * @param uriInfo {@inheritDoc}
-   * @return {@inheritDoc}
-   */
-  @Override
-  public Response getMessageCollection(
-      HttpHeaders headers, UriInfo uriInfo, String uuid, Integer skip, Integer take) {
-    Span span = this.tracer.buildSpan("NotificationResource#getMessageCollection").start();
-    try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
-      URI requestURI = uriInfo.getRequestUri();
-      Locale language = null;
-      application.Notification notification =
-          this.notificationService.getNotification(UUID.fromString(uuid));
-      int messagesTotal = notification.getMessages().size();
-      Set<Message> messages =
-          this.notificationService.getNotificationMessages(UUID.fromString(uuid), skip, take);
-      api.representations.Representation representation = null;
-      for (MediaType acceptableMediaType : headers.getAcceptableMediaTypes()) {
-        if (this.representationIndustry.containsKey(acceptableMediaType)) {
-          RepresentationFactory representationFactory =
-              this.representationIndustry.get(acceptableMediaType);
-          representation =
-              representationFactory.createMessageCollectionRepresentation(
-                  requestURI, language, messages, skip, take, messagesTotal);
         }
       }
       return Response.ok(representation).build();

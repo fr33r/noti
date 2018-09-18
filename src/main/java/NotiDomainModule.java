@@ -3,6 +3,7 @@ import domain.Audience;
 import domain.AudienceFactory;
 import domain.AudienceSQLFactory;
 import domain.EntitySQLFactory;
+import domain.MessageFactory;
 import domain.Notification;
 import domain.NotificationFactory;
 import domain.NotificationSQLFactory;
@@ -48,6 +49,7 @@ public final class NotiDomainModule extends NotiModule {
                 this.bindAsContract(NotificationFactory.class);
                 this.bindAsContract(TargetFactory.class);
                 this.bindAsContract(AudienceFactory.class);
+                this.bindAsContract(MessageFactory.class);
               }
             });
   }

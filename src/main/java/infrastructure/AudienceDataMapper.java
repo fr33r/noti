@@ -31,9 +31,7 @@ final class AudienceDataMapper extends DataMapper {
   }
 
   private String findAudiencesForNotificationSQL() {
-
     DataMap audienceDataMap = this.audienceMetadata.getDataMap();
-
     List<String> columnNames = audienceDataMap.getAllColumnNames();
     String columns = String.join(", ", columnNames);
 
@@ -57,9 +55,7 @@ final class AudienceDataMapper extends DataMapper {
   }
 
   private String findAudienceMembersSQL() {
-
     DataMap targetDataMap = this.targetMetadata.getDataMap();
-
     List<String> columnNames = targetDataMap.getAllColumnNames();
     String columns = String.join(", ", columnNames);
 
@@ -83,7 +79,6 @@ final class AudienceDataMapper extends DataMapper {
   }
 
   private String updateAudienceSQL() {
-
     DataMap audienceDataMap = this.audienceMetadata.getDataMap();
 
     StringBuilder sb =
@@ -103,36 +98,14 @@ final class AudienceDataMapper extends DataMapper {
   }
 
   private String insertAudienceSQL() {
-
     DataMap audienceDataMap = this.audienceMetadata.getDataMap();
-
-    List<String> columnNames = audienceDataMap.getAllColumnNames();
-    String columns = String.join(", ", columnNames);
-    List<String> placeholderList = new ArrayList<>();
-    for (int i = 0; i < columnNames.size(); i++) {
-      placeholderList.add("?");
-    }
-    String placeholders = String.join(", ", placeholderList);
-
-    StringBuilder sb =
-        new StringBuilder()
-            .append("INSERT INTO ")
-            .append(audienceDataMap.getTableName())
-            .append(" (")
-            .append(columns)
-            .append(") VALUES (")
-            .append(placeholders)
-            .append(")");
-
-    String sql = sb.toString();
+    String sql = this.insertSQL(1, audienceDataMap);
     this.logger.debug(sql);
     return sql;
   }
 
   private String findAudienceSQL() {
-
     DataMap audienceDataMap = this.audienceMetadata.getDataMap();
-
     List<String> columnNames = audienceDataMap.getAllColumnNames();
     String columns = String.join(", ", columnNames);
 
@@ -156,50 +129,39 @@ final class AudienceDataMapper extends DataMapper {
   }
 
   private String associateMemberSQL(int numberOfMembers) {
-    StringBuilder sb = new StringBuilder();
-    sb.append("INSERT INTO AUDIENCE_TARGET (AUDIENCE_UUID, TARGET_UUID) VALUES");
-    for (int i = 0; i < numberOfMembers; i++) {
-      sb.append("(?,  ?)");
-      if (i != numberOfMembers - 1) sb.append(", ");
-    }
-    String sql = sb.toString();
+    String tableName = "AUDIENCE_TARGET";
+    List<String> columnNames = new ArrayList<>();
+    columnNames.add("AUDIENCE_UUID");
+    columnNames.add("TARGET_UUID");
+    String sql = this.insertSQL(numberOfMembers, tableName, columnNames);
     this.logger.debug(sql);
     return sql;
   }
 
   private String disassociateMemberSQL(int numberOfMembers) {
-    StringBuilder sb = new StringBuilder();
-    sb.append("DELETE FROM AUDIENCE_TARGET WHERE ");
-    for (int i = 0; i < numberOfMembers; i++) {
-      sb.append("(AUDIENCE_UUID = ? AND TARGET_UUID = ?)");
-      if (i != numberOfMembers - 1) sb.append(" OR ");
-    }
-    String sql = sb.toString();
+    String tableName = "AUDIENCE_TARGET";
+    String matchCriteria = "AUDIENCE_UUID = ? AND TARGET_UUID = ?";
+    String sql = this.deleteSQL(numberOfMembers, tableName, matchCriteria);
     this.logger.debug(sql);
     return sql;
   }
 
   private String deleteAudienceSQL() {
-
     DataMap audienceDataMap = this.audienceMetadata.getDataMap();
-
-    StringBuilder sb =
+    String matchCriteria =
         new StringBuilder()
-            .append("DELETE FROM ")
-            .append(audienceDataMap.getTableName())
-            .append(" WHERE ")
             .append(audienceDataMap.getColumnNameForField(AudienceMetadata.UUID))
-            .append(" = ?");
-
-    String sql = sb.toString();
+            .append(" = ?")
+            .toString();
+    String sql = this.deleteSQL(1, audienceDataMap, matchCriteria);
     this.logger.debug(sql);
     return sql;
   }
 
   private String disassociateMembersSQL() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("DELETE FROM AUDIENCE_TARGET WHERE AUDIENCE_UUID = ?;");
-    String sql = sb.toString();
+    String tableName = "AUDIENCE_TARGET";
+    String matchCriteria = "AUDIENCE_UUID = ?";
+    String sql = this.deleteSQL(1, tableName, matchCriteria);
     this.logger.debug(sql);
     return sql;
   }

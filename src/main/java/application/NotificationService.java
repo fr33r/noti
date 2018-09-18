@@ -51,4 +51,8 @@ public interface NotificationService {
   Set<Audience> getNotificationAudiences(UUID uuid, Integer skip, Integer take);
 
   Set<Message> getNotificationMessages(UUID uuid, Integer skip, Integer take);
+
+  Message getNotificationMessage(UUID notificationUUID, Integer messageID);
+
+  void updateNotificationMessage(UUID notificationUUID, Message message);
 }

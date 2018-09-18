@@ -1,4 +1,5 @@
 import api.resources.AudienceResource;
+import api.resources.MessageResource;
 import api.resources.NotificationResource;
 import api.resources.TargetResource;
 import configuration.NotiConfiguration;
@@ -17,5 +18,6 @@ public final class ResourceModule extends NotiModule {
     this.getEnvironment().jersey().register(NotificationResource.class);
     this.getEnvironment().jersey().register(AudienceResource.class);
     this.getEnvironment().jersey().register(TargetResource.class);
+    this.getEnvironment().jersey().register(MessageResource.class);
   }
 }
