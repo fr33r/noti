@@ -332,7 +332,7 @@ public final class NotificationService implements application.NotificationServic
                 "Can't find notification with UUID of '%s'", notificationUUID.toString()));
       }
 
-      // ensure that the message being updated actually exists.
+      // ensure that the message being retrieved actually exists.
       if (!_notification.containsMessage(messageID)) {
         throw new RuntimeException(String.format("Can't find message with ID of '%d'", messageID));
       }
@@ -352,7 +352,6 @@ public final class NotificationService implements application.NotificationServic
       Repository<Notification, UUID> notificationRepository =
           this.repositoryFactory.createNotificationRepository(unitOfWork);
       Message _message = this.messageFactory.createFrom(message);
-      System.out.println("[X] provided status => " + _message.getStatus().toString());
 
       // retrieve notification.
       Notification _notification = notificationRepository.get(notificationUUID);
@@ -374,7 +373,6 @@ public final class NotificationService implements application.NotificationServic
       // TODO - use state pattern instead to enforce invarients. throw error
       // if the provided status is invalid.
       _existing_message.setStatus(_message.getStatus());
-      System.out.println("[X] after modification => " + _existing_message.getStatus().toString());
       notificationRepository.put(_notification);
       unitOfWork.save();
     } catch (Exception x) {
