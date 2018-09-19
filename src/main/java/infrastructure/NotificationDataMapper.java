@@ -238,11 +238,11 @@ final class NotificationDataMapper extends DataMapper {
             .append(notificationDataMap.getTableName())
             .append(" SET ")
             .append(notificationDataMap.getColumnNameForField(NotificationMetadata.CONTENT))
-            .append(" = ?,")
+            .append(" = ?, ")
             .append(notificationDataMap.getColumnNameForField(NotificationMetadata.STATUS))
-            .append(" = ?,")
+            .append(" = ?, ")
             .append(notificationDataMap.getColumnNameForField(NotificationMetadata.SENT_AT))
-            .append(" = ?,")
+            .append(" = ?, ")
             .append(notificationDataMap.getColumnNameForField(NotificationMetadata.SEND_AT))
             .append(" = ?")
             .append(" WHERE ")
@@ -254,111 +254,141 @@ final class NotificationDataMapper extends DataMapper {
   }
 
   private String insertNotificationSQL() {
-
     DataMap notificationDataMap = this.notificationMetadata.getDataMap();
-
-    List<String> columnNames = notificationDataMap.getAllColumnNamesWithAliases();
-    String columns = String.join(", ", columnNames);
-    List<String> placeholderList = new ArrayList<>();
-    for (int i = 0; i < columnNames.size(); i++) {
-      placeholderList.add("?");
-    }
-    String placeholders = String.join(", ", placeholderList);
-
-    StringBuilder sb =
-        new StringBuilder()
-            .append("INSERT INTO ")
-            .append(notificationDataMap.getTableName())
-            .append(" (")
-            .append(columns)
-            .append(") VALUES (")
-            .append(placeholders)
-            .append(")");
-
-    String sql = sb.toString();
+    String sql = this.insertSQL(1, notificationDataMap);
     this.logger.debug(sql);
     return sql;
   }
 
   private String insertMessageSQL() {
-
     DataMap messageDataMap = this.messageMetadata.getDataMap();
+    String sql = this.insertSQL(1, messageDataMap);
+    this.logger.debug(sql);
+    return sql;
+  }
 
-    List<String> columnNames = messageDataMap.getAllColumnNamesWithAliases();
-    String columns = String.join(", ", columnNames);
-    List<String> placeholderList = new ArrayList<>();
-    for (int i = 0; i < columnNames.size(); i++) {
-      placeholderList.add("?");
-    }
-    String placeholders = String.join(", ", placeholderList);
-
+  private String updateMessageSQL() {
+    DataMap messageDataMap = this.messageMetadata.getDataMap();
     StringBuilder sb =
         new StringBuilder()
-            .append("INSERT INTO ")
+            .append("UPDATE ")
             .append(messageDataMap.getTableName())
-            .append(" (")
-            .append(columns)
-            .append(") VALUES (")
-            .append(placeholders)
-            .append(")");
+            .append(" SET ")
+            .append(messageDataMap.getColumnNameForField(MessageMetadata.CONTENT))
+            .append(" = ?, ")
+            .append(messageDataMap.getColumnNameForField(MessageMetadata.TO))
+            .append(" = ?, ")
+            .append(messageDataMap.getColumnNameForField(MessageMetadata.FROM))
+            .append(" = ?, ")
+            .append(messageDataMap.getColumnNameForField(MessageMetadata.EXTERNAL_ID))
+            .append(" = ?, ")
+            .append(messageDataMap.getColumnNameForField(MessageMetadata.STATUS))
+            .append(" = ?")
+            .append(" WHERE ")
+            .append(messageDataMap.getColumnNameForField(MessageMetadata.ID))
+            .append(" = ? AND NOTIFICATION_UUID = ?");
 
     String sql = sb.toString();
+    this.logger.debug(sql);
+    return sql;
+  }
+
+  private String insertMessagesSQL(int numberOfMessages) {
+    DataMap messageDataMap = this.messageMetadata.getDataMap();
+    String sql = this.insertSQL(numberOfMessages, messageDataMap);
+    this.logger.debug(sql);
+    return sql;
+  }
+
+  private String deleteMessagesSQL(int numberOfMessages) {
+    DataMap messageDataMap = this.messageMetadata.getDataMap();
+    String matchCriteria =
+        new StringBuilder()
+            .append(messageDataMap.getTableAlias())
+            .append(".")
+            .append(messageDataMap.getColumnNameForField(MessageMetadata.ID))
+            .append(" = ?)")
+            .toString();
+    String sql = this.deleteSQL(numberOfMessages, messageDataMap, matchCriteria);
     this.logger.debug(sql);
     return sql;
   }
 
   private String associateTargetSQL() {
-    return "INSERT INTO NOTIFICATION_TARGET (NOTIFICATION_UUID, TARGET_UUID) VALUES (?, ?)";
+    return this.associateTargetsSQL(1);
+  }
+
+  private String associateTargetsSQL(int numberOfTargets) {
+    List<String> columns = new ArrayList<>();
+    columns.add("NOTIFICATION_UUID");
+    columns.add("TARGET_UUID");
+    String tableName = "NOTIFICATION_TARGET";
+    String sql = this.insertSQL(numberOfTargets, tableName, columns);
+    this.logger.debug(sql);
+    return sql;
+  }
+
+  private String disassociateTargetsSQL(int numberOfTargets) {
+    String tableName = "NOTIFICATION_TARGET";
+    String matchCriteria = "NOTIFICATION_UUID = ? AND NOTIFICATION_TARGET = ?";
+    return this.deleteSQL(numberOfTargets, tableName, matchCriteria);
   }
 
   private String associateAudienceSQL() {
-    return "INSERT INTO NOTIFICATION_AUDIENCE (NOTIFICATION_UUID, AUDIENCE_UUID) VALUES (?, ?)";
+    return this.associateAudiencesSQL(1);
+  }
+
+  private String associateAudiencesSQL(int numberOfAudiences) {
+    List<String> columns = new ArrayList<>();
+    columns.add("NOTIFICATION_UUID");
+    columns.add("AUDIENCE_UUID");
+    String tableName = "NOTIFICATION_AUDIENCE";
+    String sql = this.insertSQL(numberOfAudiences, tableName, columns);
+    this.logger.debug(sql);
+    return sql;
+  }
+
+  private String disassociateAudiencesSQL(int numberOfAudiences) {
+    String tableName = "NOTIFICATION_AUDIENCE";
+    String matchCriteria = "NOTIFICATION_UUID = ? AND AUDIENCE_UUID = ?";
+    String sql = this.deleteSQL(numberOfAudiences, tableName, matchCriteria);
+    this.logger.debug(sql);
+    return sql;
   }
 
   private String deleteNotificationSQL() {
-
     DataMap notificationDataMap = this.notificationMetadata.getDataMap();
-
-    StringBuilder sb =
+    String matchCriteria =
         new StringBuilder()
-            .append("DELETE FROM ")
-            .append(notificationDataMap.getTableName())
-            .append(" WHERE ")
             .append(notificationDataMap.getColumnNameForField(NotificationMetadata.UUID))
-            .append(" = ?");
+            .append(" = ?")
+            .toString();
 
-    String sql = sb.toString();
+    String sql = this.deleteSQL(1, notificationDataMap, matchCriteria);
     this.logger.debug(sql);
     return sql;
   }
 
   private String deleteMessagesSQL() {
-
     DataMap messageDataMap = this.messageMetadata.getDataMap();
-
-    List<String> columnNames = messageDataMap.getAllColumnNamesWithAliases();
-    String columns = String.join(", ", columnNames);
-
-    StringBuilder sb =
-        new StringBuilder()
-            .append("DELETE FROM ")
-            .append(messageDataMap.getTableName())
-            .append(" WHERE ")
-            .append("NOTIFICATION_UUID = ?");
-
-    String sql = sb.toString();
+    String matchCriteria = "NOTIFICATION_UUID = ?";
+    String sql = this.deleteSQL(1, messageDataMap, matchCriteria);
     this.logger.debug(sql);
     return sql;
   }
 
   private String dissociateTargetSQL() {
-    String sql = "DELETE FROM NOTIFICATION_TARGET WHERE NOTIFICATION_UUID = ?";
+    String tableName = "NOTIFICATION_TARGET";
+    String matchCriteria = "NOTIFICATION_UUID = ?";
+    String sql = this.deleteSQL(1, tableName, matchCriteria);
     this.logger.debug(sql);
     return sql;
   }
 
   private String dissociateAudienceSQL() {
-    String sql = "DELETE FROM NOTIFICATION_AUDIENCE WHERE NOTIFICATION_UUID = ?";
+    String tableName = "NOTIFICATION_AUDIENCE";
+    String matchCriteria = "NOTIFICATION_UUID = ?";
+    String sql = this.deleteSQL(1, tableName, matchCriteria);
     this.logger.debug(sql);
     return sql;
   }
@@ -561,6 +591,9 @@ final class NotificationDataMapper extends DataMapper {
   void update(final Notification notification) {
 
     String notificationSQL = this.updateNotificationSQL();
+    Notification existingNotification = this.find(notification.getId());
+    if (existingNotification == null) return;
+
     try (final PreparedStatement updateNotificationStatement =
         this.getUnitOfWork().createPreparedStatement(notificationSQL)) {
       int index = 0;
@@ -582,8 +615,138 @@ final class NotificationDataMapper extends DataMapper {
       }
 
       updateNotificationStatement.setString(++index, notification.getId().toString());
-
       updateNotificationStatement.executeUpdate();
+
+      Set<UUID> recipientsToAssociate = new HashSet<>();
+      Set<UUID> recipeintsToDisassociate = new HashSet<>();
+
+      // determine which recipients are being added.
+      for (Target recipient : notification.directRecipients()) {
+        if (!existingNotification.directRecipients().contains(recipient)) {
+          recipientsToAssociate.add(recipient.getId());
+        }
+      }
+
+      // determine which recipients are being removed.
+      for (Target recipient : existingNotification.directRecipients()) {
+        if (!notification.directRecipients().contains(recipient)) {
+          recipeintsToDisassociate.add(recipient.getId());
+        }
+      }
+
+      Set<UUID> audiencesToAssociate = new HashSet<>();
+      Set<UUID> audiencesToDisassociate = new HashSet<>();
+
+      // determine which audiences are being added.
+      for (Audience audience : notification.audiences()) {
+        if (!existingNotification.audiences().contains(audience)) {
+          audiencesToAssociate.add(audience.getId());
+        }
+      }
+
+      // determine which audiences are being removed.
+      for (Audience audience : existingNotification.audiences()) {
+        if (!notification.audiences().contains(audience)) {
+          audiencesToDisassociate.add(audience.getId());
+        }
+      }
+
+      Set<Integer> messagesToInsert = new HashSet<>();
+      Set<Integer> messagesToDelete = new HashSet<>();
+      Set<Integer> messagesToUpdate = new HashSet<>();
+
+      // determine which messages are being added.
+      for (Message message : notification.messages()) {
+        if (!existingNotification.messages().contains(message)) {
+          messagesToInsert.add(message.getId());
+        }
+      }
+
+      // determine which messages are being removed.
+      for (Message message : existingNotification.messages()) {
+        if (!notification.messages().contains(message)) {
+          messagesToDelete.add(message.getId());
+        }
+      }
+
+      // determine which messages are being updated.
+      for (Message message : notification.messages()) {
+        if (existingNotification.messages().contains(message)) {
+          messagesToUpdate.add(message.getId());
+        }
+      }
+
+      if (!audiencesToAssociate.isEmpty()) {
+        String associateAudiencesSQL = this.associateAudiencesSQL(audiencesToAssociate.size());
+        try (final PreparedStatement associateAudienceStatement =
+            this.getUnitOfWork().createPreparedStatement(associateAudiencesSQL)) {
+          index = 0;
+          for (UUID uuid : audiencesToAssociate) {
+            associateAudienceStatement.setString(++index, notification.getId().toString());
+            associateAudienceStatement.setString(++index, uuid.toString());
+          }
+          associateAudienceStatement.executeUpdate();
+        }
+      }
+
+      if (!audiencesToDisassociate.isEmpty()) {
+        String disassociateAudiencesSQL =
+            this.disassociateAudiencesSQL(audiencesToDisassociate.size());
+        try (final PreparedStatement disassociateAudiencesStatement =
+            this.getUnitOfWork().createPreparedStatement(disassociateAudiencesSQL)) {
+          index = 0;
+          for (UUID uuid : audiencesToDisassociate) {
+            disassociateAudiencesStatement.setString(++index, notification.getId().toString());
+            disassociateAudiencesStatement.setString(++index, uuid.toString());
+          }
+          disassociateAudiencesStatement.executeUpdate();
+        }
+      }
+
+      if (!messagesToInsert.isEmpty()) {
+        String insertMessagesSQL = this.insertMessagesSQL(messagesToInsert.size());
+        try (final PreparedStatement insertMessagesStatement =
+            this.getUnitOfWork().createPreparedStatement(insertMessagesSQL)) {
+          index = 0;
+          for (Integer id : messagesToInsert) {
+            insertMessagesStatement.setString(++index, notification.getId().toString());
+            insertMessagesStatement.setInt(++index, id);
+          }
+          insertMessagesStatement.executeUpdate();
+        }
+      }
+
+      if (!messagesToDelete.isEmpty()) {
+        String deleteMessagesSQL = this.deleteMessagesSQL(messagesToDelete.size());
+        try (final PreparedStatement deleteMessagesStatement =
+            this.getUnitOfWork().createPreparedStatement(deleteMessagesSQL)) {
+          index = 0;
+          for (Integer id : messagesToDelete) {
+            deleteMessagesStatement.setString(++index, notification.getId().toString());
+            deleteMessagesStatement.setInt(++index, id);
+          }
+          deleteMessagesStatement.executeUpdate();
+        }
+      }
+
+      if (!messagesToUpdate.isEmpty()) {
+        String updateMessageSQL = this.updateMessageSQL();
+        for (Integer id : messagesToUpdate) {
+          index = 0;
+          Message message = notification.message(id);
+          try (final PreparedStatement updateMessageStatement =
+              this.getUnitOfWork().createPreparedStatement(updateMessageSQL)) {
+            updateMessageStatement.setString(++index, message.getContent());
+            updateMessageStatement.setString(++index, message.getTo().toE164());
+            updateMessageStatement.setString(++index, message.getFrom().toE164());
+            updateMessageStatement.setString(++index, message.getExternalId());
+            updateMessageStatement.setString(++index, message.getStatus().toString());
+            updateMessageStatement.setInt(++index, id);
+            updateMessageStatement.setString(++index, notification.getId().toString());
+            updateMessageStatement.executeUpdate();
+          }
+        }
+      }
     } catch (SQLException x) {
       throw new RuntimeException(x);
     }

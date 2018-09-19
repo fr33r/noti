@@ -5,7 +5,6 @@ import domain.Target;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -29,7 +28,6 @@ final class TargetDataMapper extends DataMapper {
 
   private String findTargetsForNotificationSQL() {
     DataMap targetDataMap = this.targetMetadata.getDataMap();
-
     List<String> columnNames = targetDataMap.getAllColumnNames();
     String columns = String.join(", ", columnNames);
 
@@ -54,7 +52,6 @@ final class TargetDataMapper extends DataMapper {
 
   private String findTargetSQL() {
     DataMap targetDataMap = this.targetMetadata.getDataMap();
-
     List<String> columnNames = targetDataMap.getAllColumnNames();
     String columns = String.join(", ", columnNames);
 
@@ -79,26 +76,7 @@ final class TargetDataMapper extends DataMapper {
 
   private String insertTargetSQL() {
     DataMap targetDataMap = this.targetMetadata.getDataMap();
-
-    List<String> columnNames = targetDataMap.getAllColumnNames();
-    String columns = String.join(", ", columnNames);
-    List<String> placeholderList = new ArrayList<>();
-    for (int i = 0; i < columnNames.size(); i++) {
-      placeholderList.add("?");
-    }
-    String placeholders = String.join(", ", placeholderList);
-
-    StringBuilder sb =
-        new StringBuilder()
-            .append("INSERT INTO ")
-            .append(targetDataMap.getTableName())
-            .append(" (")
-            .append(columns)
-            .append(") VALUES (")
-            .append(placeholders)
-            .append(")");
-
-    String sql = sb.toString();
+    String sql = this.insertSQL(1, targetDataMap);
     this.logger.debug(sql);
     return sql;
   }
@@ -126,32 +104,29 @@ final class TargetDataMapper extends DataMapper {
 
   private String deleteTargetSQL() {
     DataMap targetDataMap = this.targetMetadata.getDataMap();
-
-    StringBuilder sb =
+    String matchCriteria =
         new StringBuilder()
-            .append("DELETE FROM ")
-            .append(targetDataMap.getTableName())
-            .append(" WHERE ")
             .append(targetDataMap.getColumnNameForField(TargetMetadata.UUID))
-            .append(" = ?");
+            .append(" = ?")
+            .toString();
 
-    String sql = sb.toString();
+    String sql = this.deleteSQL(1, targetDataMap, matchCriteria);
     this.logger.debug(sql);
     return sql;
   }
 
   private String disassociateFromNotificationSQL() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("DELETE FROM NOTIFICATION_TARGET WHERE TARGET_UUID = ?");
-    String sql = sb.toString();
+    String tableName = "NOTIFICATION_TARGET";
+    String matchCriteria = "TARGET_UUID = ?";
+    String sql = this.deleteSQL(1, tableName, matchCriteria);
     this.logger.debug(sql);
     return sql;
   }
 
   private String disassociateFromAudienceSQL() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("DELETE FROM AUDIENCE_TARGET WHERE TARGET_UUID = ?");
-    String sql = sb.toString();
+    String tableName = "NOTIFICATION_AUDIENCE";
+    String matchCriteria = "TARGET_UUID = ?";
+    String sql = this.deleteSQL(1, tableName, matchCriteria);
     this.logger.debug(sql);
     return sql;
   }

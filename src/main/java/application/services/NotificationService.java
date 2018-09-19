@@ -1,6 +1,7 @@
 package application.services;
 
 import domain.Message;
+import domain.MessageFactory;
 import domain.Notification;
 import domain.NotificationFactory;
 import infrastructure.MessageMetadata;
@@ -26,6 +27,8 @@ public final class NotificationService implements application.NotificationServic
   private final RepositoryFactory repositoryFactory;
   private final NotificationFactory notificationFactory;
   private final application.NotificationFactory applicationNotificationFactory;
+  private final MessageFactory messageFactory;
+  private final application.MessageFactory applicationMessageFactory;
   private final MessageQueueService smsQueueService;
   private final QueryFactory<domain.Notification> queryFactory;
   private final Tracer tracer;
@@ -38,11 +41,15 @@ public final class NotificationService implements application.NotificationServic
       NotificationFactory notificationFactory,
       application.NotificationFactory applicationNotificationFactory,
       QueryFactory<domain.Notification> queryFactory,
+      MessageFactory messageFactory,
+      application.MessageFactory applicationMessageFactory,
       Tracer tracer) {
     this.unitOfWorkFactory = unitOfWorkFactory;
     this.repositoryFactory = repositoryFactory;
     this.smsQueueService = smsQueueService;
     this.notificationFactory = notificationFactory;
+    this.messageFactory = messageFactory;
+    this.applicationMessageFactory = applicationMessageFactory;
     this.applicationNotificationFactory = applicationNotificationFactory;
     this.queryFactory = queryFactory;
     this.tracer = tracer;
@@ -302,6 +309,71 @@ public final class NotificationService implements application.NotificationServic
           this.repositoryFactory.createNotificationRepository(unitOfWork);
       Notification noti_domain = this.notificationFactory.createFrom(notification);
       notificationRepository.put(noti_domain);
+      unitOfWork.save();
+    } catch (Exception x) {
+      unitOfWork.undo();
+      throw x;
+    }
+  }
+
+  public application.Message getNotificationMessage(UUID notificationUUID, Integer messageID) {
+    SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+
+    try {
+      Repository<Notification, UUID> notificationRepository =
+          this.repositoryFactory.createNotificationRepository(unitOfWork);
+
+      // retrieve notification.
+      Notification _notification = notificationRepository.get(notificationUUID);
+      unitOfWork.save();
+      if (_notification == null) {
+        throw new RuntimeException(
+            String.format(
+                "Can't find notification with UUID of '%s'", notificationUUID.toString()));
+      }
+
+      // ensure that the message being retrieved actually exists.
+      if (!_notification.containsMessage(messageID)) {
+        throw new RuntimeException(String.format("Can't find message with ID of '%d'", messageID));
+      }
+
+      Message message = _notification.message(messageID);
+      return this.applicationMessageFactory.createFrom(message);
+    } catch (Exception x) {
+      unitOfWork.undo();
+      throw x;
+    }
+  }
+
+  public void updateNotificationMessage(UUID notificationUUID, application.Message message) {
+    SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+
+    try {
+      Repository<Notification, UUID> notificationRepository =
+          this.repositoryFactory.createNotificationRepository(unitOfWork);
+      Message _message = this.messageFactory.createFrom(message);
+
+      // retrieve notification.
+      Notification _notification = notificationRepository.get(notificationUUID);
+      if (_notification == null) {
+        throw new RuntimeException(
+            String.format(
+                "Can't find notification with UUID of '%s'", notificationUUID.toString()));
+      }
+
+      // ensure that the message being updated actually exists.
+      if (!_notification.containsMessage(_message)) {
+        throw new RuntimeException(
+            String.format("Can't find message with ID of '%d'", _message.getId()));
+      }
+
+      // update the message.
+      Message _existing_message = _notification.message(_message.getId());
+
+      // TODO - use state pattern instead to enforce invarients. throw error
+      // if the provided status is invalid.
+      _existing_message.setStatus(_message.getStatus());
+      notificationRepository.put(_notification);
       unitOfWork.save();
     } catch (Exception x) {
       unitOfWork.undo();
