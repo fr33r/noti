@@ -11,61 +11,43 @@ import io.opentracing.Span;
 import io.opentracing.Tracer;
 import java.net.URI;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
-public class AudienceResource implements api.AudienceResource {
+public class AudienceResource extends Resource implements api.AudienceResource {
 
   private final AudienceService audienceService;
-  private final RepresentationFactory jsonRepresentationFactory;
-  private final RepresentationFactory xmlRepresentationFactory;
-  private final RepresentationFactory sirenRepresentationFactory;
   private final AudienceFactory audienceFactory;
-  private final Tracer tracer;
 
   @Inject
   public AudienceResource(
       AudienceService audienceService,
-      @Named("JSONRepresentationFactory") RepresentationFactory jsonRepresentationFactory,
-      @Named("XMLRepresentationFactory") RepresentationFactory xmlRepresentationFactory,
-      @Named("SirenRepresentationFactory") RepresentationFactory sirenRepresentationFactory,
+      Map<MediaType, RepresentationFactory> representationIndustry,
       Tracer tracer) {
+    super(representationIndustry, tracer);
     this.audienceService = audienceService;
-    this.jsonRepresentationFactory = jsonRepresentationFactory;
-    this.xmlRepresentationFactory = xmlRepresentationFactory;
-    this.sirenRepresentationFactory = sirenRepresentationFactory;
-    this.tracer = tracer;
     this.audienceFactory = new AudienceFactory(new TargetFactory());
   }
 
   @Override
   public Response get(HttpHeaders headers, UriInfo uriInfo, String uuid) {
-    Span span = this.tracer.buildSpan("AudienceResource#get").start();
-    try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
+    String className = TargetResource.class.getName();
+    String spanName = String.format("%s#get", className);
+    Span span = this.getTracer().buildSpan(spanName).start();
+    try (Scope scope = this.getTracer().scopeManager().activate(span, false)) {
+      URI location = uriInfo.getRequestUri();
+      Locale language = null;
       application.Audience audience = this.audienceService.getAudience(UUID.fromString(uuid));
 
-      URI requestURI = uriInfo.getRequestUri();
-      Locale language = null;
-      Representation representation = null;
-      if (headers.getAcceptableMediaTypes().contains(MediaType.APPLICATION_JSON_TYPE)) {
-        representation =
-            this.jsonRepresentationFactory.createAudienceRepresentation(
-                requestURI, language, audience);
-      } else if (headers.getAcceptableMediaTypes().contains(MediaType.APPLICATION_XML_TYPE)) {
-        representation =
-            this.xmlRepresentationFactory.createAudienceRepresentation(
-                requestURI, language, audience);
-      } else {
-        representation =
-            this.sirenRepresentationFactory.createAudienceRepresentation(
-                requestURI, language, audience);
-      }
+      RepresentationFactory representationFactory = this.getRepresentationFactory(headers);
+      Representation representation =
+          representationFactory.createAudienceRepresentation(location, language, audience);
       return Response.ok(representation).build();
     } finally {
       span.finish();
@@ -74,8 +56,10 @@ public class AudienceResource implements api.AudienceResource {
 
   @Override
   public Response createAndAppend(HttpHeaders headers, UriInfo uriInfo, Audience audience) {
-    Span span = this.tracer.buildSpan("AudienceResource#createAndAppend").start();
-    try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
+    String className = AudienceResource.class.getName();
+    String spanName = String.format("%s#createAndAppend", className);
+    Span span = this.getTracer().buildSpan(spanName).start();
+    try (Scope scope = this.getTracer().scopeManager().activate(span, false)) {
       UUID audienceUUID =
           this.audienceService.createAudience(this.audienceFactory.createFrom(audience));
       URI location =
@@ -90,8 +74,10 @@ public class AudienceResource implements api.AudienceResource {
 
   @Override
   public Response replace(HttpHeaders headers, UriInfo uriInfo, Audience audience) {
-    Span span = this.tracer.buildSpan("AudienceResource#replace").start();
-    try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
+    String className = AudienceResource.class.getName();
+    String spanName = String.format("%s#replace", className);
+    Span span = this.getTracer().buildSpan(spanName).start();
+    try (Scope scope = this.getTracer().scopeManager().activate(span, false)) {
       this.audienceService.replaceAudience(this.audienceFactory.createFrom(audience));
       return Response.noContent().build();
     } finally {
@@ -101,8 +87,10 @@ public class AudienceResource implements api.AudienceResource {
 
   @Override
   public Response delete(UriInfo uriInfo, String uuid) {
-    Span span = this.tracer.buildSpan("AudienceResource#delete").start();
-    try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
+    String className = AudienceResource.class.getName();
+    String spanName = String.format("%s#delete", className);
+    Span span = this.getTracer().buildSpan(spanName).start();
+    try (Scope scope = this.getTracer().scopeManager().activate(span, false)) {
       this.audienceService.deleteAudience(UUID.fromString(uuid));
       return Response.ok().build();
     } finally {
