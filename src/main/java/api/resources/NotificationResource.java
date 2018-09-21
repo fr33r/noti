@@ -12,13 +12,11 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import java.net.URI;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -30,26 +28,16 @@ import javax.ws.rs.core.UriInfo;
  *
  * @author jonfreer
  */
-public class NotificationResource implements api.NotificationResource {
+public class NotificationResource extends Resource implements api.NotificationResource {
 
   private final NotificationService notificationService;
-  private final RepresentationFactory jsonRepresentationFactory;
-  private final RepresentationFactory xmlRepresentationFactory;
-  private final RepresentationFactory sirenRepresentationFactory;
   private final NotificationFactory notificationFactory;
-  private final Tracer tracer;
-  private final Map<MediaType, RepresentationFactory> representationIndustry;
 
   /**
    * Construct a new {@link NotificationResource}.
    *
-   * @param jsonRepresentationFactory The {@link api.representations.json.JSONRepresentationFactory}
-   *     responsible for constructing JSON {@link api.representations.Representation} instances.
-   * @param xmlRepresentationFactory The {@link api.representations.xml.XMLRepresentationFactory}
-   *     responsible for constructing XML {@link api.representations.Representation} instances.
-   * @param sirenRepresentationFactory The {@link
-   *     api.representations.siren.SirenRepresentationFactory} responsible for constructing Siren
-   *     {@link api.representations.Representation} instances.
+   * @param representationIndustry The collection of representation factories used to construct
+   *     representations.
    * @param tracer The tracer conforming to the OpenTracing standard utilized for instrumentation.
    * @param notificationService The application service that orchestrates various operations with
    *     notifications.
@@ -57,25 +45,13 @@ public class NotificationResource implements api.NotificationResource {
   @Inject
   public NotificationResource(
       NotificationService notificationService,
-      @Named("JSONRepresentationFactory") RepresentationFactory jsonRepresentationFactory,
-      @Named("XMLRepresentationFactory") RepresentationFactory xmlRepresentationFactory,
-      @Named("SirenRepresentationFactory") RepresentationFactory sirenRepresentationFactory,
+      Map<MediaType, RepresentationFactory> representationIndustry,
       Tracer tracer) {
+    super(representationIndustry, tracer);
     this.notificationService = notificationService;
-    this.jsonRepresentationFactory = jsonRepresentationFactory;
-    this.xmlRepresentationFactory = xmlRepresentationFactory;
-    this.sirenRepresentationFactory = sirenRepresentationFactory;
-    this.tracer = tracer;
     this.notificationFactory =
         new NotificationFactory(
             new TargetFactory(), new AudienceFactory(new TargetFactory()), new MessageFactory());
-    this.representationIndustry = new HashMap<>();
-    this.representationIndustry.put(
-        jsonRepresentationFactory.getMediaType(), jsonRepresentationFactory);
-    this.representationIndustry.put(
-        xmlRepresentationFactory.getMediaType(), xmlRepresentationFactory);
-    this.representationIndustry.put(
-        sirenRepresentationFactory.getMediaType(), sirenRepresentationFactory);
   }
 
   /**
@@ -89,8 +65,10 @@ public class NotificationResource implements api.NotificationResource {
   @Override
   public Response getCollection(
       HttpHeaders headers, UriInfo uriInfo, String messageExternalID, Integer skip, Integer take) {
-    Span span = this.tracer.buildSpan("NotificationResource#get").start();
-    try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
+    String className = NotificationResource.class.getName();
+    String spanName = String.format("%s#getCollection", className);
+    Span span = this.getTracer().buildSpan(spanName).start();
+    try (Scope scope = this.getTracer().scopeManager().activate(span, false)) {
       URI location = uriInfo.getRequestUri();
       Locale language = null;
 
@@ -99,15 +77,11 @@ public class NotificationResource implements api.NotificationResource {
       Integer total = this.notificationService.getNotificationCount();
 
       api.representations.Representation representation = null;
-      for (MediaType acceptableMediaType : headers.getAcceptableMediaTypes()) {
-        if (this.representationIndustry.containsKey(acceptableMediaType)) {
-          RepresentationFactory representationFactory =
-              this.representationIndustry.get(acceptableMediaType);
-          representation =
-              representationFactory.createNotificationCollectionRepresentation(
-                  location, language, notifications, skip, take, total);
-        }
-      }
+      RepresentationFactory representationFactory = this.getRepresentationFactory(headers);
+      representation =
+          representationFactory.createNotificationCollectionRepresentation(
+              location, language, notifications, skip, take, total);
+
       return Response.ok(representation).build();
     } finally {
       span.finish();
@@ -124,36 +98,20 @@ public class NotificationResource implements api.NotificationResource {
    */
   @Override
   public Response get(HttpHeaders headers, UriInfo uriInfo, String uuid) {
-    Span span = this.tracer.buildSpan("NotificationResource#get").start();
-    try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
-
+    String className = NotificationResource.class.getName();
+    String spanName = String.format("%s#get", className);
+    Span span = this.getTracer().buildSpan(spanName).start();
+    try (Scope scope = this.getTracer().scopeManager().activate(span, false)) {
       URI requestURI = uriInfo.getRequestUri();
-
-      // as currently designed, the notification is stored agnostic to which
-      // language audience it is intended for. Due to this, NOTI cannot
-      // perform content negotiation on the language, since a language is not
-      // associated with the notification content. if/when intended language
-      // audiences are assocaited with notification content, can NOTI
-      // fully support content negotiation based on Accept-Language.
-      //
-      // as outlined in RFC7231 section 5.3.5, the origin server is free
-      // to ignore the Accept-Language header when performing content negotation.
-      // the RFC does not recommend returning 406, since it is possible for
-      // clients to translate.
       Locale language = null;
       application.Notification notification =
           this.notificationService.getNotification(UUID.fromString(uuid));
 
       api.representations.Representation representation = null;
-      for (MediaType acceptableMediaType : headers.getAcceptableMediaTypes()) {
-        if (this.representationIndustry.containsKey(acceptableMediaType)) {
-          RepresentationFactory representationFactory =
-              this.representationIndustry.get(acceptableMediaType);
-          representation =
-              representationFactory.createNotificationRepresentation(
-                  requestURI, language, notification);
-        }
-      }
+      RepresentationFactory representationFactory = this.getRepresentationFactory(headers);
+      representation =
+          representationFactory.createNotificationRepresentation(
+              requestURI, language, notification);
       return Response.ok(representation).build();
     } finally {
       span.finish();
@@ -170,8 +128,10 @@ public class NotificationResource implements api.NotificationResource {
    */
   @Override
   public Response createAndAppend(HttpHeaders headers, UriInfo uriInfo, Notification notification) {
-    Span span = this.tracer.buildSpan("NotificationResource#createAndAppend").start();
-    try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
+    String className = NotificationResource.class.getName();
+    String spanName = String.format("%s#createAndAppend", className);
+    Span span = this.getTracer().buildSpan(spanName).start();
+    try (Scope scope = this.getTracer().scopeManager().activate(span, false)) {
       UUID uuid =
           this.notificationService.createNotification(
               this.notificationFactory.createFrom(notification));
@@ -193,8 +153,10 @@ public class NotificationResource implements api.NotificationResource {
    */
   @Override
   public Response replace(HttpHeaders headers, UriInfo uriInfo, Notification notification) {
-    Span span = this.tracer.buildSpan("NotificationResource#replace").start();
-    try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
+    String className = NotificationResource.class.getName();
+    String spanName = String.format("%s#replace", className);
+    Span span = this.getTracer().buildSpan(spanName).start();
+    try (Scope scope = this.getTracer().scopeManager().activate(span, false)) {
       this.notificationService.updateNotification(
           this.notificationFactory.createFrom(notification));
       return Response.noContent().build();
@@ -212,8 +174,10 @@ public class NotificationResource implements api.NotificationResource {
    */
   @Override
   public Response delete(UriInfo uriInfo, String uuid) {
-    Span span = this.tracer.buildSpan("NotificationResource#delete").start();
-    try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
+    String className = NotificationResource.class.getName();
+    String spanName = String.format("%s#delete", className);
+    Span span = this.getTracer().buildSpan(spanName).start();
+    try (Scope scope = this.getTracer().scopeManager().activate(span, false)) {
       this.notificationService.deleteNotification(UUID.fromString(uuid));
       return Response.noContent().build();
     } finally {
@@ -231,8 +195,10 @@ public class NotificationResource implements api.NotificationResource {
   @Override
   public Response getTargetCollection(
       HttpHeaders headers, UriInfo uriInfo, String uuid, Integer skip, Integer take) {
-    Span span = this.tracer.buildSpan("NotificationResource#getTargetCollection").start();
-    try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
+    String className = NotificationResource.class.getName();
+    String spanName = String.format("%s#getTargetCollection", className);
+    Span span = this.getTracer().buildSpan(spanName).start();
+    try (Scope scope = this.getTracer().scopeManager().activate(span, false)) {
       URI requestURI = uriInfo.getRequestUri();
       Locale language = null;
       Set<Target> notificationTargets =
@@ -242,15 +208,10 @@ public class NotificationResource implements api.NotificationResource {
           this.notificationService.getNotification(UUID.fromString(uuid));
       int totalTargets = notification.getTargets().size();
       api.representations.Representation representation = null;
-      for (MediaType acceptableMediaType : headers.getAcceptableMediaTypes()) {
-        if (this.representationIndustry.containsKey(acceptableMediaType)) {
-          RepresentationFactory representationFactory =
-              this.representationIndustry.get(acceptableMediaType);
-          representation =
-              representationFactory.createTargetCollectionRepresentation(
-                  requestURI, language, notificationTargets, skip, take, totalTargets);
-        }
-      }
+      RepresentationFactory representationFactory = this.getRepresentationFactory(headers);
+      representation =
+          representationFactory.createTargetCollectionRepresentation(
+              requestURI, language, notificationTargets, skip, take, totalTargets);
       return Response.ok(representation).build();
     } finally {
       span.finish();
@@ -267,8 +228,10 @@ public class NotificationResource implements api.NotificationResource {
   @Override
   public Response getAudienceCollection(
       HttpHeaders headers, UriInfo uriInfo, String uuid, Integer skip, Integer take) {
-    Span span = this.tracer.buildSpan("NotificationResource#getAudienceCollection").start();
-    try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
+    String className = NotificationResource.class.getName();
+    String spanName = String.format("%s#getAudienceCollection", className);
+    Span span = this.getTracer().buildSpan(spanName).start();
+    try (Scope scope = this.getTracer().scopeManager().activate(span, false)) {
       URI requestURI = uriInfo.getRequestUri();
       Locale language = null;
       application.Notification notification =
@@ -277,15 +240,10 @@ public class NotificationResource implements api.NotificationResource {
       Set<application.Audience> audiences =
           this.notificationService.getNotificationAudiences(UUID.fromString(uuid), skip, take);
       api.representations.Representation representation = null;
-      for (MediaType acceptableMediaType : headers.getAcceptableMediaTypes()) {
-        if (this.representationIndustry.containsKey(acceptableMediaType)) {
-          RepresentationFactory representationFactory =
-              this.representationIndustry.get(acceptableMediaType);
-          representation =
-              representationFactory.createAudienceCollectionRepresentation(
-                  requestURI, language, audiences, skip, take, audiencesTotal);
-        }
-      }
+      RepresentationFactory representationFactory = this.getRepresentationFactory(headers);
+      representation =
+          representationFactory.createAudienceCollectionRepresentation(
+              requestURI, language, audiences, skip, take, audiencesTotal);
       return Response.ok(representation).build();
     } finally {
       span.finish();
