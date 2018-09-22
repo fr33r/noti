@@ -1,5 +1,7 @@
 package application.services;
 
+import application.InternalErrorException;
+import application.NotFoundException;
 import domain.Message;
 import domain.MessageFactory;
 import domain.Notification;
@@ -96,8 +98,9 @@ public final class NotificationService implements application.NotificationServic
       return notifications;
     } catch (Exception x) {
       unitOfWork.undo();
-      this.logger.error("An error occurred when retrieving notifications.", x);
-      throw new RuntimeException(x);
+      String errorMessage = "An error occurred when retrieving notifications.";
+      this.logger.error(errorMessage, x);
+      throw new InternalErrorException(errorMessage, x.getMessage());
     }
   }
 
@@ -110,8 +113,9 @@ public final class NotificationService implements application.NotificationServic
       return notificationRepository.size();
     } catch (Exception x) {
       unitOfWork.undo();
-      this.logger.error("An error occurred when retrieving the total number of notifications.", x);
-      throw new RuntimeException(x);
+      String errorMessage = "An error occurred when retrieving the total number of notifications.";
+      this.logger.error(errorMessage, x);
+      throw new InternalErrorException(errorMessage, x.getMessage());
     }
   }
 
@@ -123,9 +127,11 @@ public final class NotificationService implements application.NotificationServic
           this.repositoryFactory.createNotificationRepository(unitOfWork);
       domain.Notification notification = notificationRepository.get(uuid);
       if (notification == null) {
-        this.logger.info("Couldn't find a notification with UUID '{}'.", uuid.toString());
-        throw new RuntimeException(
-            String.format("Can't find notification with UUID of '%s'", uuid.toString()));
+        String errorMessage = "Can't find notification.";
+        String detailedMessage =
+            String.format("Can't find notification with UUID of '%s'", uuid.toString());
+        this.logger.warn(detailedMessage);
+        throw new NotFoundException(errorMessage, detailedMessage);
       }
       application.Notification noti = this.applicationNotificationFactory.createFrom(notification);
       Set<application.Target> targets = noti.getTargets();
@@ -144,9 +150,10 @@ public final class NotificationService implements application.NotificationServic
       return filteredTargets;
     } catch (Exception x) {
       unitOfWork.undo();
-      this.logger.error(
-          "An error occurred when retrieving the direct recipients of the notification.", x);
-      throw new RuntimeException(x);
+      String errorMessage =
+          "An error occurred when retrieving the direct recipients of the notification.";
+      this.logger.error(errorMessage, x);
+      throw new InternalErrorException(errorMessage, x.getMessage());
     }
   }
 
@@ -157,9 +164,11 @@ public final class NotificationService implements application.NotificationServic
           this.repositoryFactory.createNotificationRepository(unitOfWork);
       domain.Notification notification = notificationRepository.get(uuid);
       if (notification == null) {
-        this.logger.warn("Couldn't find a notification with UUID '{}'.", uuid.toString());
-        throw new RuntimeException(
-            String.format("Can't find notification with UUID of '%s'", uuid.toString()));
+        String errorMessage = "Can't find notification.";
+        String detailedMessage =
+            String.format("Can't find notification with UUID of '%s'", uuid.toString());
+        this.logger.warn(detailedMessage);
+        throw new NotFoundException(errorMessage, detailedMessage);
       }
       application.Notification noti = this.applicationNotificationFactory.createFrom(notification);
       Set<application.Audience> audiences = noti.getAudiences();
@@ -177,9 +186,10 @@ public final class NotificationService implements application.NotificationServic
       }
       return filteredAudiences;
     } catch (Exception x) {
-      this.logger.error("An error occurred when retrieving the audiences of the notification.", x);
       unitOfWork.undo();
-      throw new RuntimeException(x);
+      String errorMessage = "An error occurred when retrieving the audiences of the notification.";
+      this.logger.error(errorMessage, x);
+      throw new InternalErrorException(errorMessage, x.getMessage());
     }
   }
 
@@ -190,9 +200,11 @@ public final class NotificationService implements application.NotificationServic
           this.repositoryFactory.createNotificationRepository(unitOfWork);
       domain.Notification notification = notificationRepository.get(uuid);
       if (notification == null) {
-        this.logger.warn("Couldn't find a notification with UUID '{}'.", uuid.toString());
-        throw new RuntimeException(
-            String.format("Can't find notification with UUID of '%s'", uuid.toString()));
+        String errorMessage = "Can't find notification.";
+        String detailedMessage =
+            String.format("Can't find notification with UUID of '%s'", uuid.toString());
+        this.logger.warn(detailedMessage);
+        throw new NotFoundException(errorMessage, detailedMessage);
       }
       application.Notification noti = this.applicationNotificationFactory.createFrom(notification);
       Set<application.Message> messages = noti.getMessages();
@@ -211,8 +223,9 @@ public final class NotificationService implements application.NotificationServic
       return filteredMessages;
     } catch (Exception x) {
       unitOfWork.undo();
-      this.logger.error("An error occurred when retrieving the messages of the notification.", x);
-      throw new RuntimeException(x);
+      String errorMessage = "An error occurred when retrieving the messages of the notification.";
+      this.logger.error(errorMessage, x);
+      throw new InternalErrorException(errorMessage, x.getMessage());
     }
   }
 
@@ -253,8 +266,9 @@ public final class NotificationService implements application.NotificationServic
       return noti_domain.getId();
     } catch (Exception x) {
       unitOfWork.undo();
-      this.logger.error("An error occurred when creating the notification.", x);
-      throw new RuntimeException(x);
+      String errorMessage = "An error occurred when creating the notification.";
+      this.logger.error(errorMessage, x);
+      throw new InternalErrorException(errorMessage, x.getMessage());
     }
   }
 
@@ -276,14 +290,17 @@ public final class NotificationService implements application.NotificationServic
       unitOfWork.save();
     } catch (Exception x) {
       unitOfWork.undo();
-      this.logger.error("An error occurred when retrieving the notification.", x);
-      throw new RuntimeException(x);
+      String errorMessage = "An error occurred when retrieving the notification.";
+      this.logger.error(errorMessage, x);
+      throw new InternalErrorException(errorMessage, x.getMessage());
     }
 
     if (notification == null) {
-      this.logger.warn("Couldn't find a notification with UUID '{}'.", uuid.toString());
-      throw new RuntimeException(
-          String.format("Can't find notification with UUID of '%s'", uuid.toString()));
+      String errorMessage = "Can't find notification.";
+      String detailedMessage =
+          String.format("Can't find notification with UUID of '%s'", uuid.toString());
+      this.logger.warn(detailedMessage);
+      throw new NotFoundException(errorMessage, detailedMessage);
     }
 
     return this.applicationNotificationFactory.createFrom(notification);
@@ -305,8 +322,9 @@ public final class NotificationService implements application.NotificationServic
       unitOfWork.save();
     } catch (Exception x) {
       unitOfWork.undo();
-      this.logger.error("An error occurred when deleting the notification.", x);
-      throw new RuntimeException(x);
+      String errorMessage = "An error occurred when deleting the notification.";
+      this.logger.error(errorMessage, x);
+      throw new InternalErrorException(errorMessage, x.getMessage());
     }
   }
 
@@ -327,8 +345,9 @@ public final class NotificationService implements application.NotificationServic
       unitOfWork.save();
     } catch (Exception x) {
       unitOfWork.undo();
-      this.logger.error("An error occurred when updating the notification.", x);
-      throw x;
+      String errorMessage = "An error occurred when updating the notification.";
+      this.logger.error(errorMessage, x);
+      throw new InternalErrorException(errorMessage, x.getMessage());
     }
   }
 
@@ -343,25 +362,28 @@ public final class NotificationService implements application.NotificationServic
       Notification _notification = notificationRepository.get(notificationUUID);
       unitOfWork.save();
       if (_notification == null) {
-        this.logger.warn(
-            "Couldn't find a notification with UUID '{}'.", notificationUUID.toString());
-        throw new RuntimeException(
-            String.format(
-                "Can't find notification with UUID of '%s'", notificationUUID.toString()));
+        String errorMessage = "Can't find notification.";
+        String detailedMessage =
+            String.format("Can't find notification with UUID of '%s'", notificationUUID.toString());
+        this.logger.warn(detailedMessage);
+        throw new NotFoundException(errorMessage, detailedMessage);
       }
 
       // ensure that the message being retrieved actually exists.
       if (!_notification.containsMessage(messageID)) {
-        this.logger.info("Couldn't find a message with ID '{}'.", messageID);
-        throw new RuntimeException(String.format("Can't find message with ID of '%d'", messageID));
+        String errorMessage = "Can't find message.";
+        String detailedMessage = String.format("Can't find a message with ID '%d'.", messageID);
+        this.logger.warn(detailedMessage);
+        throw new NotFoundException(errorMessage, detailedMessage);
       }
 
       Message message = _notification.message(messageID);
       return this.applicationMessageFactory.createFrom(message);
     } catch (Exception x) {
       unitOfWork.undo();
-      this.logger.error("An error occurred when retrieving the notification messages.", x);
-      throw x;
+      String errorMessage = "An error occurred when retrieving the notification messages.";
+      this.logger.error(errorMessage, x);
+      throw new InternalErrorException(errorMessage, x.getMessage());
     }
   }
 
@@ -376,17 +398,20 @@ public final class NotificationService implements application.NotificationServic
       // retrieve notification.
       Notification _notification = notificationRepository.get(notificationUUID);
       if (_notification == null) {
-        this.logger.warn(
-            "Couldn't find a notification with UUID '{}'.", notificationUUID.toString());
-        throw new RuntimeException(
-            String.format(
-                "Can't find notification with UUID of '%s'", notificationUUID.toString()));
+        String errorMessage = "Can't find notification.";
+        String detailedMessage =
+            String.format("Can't find notification with UUID of '%s'", notificationUUID.toString());
+        this.logger.warn(detailedMessage);
+        throw new NotFoundException(errorMessage, detailedMessage);
       }
 
       // ensure that the message being updated actually exists.
       if (!_notification.containsMessage(_message)) {
-        throw new RuntimeException(
-            String.format("Can't find message with ID of '%d'", _message.getId()));
+        String errorMessage = "Can't find message.";
+        String detailedMessage =
+            String.format("Can't find a message with ID '%d'.", message.getID());
+        this.logger.warn(detailedMessage);
+        throw new NotFoundException(errorMessage, detailedMessage);
       }
 
       // update the message.
@@ -399,8 +424,9 @@ public final class NotificationService implements application.NotificationServic
       unitOfWork.save();
     } catch (Exception x) {
       unitOfWork.undo();
-      this.logger.error("An error occurred when updating the notification message.", x);
-      throw new RuntimeException(x);
+      String errorMessage = "An error occurred when updating the notification messages.";
+      this.logger.error(errorMessage, x);
+      throw new InternalErrorException(errorMessage, x.getMessage());
     }
   }
 }

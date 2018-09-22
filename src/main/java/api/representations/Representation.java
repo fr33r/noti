@@ -21,7 +21,8 @@ import javax.xml.bind.annotation.XmlTransient;
   api.representations.xml.Notification.class,
   api.representations.xml.Audience.class,
   api.representations.xml.Target.class,
-  api.representations.xml.Message.class
+  api.representations.xml.Message.class,
+  api.representations.xml.Error.class
 })
 public abstract class Representation {
 

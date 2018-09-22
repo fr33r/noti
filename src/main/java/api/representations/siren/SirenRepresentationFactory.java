@@ -2,6 +2,7 @@ package api.representations.siren;
 
 import api.representations.Representation;
 import api.representations.RepresentationFactory;
+import application.ApplicationException;
 import application.Audience;
 import application.Message;
 import application.Notification;
@@ -933,6 +934,31 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
     }
 
     return representation;
+  }
+
+  @Override
+  public Representation createErrorRepresentation(
+      URI location, Locale language, ApplicationException x) {
+    String className = SirenRepresentationFactory.class.getName();
+    String spanName = String.format("%s#createErrorRepresentation", className);
+    Span span = this.tracer.buildSpan(spanName).asChildOf(this.tracer.activeSpan()).start();
+    try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
+      Entity.Builder entityBuilder = this.entityBuilderFactory.create();
+      Entity entity =
+          entityBuilder
+              .klass("error")
+              .property("message", x.getMessage())
+              .property("detailedMessage", x.getDetailedMessage())
+              .property("sillyMessage", x.getSillyMessage())
+              .property("emoji", x.getEmoji())
+              .build();
+
+      Representation representation =
+          new SirenEntityRepresentation.Builder().entity(entity).language(language).build();
+      return representation;
+    } finally {
+      span.finish();
+    }
   }
 
   private boolean hasPreviousLink(Integer skip, Integer take, Integer total) {
