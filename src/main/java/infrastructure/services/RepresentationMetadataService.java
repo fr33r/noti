@@ -22,6 +22,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.util.UUID;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
 import org.jvnet.hk2.annotations.Service;
@@ -43,7 +44,9 @@ public class RepresentationMetadataService implements infrastructure.Representat
 
   @Inject
   public RepresentationMetadataService(
-      SQLUnitOfWorkFactory unitOfWorkFactory, Tracer tracer, Logger logger) {
+      SQLUnitOfWorkFactory unitOfWorkFactory,
+      Tracer tracer,
+      @Named("infrastructure.services.RepresentationMetadataService") Logger logger) {
     this.unitOfWorkFactory = unitOfWorkFactory;
     this.calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
     this.tracer = tracer;
@@ -62,11 +65,9 @@ public class RepresentationMetadataService implements infrastructure.Representat
   @Override
   public RepresentationMetadata get(
       URI uri, Locale language, String encoding, MediaType contentType) {
-    Span span =
-        this.tracer
-            .buildSpan("RepresentationMetadataService#get")
-            .asChildOf(this.tracer.activeSpan())
-            .start();
+    String className = RepresentationMetadataService.class.getName();
+    String spanName = String.format("%s#get", className);
+    Span span = this.tracer.buildSpan(spanName).asChildOf(this.tracer.activeSpan()).start();
     final String sql =
         "SELECT RM.CONTENT_LOCATION, RM.CONTENT_TYPE, RM.CONTENT_LANGUAGE, RM.CONTENT_ENCODING, RM.LAST_MODIFIED, RM.ENTITY_TAG FROM REPRESENTATION_METADATA AS RM WHERE RM.CONTENT_LOCATION = ? AND RM.CONTENT_TYPE = ? AND (CONTENT_LANGUAGE IS NULL AND ? IS NULL OR CONTENT_LANGUAGE IS NOT NULL AND CONTENT_LANGUAGE = ?) AND (CONTENT_ENCODING IS NULL AND ? IS NULL OR CONTENT_ENCODING IS NOT NULL AND CONTENT_ENCODING = ?)";
     this.logger.debug(sql);
@@ -129,13 +130,24 @@ public class RepresentationMetadataService implements infrastructure.Representat
    * @return All representation metdata that is associated with the provided content location (URI).
    */
   public List<RepresentationMetadata> getAll(URI uri) {
-    Span span =
-        this.tracer
-            .buildSpan("RepresentationMetadataService#getAll")
-            .asChildOf(this.tracer.activeSpan())
-            .start();
+    String className = RepresentationMetadataService.class.getName();
+    String spanName = String.format("%s#getAll", className);
+    Span span = this.tracer.buildSpan(spanName).asChildOf(this.tracer.activeSpan()).start();
     final String sql =
-        "SELECT RM.CONTENT_LOCATION, RM.CONTENT_TYPE, RM.CONTENT_LANGUAGE, RM.CONTENT_ENCODING, RM.LAST_MODIFIED, RM.ENTITY_TAG FROM REPRESENTATION_METADATA AS RM WHERE RM.CONTENT_LOCATION = ?;";
+        new StringBuilder()
+            .append("SELECT ")
+            .append("RM.CONTENT_LOCATION, ")
+            .append("RM.CONTENT_TYPE, ")
+            .append("RM.CONTENT_LANGUAGE, ")
+            .append("RM.CONTENT_ENCODING, ")
+            .append("RM.LAST_MODIFIED, ")
+            .append("RM.ENTITY_TAG")
+            .append(" FROM ")
+            .append("REPRESENTATION_METADATA AS RM")
+            .append(" WHERE ")
+            .append("RM.CONTENT_LOCATION = ?;")
+            .toString();
+
     this.logger.debug(sql);
     List<RepresentationMetadata> representationMetadata = new ArrayList<>();
 
@@ -184,13 +196,27 @@ public class RepresentationMetadataService implements infrastructure.Representat
    */
   @Override
   public void insert(RepresentationMetadata representationMetadata) {
-    Span span =
-        this.tracer
-            .buildSpan("RepresentationMetadataService#insert")
-            .asChildOf(this.tracer.activeSpan())
-            .start();
+    String className = RepresentationMetadataService.class.getName();
+    String spanName = String.format("%s#insert", className);
+    Span span = this.tracer.buildSpan(spanName).asChildOf(this.tracer.activeSpan()).start();
     final String sql =
-        "INSERT INTO REPRESENTATION_METADATA (UUID, CONTENT_LOCATION, CONTENT_LOCATION_HASH, CONTENT_TYPE, CONTENT_LANGUAGE, CONTENT_ENCODING, LAST_MODIFIED, ENTITY_TAG) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
+        new StringBuilder()
+            .append("INSERT INTO ")
+            .append("REPRESENTATION_METADATA ")
+            .append("(")
+            .append("UUID, ")
+            .append("CONTENT_LOCATION, ")
+            .append("CONTENT_LOCATION_HASH, ")
+            .append("CONTENT_TYPE, ")
+            .append("CONTENT_LANGUAGE, ")
+            .append("CONTENT_ENCODING, ")
+            .append("LAST_MODIFIED, ")
+            .append("ENTITY_TAG")
+            .append(")")
+            .append(" VALUES ")
+            .append("(?, ?, ?, ?, ?, ?, ?, ?);")
+            .toString();
+
     this.logger.debug(sql);
     try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
       SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
@@ -239,11 +265,9 @@ public class RepresentationMetadataService implements infrastructure.Representat
    */
   @Override
   public void put(RepresentationMetadata representationMetadata) {
-    Span span =
-        this.tracer
-            .buildSpan("RepresentationMetadataService#put")
-            .asChildOf(this.tracer.activeSpan())
-            .start();
+    String className = RepresentationMetadataService.class.getName();
+    String spanName = String.format("%s#put", className);
+    Span span = this.tracer.buildSpan(spanName).asChildOf(this.tracer.activeSpan()).start();
     if (this.get(
             representationMetadata.getContentLocation(),
             representationMetadata.getContentLanguage(),
@@ -256,25 +280,16 @@ public class RepresentationMetadataService implements infrastructure.Representat
       StringBuilder sqlStringBuilder = new StringBuilder();
       final String sql =
           sqlStringBuilder
-              .append("UPDATE")
-              .append("\n\t")
+              .append("UPDATE ")
               .append("REPRESENTATION_METADATA")
-              .append("\n")
-              .append("SET")
-              .append("\n\t")
-              .append("LAST_MODIFIED = ?,")
-              .append("\n\t")
+              .append(" SET ")
+              .append("LAST_MODIFIED = ?, ")
               .append("ENTITY_TAG = ?")
-              .append("\n")
-              .append("WHERE")
-              .append("\n\t")
-              .append("CONTENT_LOCATION = ? AND")
-              .append("\n\t")
-              .append("CONTENT_TYPE = ? AND")
-              .append("\n\t")
+              .append(" WHERE ")
+              .append("CONTENT_LOCATION = ? AND ")
+              .append("CONTENT_TYPE = ? AND ")
               .append(
-                  "(CONTENT_LANGUAGE IS NULL AND ? IS NULL OR CONTENT_LANGUAGE IS NOT NULL AND CONTENT_LANGUAGE = ?) AND")
-              .append("\n\t")
+                  "(CONTENT_LANGUAGE IS NULL AND ? IS NULL OR CONTENT_LANGUAGE IS NOT NULL AND CONTENT_LANGUAGE = ?) AND ")
               .append(
                   "(CONTENT_ENCODING IS NULL AND ? IS NULL OR CONTENT_ENCODING IS NOT NULL AND CONTENT_ENCODING = ?);")
               .toString();
@@ -321,13 +336,19 @@ public class RepresentationMetadataService implements infrastructure.Representat
    */
   @Override
   public void remove(URI uri, Locale language, String encoding, MediaType contentType) {
-    Span span =
-        this.tracer
-            .buildSpan("RepresentationMetadataService#remove")
-            .asChildOf(this.tracer.activeSpan())
-            .start();
+    String className = RepresentationMetadataService.class.getName();
+    String spanName = String.format("%s#remove", className);
+    Span span = this.tracer.buildSpan(spanName).asChildOf(this.tracer.activeSpan()).start();
     final String sql =
-        "DELETE FROM REPRESENTATION_METADATA WHERE CONTENT_LOCATION = ? AND CONTENT_TYPE = ? AND CONTENT_LANGUAGE = ? AND CONTENT_ENCODING = ?;";
+        new StringBuilder()
+            .append("DELETE FROM ")
+            .append("REPRESENTATION_METADATA")
+            .append(" WHERE ")
+            .append("CONTENT_LOCATION = ? AND ")
+            .append("CONTENT_TYPE = ? AND ")
+            .append("CONTENT_LANGUAGE = ? AND ")
+            .append("CONTENT_ENCODING = ?;")
+            .toString();
     this.logger.debug(sql);
 
     try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
@@ -356,12 +377,16 @@ public class RepresentationMetadataService implements infrastructure.Representat
    */
   @Override
   public void removeAll(URI uri) {
-    Span span =
-        this.tracer
-            .buildSpan("RepresentationMetadataService#removeAll")
-            .asChildOf(this.tracer.activeSpan())
-            .start();
-    final String sql = "DELETE FROM REPRESENTATION_METADATA WHERE CONTENT_LOCATION = ?;";
+    String className = RepresentationMetadataService.class.getName();
+    String spanName = String.format("%s#removeAll", className);
+    Span span = this.tracer.buildSpan(spanName).asChildOf(this.tracer.activeSpan()).start();
+    final String sql =
+        new StringBuilder()
+            .append("DELETE FROM ")
+            .append("REPRESENTATION_METADATA")
+            .append(" WHERE ")
+            .append("CONTENT_LOCATION = ?;")
+            .toString();
     this.logger.debug(sql);
 
     try (Scope scope = this.tracer.scopeManager().activate(span, false)) {

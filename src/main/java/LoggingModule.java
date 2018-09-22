@@ -2,8 +2,15 @@ import api.filters.ConditionalGetFilter;
 import api.filters.ConditionalPutFilter;
 import api.interceptors.MetadataGetInterceptor;
 import api.interceptors.MetadataPutInterceptor;
+import application.services.AudienceService;
+import application.services.NotificationService;
+import application.services.TargetService;
 import configuration.NotiConfiguration;
+import infrastructure.services.RepresentationMetadataService;
+import infrastructure.services.SMSQueueService;
 import io.dropwizard.setup.Environment;
+import java.util.ArrayList;
+import java.util.List;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,30 +32,22 @@ public final class LoggingModule extends NotiModule {
               protected void configure() {
 
                 // retrieve logger instances.
-                final Logger notiLogger = LoggerFactory.getLogger(Noti.class);
-                final Logger conditionalGetFilterLogger =
-                    LoggerFactory.getLogger(ConditionalGetFilter.class);
-                final Logger conditionalPutFilterLogger =
-                    LoggerFactory.getLogger(ConditionalPutFilter.class);
-                final Logger metadataGetInterceptorLogger =
-                    LoggerFactory.getLogger(MetadataGetInterceptor.class);
-                final Logger metadataPutInterceptorLogger =
-                    LoggerFactory.getLogger(MetadataPutInterceptor.class);
+                List<Logger> loggers = new ArrayList<>();
+                loggers.add(LoggerFactory.getLogger(Noti.class));
+                loggers.add(LoggerFactory.getLogger(ConditionalGetFilter.class));
+                loggers.add(LoggerFactory.getLogger(ConditionalPutFilter.class));
+                loggers.add(LoggerFactory.getLogger(MetadataGetInterceptor.class));
+                loggers.add(LoggerFactory.getLogger(MetadataPutInterceptor.class));
+                loggers.add(LoggerFactory.getLogger(NotificationService.class));
+                loggers.add(LoggerFactory.getLogger(AudienceService.class));
+                loggers.add(LoggerFactory.getLogger(TargetService.class));
+                loggers.add(LoggerFactory.getLogger(SMSQueueService.class));
+                loggers.add(LoggerFactory.getLogger(RepresentationMetadataService.class));
 
                 // wire up logger instances.
-                this.bind(notiLogger).to(Logger.class).named(notiLogger.getName());
-                this.bind(conditionalGetFilterLogger)
-                    .to(Logger.class)
-                    .named(conditionalGetFilterLogger.getName());
-                this.bind(conditionalPutFilterLogger)
-                    .to(Logger.class)
-                    .named(conditionalPutFilterLogger.getName());
-                this.bind(metadataGetInterceptorLogger)
-                    .to(Logger.class)
-                    .named(metadataGetInterceptorLogger.getName());
-                this.bind(metadataPutInterceptorLogger)
-                    .to(Logger.class)
-                    .named(metadataPutInterceptorLogger.getName());
+                for (Logger logger : loggers) {
+                  this.bind(logger).to(Logger.class).named(logger.getName());
+                }
               }
             });
   }
