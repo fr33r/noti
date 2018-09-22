@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import javax.inject.Named;
 import org.slf4j.Logger;
 
 final class NotificationDataMapper extends DataMapper {
@@ -33,7 +34,7 @@ final class NotificationDataMapper extends DataMapper {
       EntitySQLFactory<Notification, UUID> notificationFactory,
       EntitySQLFactory<Target, UUID> targetFactory,
       EntitySQLFactory<Audience, UUID> audienceFactory,
-      Logger logger) {
+      @Named("infrastructure.NotificationDataMapper") Logger logger) {
     super(unitOfWork);
 
     this.notificationFactory = notificationFactory;

@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import javax.inject.Named;
 import org.slf4j.Logger;
 
 final class AudienceDataMapper extends DataMapper {
@@ -21,7 +22,9 @@ final class AudienceDataMapper extends DataMapper {
   private final Logger logger;
 
   AudienceDataMapper(
-      SQLUnitOfWork unitOfWork, EntitySQLFactory<Audience, UUID> audienceFactory, Logger logger) {
+      SQLUnitOfWork unitOfWork,
+      EntitySQLFactory<Audience, UUID> audienceFactory,
+      @Named("infrastructure.AudienceDataMapper") Logger logger) {
     super(unitOfWork);
 
     this.audienceFactory = audienceFactory;

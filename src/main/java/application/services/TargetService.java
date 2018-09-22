@@ -8,6 +8,8 @@ import infrastructure.SQLUnitOfWork;
 import infrastructure.SQLUnitOfWorkFactory;
 import java.util.UUID;
 import javax.inject.Inject;
+import javax.inject.Named;
+import org.slf4j.Logger;
 
 public final class TargetService implements application.TargetService {
 
@@ -15,17 +17,20 @@ public final class TargetService implements application.TargetService {
   private final RepositoryFactory repositoryFactory;
   private final TargetFactory targetFactory;
   private final application.TargetFactory applicationTargetFactory;
+  private final Logger logger;
 
   @Inject
   public TargetService(
       SQLUnitOfWorkFactory unitOfWorkFactory,
       RepositoryFactory repositoryFactory,
       TargetFactory targetFactory,
-      application.TargetFactory applicationTargetFactory) {
+      application.TargetFactory applicationTargetFactory,
+      @Named("application.services.TargetService") Logger logger) {
     this.unitOfWorkFactory = unitOfWorkFactory;
     this.repositoryFactory = repositoryFactory;
     this.targetFactory = targetFactory;
     this.applicationTargetFactory = applicationTargetFactory;
+    this.logger = logger;
   }
 
   /**
@@ -37,19 +42,19 @@ public final class TargetService implements application.TargetService {
   @Override
   public UUID createTarget(application.Target target) {
 
-    Target target_domain = this.targetFactory.createFrom(target);
+    Target _target = this.targetFactory.createFrom(target);
     SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
 
     try {
       Repository<Target, UUID> targetRepository =
           this.repositoryFactory.createTargetRepository(unitOfWork);
-      targetRepository.add(target_domain);
+      targetRepository.add(_target);
       unitOfWork.save();
-      return target_domain.getId();
+      return _target.getId();
     } catch (Exception x) {
-      // log.
       unitOfWork.undo();
-      throw x;
+      this.logger.error("An error occurred when creating the target.", x);
+      throw new RuntimeException(x);
     }
   }
 
@@ -62,26 +67,27 @@ public final class TargetService implements application.TargetService {
   @Override
   public application.Target getTarget(UUID uuid) {
 
-    Target target_domain = null;
+    Target target = null;
     SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
 
     try {
       Repository<Target, UUID> targetRepository =
           this.repositoryFactory.createTargetRepository(unitOfWork);
-      target_domain = targetRepository.get(uuid);
+      target = targetRepository.get(uuid);
       unitOfWork.save();
     } catch (Exception x) {
-      // log.
       unitOfWork.undo();
-      throw x;
+      this.logger.error("An error occurred when retrieving the target.", x);
+      throw new RuntimeException(x);
     }
 
-    if (target_domain == null) {
+    if (target == null) {
+      this.logger.warn("Couldn't find a target with UUID '{}'.", uuid.toString());
       throw new RuntimeException(
           String.format("Can't find target with UUID of '%s'", uuid.toString()));
     }
 
-    return this.applicationTargetFactory.createFrom(target_domain);
+    return this.applicationTargetFactory.createFrom(target);
   }
 
   /**
@@ -92,18 +98,18 @@ public final class TargetService implements application.TargetService {
   @Override
   public void replaceTarget(application.Target target) {
 
-    Target target_domain = this.targetFactory.createFrom(target);
+    Target _target = this.targetFactory.createFrom(target);
     SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
 
     try {
       Repository<Target, UUID> targetRepository =
           this.repositoryFactory.createTargetRepository(unitOfWork);
-      targetRepository.put(target_domain);
+      targetRepository.put(_target);
       unitOfWork.save();
     } catch (Exception x) {
-      // log.
       unitOfWork.undo();
-      throw x;
+      this.logger.error("An error occurred when updating the target.", x);
+      throw new RuntimeException(x);
     }
   }
 
@@ -123,9 +129,9 @@ public final class TargetService implements application.TargetService {
       targetRepository.remove(uuid);
       unitOfWork.save();
     } catch (Exception x) {
-      // log.
       unitOfWork.undo();
-      throw x;
+      this.logger.error("An error occurred when deleting the target.", x);
+      throw new RuntimeException(x);
     }
   }
 }

@@ -10,6 +10,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import javax.inject.Inject;
+import javax.inject.Named;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
@@ -70,7 +71,9 @@ public final class SMSQueueService implements MessageQueueService {
 
   @Inject
   public SMSQueueService(
-      Producer<String, GenericRecord> producer, MetricRegistry metricRegistry, Logger logger) {
+      Producer<String, GenericRecord> producer,
+      MetricRegistry metricRegistry,
+      @Named("infrastructure.services.SMSQueueService") Logger logger) {
     this.producer = producer;
     this.metricRegistry = metricRegistry;
     this.logger = logger;

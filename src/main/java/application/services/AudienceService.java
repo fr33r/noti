@@ -9,6 +9,8 @@ import infrastructure.SQLUnitOfWork;
 import infrastructure.SQLUnitOfWorkFactory;
 import java.util.UUID;
 import javax.inject.Inject;
+import javax.inject.Named;
+import org.slf4j.Logger;
 
 public final class AudienceService implements application.AudienceService {
 
@@ -16,78 +18,82 @@ public final class AudienceService implements application.AudienceService {
   private final RepositoryFactory repositoryFactory;
   private final AudienceFactory audienceFactory;
   private final application.AudienceFactory applicationAudienceFactory;
+  private final Logger logger;
 
   @Inject
   public AudienceService(
       SQLUnitOfWorkFactory unitOfWorkFactory,
       RepositoryFactory repositoryFactory,
       AudienceFactory audienceFactory,
-      application.AudienceFactory applicationAudienceFactory) {
+      application.AudienceFactory applicationAudienceFactory,
+      @Named("application.services.AudienceService") Logger logger) {
     this.unitOfWorkFactory = unitOfWorkFactory;
     this.repositoryFactory = repositoryFactory;
     this.audienceFactory = audienceFactory;
     this.applicationAudienceFactory = applicationAudienceFactory;
+    this.logger = logger;
   }
 
   @Override
   public UUID createAudience(final application.Audience audience) {
 
-    Audience audience_domain = this.audienceFactory.createFrom(audience);
+    Audience _audience = this.audienceFactory.createFrom(audience);
     SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
 
     try {
       Repository<Audience, UUID> audienceRepository =
           this.repositoryFactory.createAudienceRepository(unitOfWork);
-      audienceRepository.put(audience_domain);
+      audienceRepository.put(_audience);
       unitOfWork.save();
     } catch (Exception x) {
-      // log.
       unitOfWork.undo();
-      throw x;
+      this.logger.error("An error occurred when creating the audience.", x);
+      throw new RuntimeException(x);
     }
-    return audience_domain.getId();
+    return _audience.getId();
   }
 
   @Override
   public application.Audience getAudience(final UUID uuid) {
 
-    Audience audience_domain = null;
+    Audience audience = null;
     SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
 
     try {
       Repository<Audience, UUID> audienceRepository =
           this.repositoryFactory.createAudienceRepository(unitOfWork);
-      audience_domain = audienceRepository.get(uuid);
+      audience = audienceRepository.get(uuid);
       unitOfWork.save();
     } catch (Exception x) {
-      // log.
       unitOfWork.undo();
-      throw x;
+      this.logger.error("An error occurred when retrieving the audience.", x);
+      throw new RuntimeException(x);
     }
 
-    if (audience_domain == null) {
+    if (audience == null) {
+      this.logger.warn("Couldn't find a audience with UUID '{}'.", uuid.toString());
       throw new RuntimeException(
           String.format("Can't find audience with UUID of '%s'", uuid.toString()));
     }
 
-    return this.applicationAudienceFactory.createFrom(audience_domain);
+    return this.applicationAudienceFactory.createFrom(audience);
   }
 
   @Override
   public void replaceAudience(final application.Audience audience) {
 
-    Audience audience_domain = this.audienceFactory.createFrom(audience);
+    Audience _audience = this.audienceFactory.createFrom(audience);
     SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
 
     try {
       Repository<Audience, UUID> audienceRepository =
           this.repositoryFactory.createAudienceRepository(unitOfWork);
-      audienceRepository.put(audience_domain);
+      audienceRepository.put(_audience);
       unitOfWork.save();
     } catch (Exception x) {
-      // log.
       unitOfWork.undo();
-      throw x;
+      this.logger.error("An error occurred when updating the audience.", x);
+      throw new RuntimeException(x);
     }
   }
 
@@ -102,9 +108,9 @@ public final class AudienceService implements application.AudienceService {
       audienceRepository.remove(uuid);
       unitOfWork.save();
     } catch (Exception x) {
-      // log.
       unitOfWork.undo();
-      throw x;
+      this.logger.error("An error occurred when deleting the audience.", x);
+      throw new RuntimeException(x);
     }
   }
 
@@ -121,6 +127,7 @@ public final class AudienceService implements application.AudienceService {
       Target target = targetRepository.get(memberUUID);
 
       if (target == null) {
+        this.logger.warn("Couldn't find a member with UUID '{}'.", memberUUID.toString());
         throw new RuntimeException(
             String.format("Can't find target with UUID of '%s'.", memberUUID.toString()));
       }
@@ -128,6 +135,7 @@ public final class AudienceService implements application.AudienceService {
       Audience audience = audienceRepository.get(audienceUUID);
 
       if (audience == null) {
+        this.logger.warn("Couldn't find a audience with UUID '{}'.", audienceUUID.toString());
         throw new RuntimeException(
             String.format("Can't find audience with UUID of '%s'.", audienceUUID.toString()));
       }
@@ -135,9 +143,9 @@ public final class AudienceService implements application.AudienceService {
       audience.include(target);
       unitOfWork.save();
     } catch (Exception x) {
-      // log.
       unitOfWork.undo();
-      throw x;
+      this.logger.error("An error occurred when associating the member to the audience.", x);
+      throw new RuntimeException(x);
     }
   }
 
@@ -154,13 +162,15 @@ public final class AudienceService implements application.AudienceService {
       Target target = targetRepository.get(memberUUID);
 
       if (target == null) {
+        this.logger.warn("Couldn't find a member with UUID '{}'.", memberUUID.toString());
         throw new RuntimeException(
-            String.format("Can't find target with UUID of '%s'.", memberUUID.toString()));
+            String.format("Can't find member with UUID of '%s'.", memberUUID.toString()));
       }
 
       Audience audience = audienceRepository.get(audienceUUID);
 
       if (audience == null) {
+        this.logger.warn("Couldn't find a audience with UUID '{}'.", audienceUUID.toString());
         throw new RuntimeException(
             String.format("Can't find audience with UUID of '%s'.", audienceUUID.toString()));
       }
@@ -168,9 +178,9 @@ public final class AudienceService implements application.AudienceService {
       audience.remove(target);
       unitOfWork.save();
     } catch (Exception x) {
-      // log.
       unitOfWork.undo();
-      throw x;
+      this.logger.error("An error occurred when disassociating the member to the audience.", x);
+      throw new RuntimeException(x);
     }
   }
 }
