@@ -1,5 +1,7 @@
 package application.services;
 
+import application.InternalErrorException;
+import application.NotFoundException;
 import domain.Audience;
 import domain.AudienceFactory;
 import domain.Target;
@@ -47,8 +49,9 @@ public final class AudienceService implements application.AudienceService {
       unitOfWork.save();
     } catch (Exception x) {
       unitOfWork.undo();
-      this.logger.error("An error occurred when creating the audience.", x);
-      throw new RuntimeException(x);
+      String errorMessage = "An error occurred when creating the audience.";
+      this.logger.error(errorMessage, x);
+      throw new InternalErrorException(errorMessage, x.getMessage());
     }
     return _audience.getId();
   }
@@ -66,14 +69,17 @@ public final class AudienceService implements application.AudienceService {
       unitOfWork.save();
     } catch (Exception x) {
       unitOfWork.undo();
-      this.logger.error("An error occurred when retrieving the audience.", x);
-      throw new RuntimeException(x);
+      String errorMessage = "An error occurred when retrieving the audience.";
+      this.logger.error(errorMessage, x);
+      throw new InternalErrorException(errorMessage, x.getMessage());
     }
 
     if (audience == null) {
-      this.logger.warn("Couldn't find a audience with UUID '{}'.", uuid.toString());
-      throw new RuntimeException(
-          String.format("Can't find audience with UUID of '%s'", uuid.toString()));
+      String errorMessage = "Can't find audience.";
+      String detailedMessage =
+          String.format("Can't find audience with UUID of '%s'", uuid.toString());
+      this.logger.warn(detailedMessage);
+      throw new NotFoundException(errorMessage, detailedMessage);
     }
 
     return this.applicationAudienceFactory.createFrom(audience);
@@ -92,8 +98,9 @@ public final class AudienceService implements application.AudienceService {
       unitOfWork.save();
     } catch (Exception x) {
       unitOfWork.undo();
-      this.logger.error("An error occurred when updating the audience.", x);
-      throw new RuntimeException(x);
+      String errorMessage = "An error occurred when updating the audience.";
+      this.logger.error(errorMessage, x);
+      throw new InternalErrorException(errorMessage, x.getMessage());
     }
   }
 
@@ -109,8 +116,9 @@ public final class AudienceService implements application.AudienceService {
       unitOfWork.save();
     } catch (Exception x) {
       unitOfWork.undo();
-      this.logger.error("An error occurred when deleting the audience.", x);
-      throw new RuntimeException(x);
+      String errorMessage = "An error occurred when deleting the audience.";
+      this.logger.error(errorMessage, x);
+      throw new InternalErrorException(errorMessage, x.getMessage());
     }
   }
 
@@ -127,25 +135,30 @@ public final class AudienceService implements application.AudienceService {
       Target target = targetRepository.get(memberUUID);
 
       if (target == null) {
-        this.logger.warn("Couldn't find a member with UUID '{}'.", memberUUID.toString());
-        throw new RuntimeException(
-            String.format("Can't find target with UUID of '%s'.", memberUUID.toString()));
+        String errorMessage = "Can't find audience member.";
+        String detailedMessage =
+            String.format("Can't find audience member with UUID of '%s'", memberUUID.toString());
+        this.logger.warn(detailedMessage);
+        throw new NotFoundException(errorMessage, detailedMessage);
       }
 
       Audience audience = audienceRepository.get(audienceUUID);
 
       if (audience == null) {
-        this.logger.warn("Couldn't find a audience with UUID '{}'.", audienceUUID.toString());
-        throw new RuntimeException(
-            String.format("Can't find audience with UUID of '%s'.", audienceUUID.toString()));
+        String errorMessage = "Can't find audience.";
+        String detailedMessage =
+            String.format("Can't find audience with UUID of '%s'", audienceUUID.toString());
+        this.logger.warn(detailedMessage);
+        throw new NotFoundException(errorMessage, detailedMessage);
       }
 
       audience.include(target);
       unitOfWork.save();
     } catch (Exception x) {
       unitOfWork.undo();
-      this.logger.error("An error occurred when associating the member to the audience.", x);
-      throw new RuntimeException(x);
+      String errorMessage = "An error occurred when associating the member to the audience.";
+      this.logger.error(errorMessage, x);
+      throw new InternalErrorException(errorMessage, x.getMessage());
     }
   }
 
@@ -162,25 +175,30 @@ public final class AudienceService implements application.AudienceService {
       Target target = targetRepository.get(memberUUID);
 
       if (target == null) {
-        this.logger.warn("Couldn't find a member with UUID '{}'.", memberUUID.toString());
-        throw new RuntimeException(
-            String.format("Can't find member with UUID of '%s'.", memberUUID.toString()));
+        String errorMessage = "Can't find audience member.";
+        String detailedMessage =
+            String.format("Can't find audience member with UUID of '%s'", memberUUID.toString());
+        this.logger.warn(detailedMessage);
+        throw new NotFoundException(errorMessage, detailedMessage);
       }
 
       Audience audience = audienceRepository.get(audienceUUID);
 
       if (audience == null) {
-        this.logger.warn("Couldn't find a audience with UUID '{}'.", audienceUUID.toString());
-        throw new RuntimeException(
-            String.format("Can't find audience with UUID of '%s'.", audienceUUID.toString()));
+        String errorMessage = "Can't find audience.";
+        String detailedMessage =
+            String.format("Can't find audience with UUID of '%s'", audienceUUID.toString());
+        this.logger.warn(detailedMessage);
+        throw new NotFoundException(errorMessage, detailedMessage);
       }
 
       audience.remove(target);
       unitOfWork.save();
     } catch (Exception x) {
       unitOfWork.undo();
-      this.logger.error("An error occurred when disassociating the member to the audience.", x);
-      throw new RuntimeException(x);
+      String errorMessage = "An error occurred when disassociating the member to the audience.";
+      this.logger.error(errorMessage, x);
+      throw new InternalErrorException(errorMessage, x.getMessage());
     }
   }
 }

@@ -1,5 +1,7 @@
 package application.services;
 
+import application.InternalErrorException;
+import application.NotFoundException;
 import domain.Target;
 import domain.TargetFactory;
 import infrastructure.Repository;
@@ -53,8 +55,9 @@ public final class TargetService implements application.TargetService {
       return _target.getId();
     } catch (Exception x) {
       unitOfWork.undo();
-      this.logger.error("An error occurred when creating the target.", x);
-      throw new RuntimeException(x);
+      String errorMessage = "An error occurred when creating the target.";
+      this.logger.error(errorMessage, x);
+      throw new InternalErrorException(errorMessage, x.getMessage());
     }
   }
 
@@ -77,14 +80,17 @@ public final class TargetService implements application.TargetService {
       unitOfWork.save();
     } catch (Exception x) {
       unitOfWork.undo();
-      this.logger.error("An error occurred when retrieving the target.", x);
-      throw new RuntimeException(x);
+      String errorMessage = "An error occurred when retrieving the target.";
+      this.logger.error(errorMessage, x);
+      throw new InternalErrorException(errorMessage, x.getMessage());
     }
 
     if (target == null) {
-      this.logger.warn("Couldn't find a target with UUID '{}'.", uuid.toString());
-      throw new RuntimeException(
-          String.format("Can't find target with UUID of '%s'", uuid.toString()));
+      String errorMessage = "Can't find target.";
+      String detailedMessage =
+          String.format("Can't find target with UUID of '%s'", uuid.toString());
+      this.logger.warn(detailedMessage);
+      throw new NotFoundException(errorMessage, detailedMessage);
     }
 
     return this.applicationTargetFactory.createFrom(target);
@@ -108,8 +114,9 @@ public final class TargetService implements application.TargetService {
       unitOfWork.save();
     } catch (Exception x) {
       unitOfWork.undo();
-      this.logger.error("An error occurred when updating the target.", x);
-      throw new RuntimeException(x);
+      String errorMessage = "An error occurred when updating the target.";
+      this.logger.error(errorMessage, x);
+      throw new InternalErrorException(errorMessage, x.getMessage());
     }
   }
 
@@ -130,8 +137,9 @@ public final class TargetService implements application.TargetService {
       unitOfWork.save();
     } catch (Exception x) {
       unitOfWork.undo();
-      this.logger.error("An error occurred when deleting the target.", x);
-      throw new RuntimeException(x);
+      String errorMessage = "An error occurred when deleting the target.";
+      this.logger.error(errorMessage, x);
+      throw new InternalErrorException(errorMessage, x.getMessage());
     }
   }
 }

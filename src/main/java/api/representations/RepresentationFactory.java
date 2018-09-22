@@ -1,5 +1,6 @@
 package api.representations;
 
+import application.ApplicationException;
 import application.Audience;
 import application.Message;
 import application.Notification;
@@ -156,4 +157,7 @@ public abstract class RepresentationFactory {
       Integer skip,
       Integer take,
       Integer total);
+
+  public abstract Representation createErrorRepresentation(
+      URI location, Locale language, ApplicationException exception);
 }

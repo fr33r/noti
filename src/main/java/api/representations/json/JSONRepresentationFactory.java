@@ -2,6 +2,7 @@ package api.representations.json;
 
 import api.representations.Representation;
 import api.representations.RepresentationFactory;
+import application.ApplicationException;
 import application.Audience;
 import application.Message;
 import application.Notification;
@@ -352,6 +353,19 @@ public final class JSONRepresentationFactory extends RepresentationFactory {
         builder.add(messageRepresentation);
       }
       return builder.total(total).build();
+    } finally {
+      span.finish();
+    }
+  }
+
+  @Override
+  public Representation createErrorRepresentation(
+      URI location, Locale language, ApplicationException x) {
+    String className = JSONRepresentationFactory.class.getName();
+    String spanName = String.format("%s#createErrorRepresentation", className);
+    Span span = this.tracer.buildSpan(spanName).asChildOf(this.tracer.activeSpan()).start();
+    try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
+      return new Error(x);
     } finally {
       span.finish();
     }
