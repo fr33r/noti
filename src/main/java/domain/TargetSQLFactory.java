@@ -1,5 +1,7 @@
 package domain;
 
+import infrastructure.DataMap;
+import infrastructure.TargetMetadata;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -15,13 +17,12 @@ import org.jvnet.hk2.annotations.Service;
 @Named("TargetSQLFactory")
 public class TargetSQLFactory extends EntitySQLFactory<Target, UUID> {
 
-  private static final String uuidColumn = "uuid";
-  private static final String phoneNumberColumn = "phone_number";
-  private static final String nameColumn = "name";
+  private final TargetMetadata targetMetadata;
   private final Tracer tracer;
 
   @Inject
   public TargetSQLFactory(Tracer tracer) {
+    this.targetMetadata = new TargetMetadata();
     this.tracer = tracer;
   }
 
@@ -49,6 +50,11 @@ public class TargetSQLFactory extends EntitySQLFactory<Target, UUID> {
   }
 
   private Target extractTarget(ResultSet results) throws SQLException {
+    DataMap targetDataMap = this.targetMetadata.getDataMap();
+    String uuidColumn = targetDataMap.getColumnNameForField(TargetMetadata.UUID);
+    String nameColumn = targetDataMap.getColumnNameForField(TargetMetadata.NAME);
+    String phoneNumberColumn = targetDataMap.getColumnNameForField(TargetMetadata.PHONE_NUMBER);
+
     String uuid = results.getString(uuidColumn);
     String name = results.getString(nameColumn);
     String phoneNumber = results.getString(phoneNumberColumn);
