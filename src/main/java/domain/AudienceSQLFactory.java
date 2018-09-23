@@ -1,5 +1,8 @@
 package domain;
 
+import infrastructure.AudienceMetadata;
+import infrastructure.DataMap;
+import infrastructure.TargetMetadata;
 import io.opentracing.Tracer;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -11,14 +14,14 @@ import javax.inject.Inject;
 
 public class AudienceSQLFactory extends EntitySQLFactory<Audience, UUID> {
 
-  private static final String uuidColumn = "uuid";
-  private static final String nameColumn = "name";
-  private static final String phoneNumberColumn = "phone_number";
-
+  private final AudienceMetadata audienceMetadata;
+  private final TargetMetadata targetMetadata;
   private final Tracer tracer;
 
   @Inject
   public AudienceSQLFactory(Tracer tracer) {
+    this.audienceMetadata = new AudienceMetadata();
+    this.targetMetadata = new TargetMetadata();
     this.tracer = tracer;
   }
 
@@ -71,12 +74,21 @@ public class AudienceSQLFactory extends EntitySQLFactory<Audience, UUID> {
   }
 
   private Audience extractAudience(ResultSet results) throws SQLException {
+    DataMap audienceDataMap = this.audienceMetadata.getDataMap();
+    String uuidColumn = audienceDataMap.getColumnNameForField(AudienceMetadata.UUID);
+    String nameColumn = audienceDataMap.getColumnNameForField(AudienceMetadata.NAME);
+
     String uuid = results.getString(uuidColumn);
     String name = results.getString(nameColumn);
     return new Audience(UUID.fromString(uuid), name, new HashSet<>());
   }
 
   private Set<Target> extractMembers(ResultSet results) throws SQLException {
+    DataMap targetDataMap = this.targetMetadata.getDataMap();
+    String uuidColumn = targetDataMap.getColumnNameForField(TargetMetadata.UUID);
+    String nameColumn = targetDataMap.getColumnNameForField(TargetMetadata.NAME);
+    String phoneNumberColumn = targetDataMap.getColumnNameForField(TargetMetadata.PHONE_NUMBER);
+
     Set<Target> members = new HashSet<>();
     while (results.next()) {
       String uuid = results.getString(uuidColumn);
