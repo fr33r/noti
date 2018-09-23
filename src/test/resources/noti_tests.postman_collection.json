@@ -1,0 +1,51 @@
+{
+	"info": {
+		"_postman_id": "53061c15-9931-467c-a18c-8ea81db59cd6",
+		"name": "NOTI Tests",
+		"description": "Contains a series of tests to execute against NOTI.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "/notifications/",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "84ffc0c7-b27b-46c8-9fe0-3e42ed865ed0",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code = 200 OK\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/vnd.siren+json"
+					}
+				],
+				"body": {},
+				"url": {
+					"raw": "{{scheme}}://{{host}}:{{port}}/notifications/",
+					"protocol": "{{scheme}}",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"notifications",
+						""
+					]
+				},
+				"description": "Retrieves a representation of the notification collection resource."
+			},
+			"response": []
+		}
+	]
+}
