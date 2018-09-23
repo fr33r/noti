@@ -1,5 +1,10 @@
 package domain;
 
+import infrastructure.AudienceMetadata;
+import infrastructure.DataMap;
+import infrastructure.MessageMetadata;
+import infrastructure.NotificationMetadata;
+import infrastructure.TargetMetadata;
 import io.opentracing.Tracer;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -26,26 +31,23 @@ import org.jvnet.hk2.annotations.Service;
 @Named("NotificationSQLFactory")
 public class NotificationSQLFactory extends EntitySQLFactory<Notification, UUID> {
 
-  private static final String uuidColumn = "uuid";
-  private static final String messageColumn = "message";
-  private static final String sentAtColumn = "sent_at";
-  private static final String statusColumn = "status";
-  private static final String sendAtColumn = "send_at";
-  private static final String nameColumn = "name";
-  private static final String phoneNumberColumn = "phone_number";
   private static final String targetUUIDColumn = "target_uuid";
-  private static final String idColumn = "id";
-  private static final String fromColumn = "from";
-  private static final String toColumn = "to";
-  private static final String contentColumn = "content";
-  private static final String externalIdColumn = "external_id";
   private static final String audienceUUIDColumn = "audience_uuid";
   private static final Calendar utc = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 
   private final Tracer tracer;
+  private final NotificationMetadata notificationMedadata;
+  private final AudienceMetadata audienceMetadata;
+  private final TargetMetadata targetMetadata;
+  private final MessageMetadata messageMetadata;
 
   @Inject
   public NotificationSQLFactory(Tracer tracer) {
+    // TODO - pass these in via DI.
+    this.notificationMedadata = new NotificationMetadata();
+    this.audienceMetadata = new AudienceMetadata();
+    this.targetMetadata = new TargetMetadata();
+    this.messageMetadata = new MessageMetadata();
     this.tracer = tracer;
   }
 
@@ -92,6 +94,11 @@ public class NotificationSQLFactory extends EntitySQLFactory<Notification, UUID>
   }
 
   private Target extractTarget(ResultSet results) throws SQLException {
+    DataMap targetDataMap = this.targetMetadata.getDataMap();
+    String uuidColumn = targetDataMap.getColumnNameForField(TargetMetadata.UUID);
+    String nameColumn = targetDataMap.getColumnNameForField(TargetMetadata.NAME);
+
+    String phoneNumberColumn = targetDataMap.getColumnNameForField(TargetMetadata.PHONE_NUMBER);
     String uuid = results.getString(uuidColumn);
     String name = results.getString(nameColumn);
     String phoneNumber = results.getString(phoneNumberColumn);
@@ -108,9 +115,15 @@ public class NotificationSQLFactory extends EntitySQLFactory<Notification, UUID>
   }
 
   private Notification extractNotification(ResultSet results) throws SQLException {
-    // notification results.
+    DataMap notificationDataMap = this.notificationMedadata.getDataMap();
+    String uuidColumn = notificationDataMap.getColumnNameForField(NotificationMetadata.UUID);
+    String contentColumn = notificationDataMap.getColumnNameForField(NotificationMetadata.CONTENT);
+    String sentAtColumn = notificationDataMap.getColumnNameForField(NotificationMetadata.SENT_AT);
+    String statusColumn = notificationDataMap.getColumnNameForField(NotificationMetadata.STATUS);
+    String sendAtColumn = notificationDataMap.getColumnNameForField(NotificationMetadata.SEND_AT);
+
     String uuid = results.getString(uuidColumn);
-    String content = results.getString(messageColumn);
+    String content = results.getString(contentColumn);
     Timestamp sentAtTimestamp = results.getTimestamp(sentAtColumn, utc);
     Date sentAt = null;
     if (sentAtTimestamp != null) {
@@ -131,9 +144,15 @@ public class NotificationSQLFactory extends EntitySQLFactory<Notification, UUID>
   }
 
   private Set<Message> extractMessages(ResultSet results) throws SQLException {
-    Set<Message> messages = new HashSet<Message>();
+    DataMap messageDataMap = this.messageMetadata.getDataMap();
+    String idColumn = messageDataMap.getColumnNameForField(MessageMetadata.ID);
+    String fromColumn = messageDataMap.getColumnNameForField(MessageMetadata.FROM);
+    String toColumn = messageDataMap.getColumnNameForField(MessageMetadata.TO);
+    String contentColumn = messageDataMap.getColumnNameForField(MessageMetadata.CONTENT);
+    String statusColumn = messageDataMap.getColumnNameForField(MessageMetadata.STATUS);
+    String externalIdColumn = messageDataMap.getColumnNameForField(MessageMetadata.EXTERNAL_ID);
 
-    // message results.
+    Set<Message> messages = new HashSet<Message>();
     while (results.next()) {
       Integer id = results.getInt(idColumn);
       String from = results.getString(fromColumn);
@@ -155,6 +174,10 @@ public class NotificationSQLFactory extends EntitySQLFactory<Notification, UUID>
   }
 
   private Set<Audience> extractAudiences(ResultSet results) throws SQLException {
+    DataMap audienceDataMap = this.audienceMetadata.getDataMap();
+    String uuidColumn = audienceDataMap.getColumnNameForField(AudienceMetadata.UUID);
+    String nameColumn = audienceDataMap.getColumnNameForField(AudienceMetadata.NAME);
+
     Set<Audience> audiences = new HashSet<>();
     while (results.next()) {
       String uuid = results.getString(uuidColumn);
