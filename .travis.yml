@@ -1,6 +1,10 @@
 language: java
 jdk:
   - oraclejdk8
+
+install:
+  - npm install newman
+
 addons:
   sonarqube:
     organization: "freerjm-github"
@@ -9,10 +13,19 @@ addons:
     branches:
       - master
       - development
+
+before_script:
+  - node --version
+  - npm --version
+  - node_modules/.bin/newman --version
+
 script:
   - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent package sonar:sonar
   - docker-compose --file ./docker/docker-compose.yml up && docker-compose -f ./docker/docker-compose.yml down
+  - node_modules/.bin/newman run ./src/test/resources/noti_tests.postman_collection.json -e ./src/test/resources/noti_local.postman_environment.json
+
 cache:
   directories:
     - '$HOME/.m2/repository'
     - '$HOME/.sonar/cache'
+
