@@ -97,12 +97,11 @@ public class NotificationSQLFactory extends EntitySQLFactory<Notification, UUID>
     DataMap targetDataMap = this.targetMetadata.getDataMap();
     String uuidColumn = targetDataMap.getColumnNameForField(TargetMetadata.UUID);
     String nameColumn = targetDataMap.getColumnNameForField(TargetMetadata.NAME);
-
     String phoneNumberColumn = targetDataMap.getColumnNameForField(TargetMetadata.PHONE_NUMBER);
+
     String uuid = results.getString(uuidColumn);
     String name = results.getString(nameColumn);
     String phoneNumber = results.getString(phoneNumberColumn);
-
     return new Target(new Target(UUID.fromString(uuid), name, new PhoneNumber(phoneNumber)));
   }
 
