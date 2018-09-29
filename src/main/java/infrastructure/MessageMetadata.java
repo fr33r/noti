@@ -18,6 +18,6 @@ public final class MessageMetadata extends MetadataMapper {
     this.getDataMap().addColumn("`to`", Types.VARCHAR, TO);
     this.getDataMap().addColumn("content", Types.VARCHAR, CONTENT);
     this.getDataMap().addColumn("status", Types.VARCHAR, STATUS);
-    this.getDataMap().addColumn("external_id", Types.BIGINT, EXTERNAL_ID);
+    this.getDataMap().addColumn("external_id", Types.VARCHAR, EXTERNAL_ID);
   }
 }
