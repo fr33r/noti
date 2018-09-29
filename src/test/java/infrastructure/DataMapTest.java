@@ -12,16 +12,20 @@ import org.junit.Test;
 public final class DataMapTest {
 
   private DataMap sut;
-  private String tableName = "test";
-  private String tableAlias = "T";
+  private String tableName;
+  private String tableAlias;
 
   @Before
   public void setup() {
-    this.sut = new DataMap(tableName, tableAlias);
+    this.tableName = "test";
+    this.tableAlias = "T";
+    this.sut = new DataMap(this.tableName, this.tableAlias);
   }
 
   @After
   public void tearDown() {
+    this.tableName = null;
+    this.tableAlias = null;
     this.sut = null;
   }
 

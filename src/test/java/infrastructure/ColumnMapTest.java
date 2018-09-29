@@ -24,6 +24,9 @@ public final class ColumnMapTest {
 
   @After
   public void tearDown() {
+    this.columnName = null;
+    this.columnType = null;
+    this.fieldName = null;
     this.sut = null;
   }
 
