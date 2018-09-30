@@ -1,5 +1,6 @@
 package configuration;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /** Represents the database configuration for Noti. */
@@ -81,5 +82,20 @@ public class DatabaseConfiguration {
   @JsonProperty
   public void setUseLegacyDatetimeCode(boolean useLegacyDatetimeCode) {
     this.useLegacyDatetimeCode = useLegacyDatetimeCode;
+  }
+
+  @JsonIgnore
+  public String getURL() {
+
+    // retrieve configuration values.
+    final String host = this.getHost();
+    final Integer port = this.getPort();
+    final String databaseName = this.getName();
+    final Boolean useLegacyDateTimeCode = this.getUseLegacyDatetimeCode();
+    final Boolean useSSL = this.getUseSSL();
+
+    // construct the URL.
+    final String urlTemplate = "jdbc:mysql://%s:%s/%s?useLegacyDatetimeCode=%b&useSSL=%b";
+    return String.format(urlTemplate, host, port, databaseName, useLegacyDateTimeCode, useSSL);
   }
 }
