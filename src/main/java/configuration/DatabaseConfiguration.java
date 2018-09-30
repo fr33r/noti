@@ -1,5 +1,6 @@
 package configuration;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /** Represents the database configuration for Noti. */
@@ -12,6 +13,7 @@ public class DatabaseConfiguration {
   private String password;
   private boolean useSSL;
   private boolean useLegacyDatetimeCode;
+  private boolean allowPublicKeyRetrieval;
 
   @JsonProperty
   public String getHost() {
@@ -81,5 +83,39 @@ public class DatabaseConfiguration {
   @JsonProperty
   public void setUseLegacyDatetimeCode(boolean useLegacyDatetimeCode) {
     this.useLegacyDatetimeCode = useLegacyDatetimeCode;
+  }
+
+  @JsonProperty
+  public boolean getAllowPublicKeyRetrieval() {
+    return this.allowPublicKeyRetrieval;
+  }
+
+  @JsonProperty
+  public void setAllowPublicKeyRetrieval(boolean allowPublicKeyRetrieval) {
+    this.allowPublicKeyRetrieval = allowPublicKeyRetrieval;
+  }
+
+  @JsonIgnore
+  public String getURL() {
+
+    // retrieve configuration values.
+    final String host = this.getHost();
+    final Integer port = this.getPort();
+    final String databaseName = this.getName();
+    final Boolean useLegacyDateTimeCode = this.getUseLegacyDatetimeCode();
+    final Boolean useSSL = this.getUseSSL();
+    final Boolean allowPublicKeyRetrieval = this.getAllowPublicKeyRetrieval();
+
+    // construct the URL.
+    final String urlTemplate =
+        "jdbc:mysql://%s:%s/%s?useLegacyDatetimeCode=%b&useSSL=%b&allowPublicKeyRetrieval=%b";
+    return String.format(
+        urlTemplate,
+        host,
+        port,
+        databaseName,
+        useLegacyDateTimeCode,
+        useSSL,
+        allowPublicKeyRetrieval);
   }
 }

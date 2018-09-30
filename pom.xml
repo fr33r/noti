@@ -213,10 +213,15 @@
 			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>net.jodah</groupId>
+			<artifactId>failsafe</artifactId>
+			<version>${failsafe.version}</version>
+		</dependency>
 	</dependencies>
 
 	<properties>
-		<mysql.version>6.0.6</mysql.version>
+		<mysql.version>8.0.12</mysql.version>
 		<jaeger.version>0.26.0</jaeger.version>
 		<dropwizard.version>1.2.2</dropwizard.version>
 		<dropwizard.metrics.version>3.2.3</dropwizard.metrics.version>
@@ -227,5 +232,6 @@
 		<avro.version>1.8.2</avro.version>
 		<avro.serializer.version>3.3.1</avro.serializer.version>
 		<junit.version>4.12</junit.version>
+		<failsafe.version>1.1.0</failsafe.version>
 	</properties>
 </project>
