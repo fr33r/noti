@@ -1,6 +1,9 @@
 import configuration.DatabaseConfiguration;
 import configuration.NotiConfiguration;
 import io.dropwizard.setup.Environment;
+import java.util.concurrent.TimeUnit;
+import net.jodah.failsafe.Failsafe;
+import net.jodah.failsafe.RetryPolicy;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.FlywayException;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -16,26 +19,32 @@ public final class DatabaseModule extends NotiModule {
   }
 
   @Override
-  public void configure() throws FlywayException {
+  public void configure() {
 
     // extract configuration.
     final DatabaseConfiguration databaseConfiguration =
         this.getConfiguration().getDatabaseConfiguration();
     final String username = databaseConfiguration.getUser();
     final String password = databaseConfiguration.getPassword();
-    final String host = databaseConfiguration.getHost();
-    final int port = databaseConfiguration.getPort();
-    final String name = databaseConfiguration.getName();
-    final boolean useLegacyDateTimeCode = databaseConfiguration.getUseLegacyDatetimeCode();
-    final boolean useSSL = databaseConfiguration.getUseSSL();
-    final String urlTemplate = "jdbc:mysql://%s:%s/%s?useLegacyDatetimeCode=%b&useSSL=%b";
-    final String url = String.format(urlTemplate, host, port, name, useLegacyDateTimeCode, useSSL);
+    final String url = databaseConfiguration.getURL();
 
-    // setup the database.
-    Flyway flyway = new Flyway();
-    flyway.setInstalledBy(username);
-    flyway.setDataSource(url, username, password);
-    flyway.migrate();
+    final Integer delay = 1;
+    final Integer maxDelay = 30;
+    RetryPolicy retryPolicy =
+        new RetryPolicy()
+            .retryOn(FlywayException.class)
+            .withBackoff(delay, maxDelay, TimeUnit.SECONDS);
+
+    Failsafe.with(retryPolicy)
+        .run(
+            () -> {
+
+              // setup the database.
+              Flyway flyway = new Flyway();
+              flyway.setInstalledBy(username);
+              flyway.setDataSource(url, username, password);
+              flyway.migrate();
+            });
 
     // register database configuration with environment.
     AbstractBinder binder =

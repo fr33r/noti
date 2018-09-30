@@ -213,6 +213,11 @@
 			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>net.jodah</groupId>
+			<artifactId>failsafe</artifactId>
+			<version>${failsafe.version}</version>
+		</dependency>
 	</dependencies>
 
 	<properties>
@@ -227,5 +232,6 @@
 		<avro.version>1.8.2</avro.version>
 		<avro.serializer.version>3.3.1</avro.serializer.version>
 		<junit.version>4.12</junit.version>
+		<failsafe.version>1.1.0</failsafe.version>
 	</properties>
 </project>
