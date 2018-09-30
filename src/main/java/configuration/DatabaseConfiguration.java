@@ -13,6 +13,7 @@ public class DatabaseConfiguration {
   private String password;
   private boolean useSSL;
   private boolean useLegacyDatetimeCode;
+  private boolean allowPublicKeyRetrieval;
 
   @JsonProperty
   public String getHost() {
@@ -84,6 +85,16 @@ public class DatabaseConfiguration {
     this.useLegacyDatetimeCode = useLegacyDatetimeCode;
   }
 
+  @JsonProperty
+  public boolean getAllowPublicKeyRetrieval() {
+    return this.allowPublicKeyRetrieval;
+  }
+
+  @JsonProperty
+  public void setAllowPublicKeyRetrieval(boolean allowPublicKeyRetrieval) {
+    this.allowPublicKeyRetrieval = allowPublicKeyRetrieval;
+  }
+
   @JsonIgnore
   public String getURL() {
 
@@ -93,9 +104,18 @@ public class DatabaseConfiguration {
     final String databaseName = this.getName();
     final Boolean useLegacyDateTimeCode = this.getUseLegacyDatetimeCode();
     final Boolean useSSL = this.getUseSSL();
+    final Boolean allowPublicKeyRetrieval = this.getAllowPublicKeyRetrieval();
 
     // construct the URL.
-    final String urlTemplate = "jdbc:mysql://%s:%s/%s?useLegacyDatetimeCode=%b&useSSL=%b";
-    return String.format(urlTemplate, host, port, databaseName, useLegacyDateTimeCode, useSSL);
+    final String urlTemplate =
+        "jdbc:mysql://%s:%s/%s?useLegacyDatetimeCode=%b&useSSL=%b&allowPublicKeyRetrieval=%b";
+    return String.format(
+        urlTemplate,
+        host,
+        port,
+        databaseName,
+        useLegacyDateTimeCode,
+        useSSL,
+        allowPublicKeyRetrieval);
   }
 }

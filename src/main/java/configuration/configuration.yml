@@ -6,6 +6,7 @@ database:
   password: ${DB_PASSWORD}
   useSSL: false
   useLegacyDatetimeCode: false
+  allowPublicKeyRetrieval: true
 
 jaeger:
   serviceName: noti
