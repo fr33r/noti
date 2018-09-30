@@ -7,12 +7,15 @@ import net.jodah.failsafe.RetryPolicy;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.FlywayException;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class DatabaseModule extends NotiModule {
 
   private static final String JDBC_URL = "JDBC_URL";
   private static final String JDBC_USERNAME = "JDBC_USERNAME";
   private static final String JDBC_PASSWORD = "JDBC_PASSWORD";
+  private static final Logger logger = LoggerFactory.getLogger(DatabaseModule.class);
 
   public DatabaseModule(NotiConfiguration configuration, Environment environment) {
     super(configuration, environment);
@@ -29,13 +32,17 @@ public final class DatabaseModule extends NotiModule {
     final String url = databaseConfiguration.getURL();
 
     final Integer delay = 1;
-    final Integer maxDelay = 30;
+    final Integer maxDelay = 32;
+    final Integer maxRetries = 6;
     RetryPolicy retryPolicy =
         new RetryPolicy()
             .retryOn(FlywayException.class)
-            .withBackoff(delay, maxDelay, TimeUnit.SECONDS);
+            .withBackoff(delay, maxDelay, TimeUnit.SECONDS)
+            .withMaxRetries(maxRetries);
 
     Failsafe.with(retryPolicy)
+        .onFailedAttempt((f) -> logger.warn("Unable to connect to database."))
+        .onFailure((f) -> logger.error("Unable to connect to database.", f))
         .run(
             () -> {
 
