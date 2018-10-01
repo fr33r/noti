@@ -29,11 +29,11 @@ public final class NotificationMetadata extends MetadataMapper {
 
   /** Constructs new {@link NotificationMetadata}. */
   public NotificationMetadata() {
-    super(new DataMap("notification", "N"));
-    this.getDataMap().addColumn("uuid", Types.VARCHAR, UUID);
-    this.getDataMap().addColumn("message", Types.VARCHAR, CONTENT);
-    this.getDataMap().addColumn("send_at", Types.TIMESTAMP, SEND_AT);
-    this.getDataMap().addColumn("sent_at", Types.TIMESTAMP, SENT_AT);
-    this.getDataMap().addColumn("status", Types.VARCHAR, STATUS);
+    super(new DataMap("NOTIFICATION", "N"));
+    this.getDataMap().addColumn("UUID", Types.VARCHAR, UUID);
+    this.getDataMap().addColumn("MESSAGE", Types.VARCHAR, CONTENT);
+    this.getDataMap().addColumn("SEND_AT", Types.TIMESTAMP, SEND_AT);
+    this.getDataMap().addColumn("SENT_AT", Types.TIMESTAMP, SENT_AT);
+    this.getDataMap().addColumn("STATUS", Types.VARCHAR, STATUS);
   }
 }

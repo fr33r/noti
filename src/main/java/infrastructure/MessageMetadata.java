@@ -12,12 +12,12 @@ public final class MessageMetadata extends MetadataMapper {
   public static final String EXTERNAL_ID = "externalID";
 
   public MessageMetadata() {
-    super(new DataMap("message", "M"));
-    this.getDataMap().addColumn("id", Types.BIGINT, ID);
-    this.getDataMap().addColumn("`from`", Types.VARCHAR, FROM);
-    this.getDataMap().addColumn("`to`", Types.VARCHAR, TO);
-    this.getDataMap().addColumn("content", Types.VARCHAR, CONTENT);
-    this.getDataMap().addColumn("status", Types.VARCHAR, STATUS);
-    this.getDataMap().addColumn("external_id", Types.VARCHAR, EXTERNAL_ID);
+    super(new DataMap("MESSAGE", "M"));
+    this.getDataMap().addColumn("ID", Types.BIGINT, ID);
+    this.getDataMap().addColumn("`FROM`", Types.VARCHAR, FROM);
+    this.getDataMap().addColumn("`TO`", Types.VARCHAR, TO);
+    this.getDataMap().addColumn("CONTENT", Types.VARCHAR, CONTENT);
+    this.getDataMap().addColumn("STATUS", Types.VARCHAR, STATUS);
+    this.getDataMap().addColumn("EXTERNAL_ID", Types.VARCHAR, EXTERNAL_ID);
   }
 }
