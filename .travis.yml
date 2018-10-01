@@ -3,16 +3,34 @@ jdk:
   - oraclejdk8
 addons:
   sonarqube:
-    organization: "freerjm-github"
+    organization: freerjm-github
     token:
-      secure: "fFpgdyfwx6Go9B1izAGDPkWxm+B2azkblwUnwvTIKbOpUW8Cbj4UZbEP8bL/Pcyo/ixu62oWJ9z7vc5ykuDfEbrFBtIxYfFUPEKMzjOYWw/45RLOiabom1gYs0kIAjCOFmMQovOF1RMXyBsfnOmaV9szSsFTDqZdC2/wmJQ3FD6fm3Zxc5okPssw67R+6ldUAWnUW/KspeQwTp2+xZR4pRncCc3xfHv0MMt3VmC9gl8O+rPTEZ5I4ZLL4pFe8p98JBrFJn/+JhLNvWum2WIwpSBUKL6xGM2GRNZ45MuYGN9a8AR/3pS6PSKFctSVVVVgUIR6eX8AHl9q7CUcSsBTomVu92W1NnqN6Obqoo4NrvbOBCH5BLoJbQ022uUanGFjhc9zsyngQm0anCqx/d0M3LJxkJo+F+/eznZS8uJH6mfD8d6PCyLaTj5IuWmr1eVSI0fbsc1c+gIkL4U8SwoDcqFm3qiFdu5zkuo1YKd0XJhUwWvS75ZTN3SFVRjT0rr3VVD4HGD1/q42gtRk2es1TDvAfUa/VnlzHpDxNoXOwBbwdqVOAGtPAtq+QyXfeVXHqFFTbEkuP3FU20KLf11ASVf+E8bkEbznTfruSr/FVk5oBlJvMsj1r39MNNA0Tw7NPk39CsiLIKiAhZtCmJd4Y/cmyLApL/lXr6mhYJZSDho="
+      secure: fFpgdyfwx6Go9B1izAGDPkWxm+B2azkblwUnwvTIKbOpUW8Cbj4UZbEP8bL/Pcyo/ixu62oWJ9z7vc5ykuDfEbrFBtIxYfFUPEKMzjOYWw/45RLOiabom1gYs0kIAjCOFmMQovOF1RMXyBsfnOmaV9szSsFTDqZdC2/wmJQ3FD6fm3Zxc5okPssw67R+6ldUAWnUW/KspeQwTp2+xZR4pRncCc3xfHv0MMt3VmC9gl8O+rPTEZ5I4ZLL4pFe8p98JBrFJn/+JhLNvWum2WIwpSBUKL6xGM2GRNZ45MuYGN9a8AR/3pS6PSKFctSVVVVgUIR6eX8AHl9q7CUcSsBTomVu92W1NnqN6Obqoo4NrvbOBCH5BLoJbQ022uUanGFjhc9zsyngQm0anCqx/d0M3LJxkJo+F+/eznZS8uJH6mfD8d6PCyLaTj5IuWmr1eVSI0fbsc1c+gIkL4U8SwoDcqFm3qiFdu5zkuo1YKd0XJhUwWvS75ZTN3SFVRjT0rr3VVD4HGD1/q42gtRk2es1TDvAfUa/VnlzHpDxNoXOwBbwdqVOAGtPAtq+QyXfeVXHqFFTbEkuP3FU20KLf11ASVf+E8bkEbznTfruSr/FVk5oBlJvMsj1r39MNNA0Tw7NPk39CsiLIKiAhZtCmJd4Y/cmyLApL/lXr6mhYJZSDho=
     branches:
       - master
       - development
-script:
-  - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent package sonar:sonar
-  - docker-compose --file ./docker/docker-compose.yml up && docker-compose -f ./docker/docker-compose.yml down
+jobs:
+  include:
+    -
+      stage: 'unit test'
+      script:
+        - 'mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent package sonar:sonar'
+    -
+      stage: 'postman test'
+      before_script:
+        - 'nvm install v8.12.0'
+        - 'npm install newman'
+        - 'node --version'
+        - 'npm --version'
+        - 'node_modules/.bin/newman --version'
+      script:
+        - 'mvn package -Dmaven.test.skip=true'
+        - 'docker-compose --file ./docker/docker-compose.yml up -d'
+        - 'echo "Waiting 30 seconds for service startup :)" && sleep 30 && echo "We woke! Time to get to work!"'
+        - 'node_modules/.bin/newman run ./src/test/resources/noti_tests.postman_collection.json -e ./src/test/resources/noti_local.postman_environment.json'
+        - 'docker-compose -f ./docker/docker-compose.yml down'
 cache:
   directories:
-    - '$HOME/.m2/repository'
-    - '$HOME/.sonar/cache'
+    - $HOME/.m2/repository
+    - $HOME/.sonar/cache
+
