@@ -23,9 +23,9 @@ public final class TargetMetadata extends MetadataMapper {
 
   /** Construcs new {@link TargetMetadata}. */
   public TargetMetadata() {
-    super(new DataMap("target", "T"));
-    this.getDataMap().addColumn("uuid", Types.VARCHAR, UUID);
-    this.getDataMap().addColumn("phone_number", Types.VARCHAR, PHONE_NUMBER);
-    this.getDataMap().addColumn("name", Types.VARCHAR, NAME);
+    super(new DataMap("TARGET", "T"));
+    this.getDataMap().addColumn("UUID", Types.VARCHAR, UUID);
+    this.getDataMap().addColumn("PHONE_NUMBER", Types.VARCHAR, PHONE_NUMBER);
+    this.getDataMap().addColumn("NAME", Types.VARCHAR, NAME);
   }
 }

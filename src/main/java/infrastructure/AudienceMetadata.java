@@ -20,8 +20,8 @@ public final class AudienceMetadata extends MetadataMapper {
 
   /** Construcs new {@link AudienceMetadata}. */
   public AudienceMetadata() {
-    super(new DataMap("audience", "A"));
-    this.getDataMap().addColumn("uuid", Types.VARCHAR, UUID);
-    this.getDataMap().addColumn("name", Types.VARCHAR, NAME);
+    super(new DataMap("AUDIENCE", "A"));
+    this.getDataMap().addColumn("UUID", Types.VARCHAR, UUID);
+    this.getDataMap().addColumn("NAME", Types.VARCHAR, NAME);
   }
 }
