@@ -1,8 +1,6 @@
 language: java
 jdk:
   - oraclejdk8
-install:
-  - 'npm install newman'
 addons:
   sonarqube:
     organization: freerjm-github
@@ -20,6 +18,8 @@ jobs:
     -
       stage: 'postman test'
       before_script:
+        - 'nvm install v8.12.0'
+        - 'npm install newman'
         - 'node --version'
         - 'npm --version'
         - 'node_modules/.bin/newman --version'
