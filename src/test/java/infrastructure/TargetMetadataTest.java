@@ -24,7 +24,7 @@ public final class TargetMetadataTest {
   @Test
   public void getDataMap_outcomeIs_containsUUIDMapping() {
     // arrange.
-    final String expectedColumnName = "uuid";
+    final String expectedColumnName = "UUID";
     final Integer expectedType = Types.VARCHAR;
     final String expectedFieldName = "uuid";
 
@@ -43,7 +43,7 @@ public final class TargetMetadataTest {
   @Test
   public void getDataMap_outcomeIs_containsNameMapping() {
     // arrange.
-    final String expectedColumnName = "name";
+    final String expectedColumnName = "NAME";
     final Integer expectedType = Types.VARCHAR;
     final String expectedFieldName = "name";
 
@@ -62,7 +62,7 @@ public final class TargetMetadataTest {
   @Test
   public void getDataMap_outcomeIs_containsPhoneNumberMapping() {
     // arrange.
-    final String expectedColumnName = "phone_number";
+    final String expectedColumnName = "PHONE_NUMBER";
     final Integer expectedType = Types.VARCHAR;
     final String expectedFieldName = "phoneNumber";
 
@@ -82,7 +82,7 @@ public final class TargetMetadataTest {
   public void getTableName_outcomeIs_correctTableName() {
 
     // arrange.
-    final String expectedTableName = "target";
+    final String expectedTableName = "TARGET";
 
     // action.
     String tableName = this.sut.getDataMap().getTableName();

@@ -25,7 +25,7 @@ public final class NotificationMetadataTest {
   public void getDataMap_outcomeIs_containsUUIDMapping() {
 
     // arrange.
-    final String expectedColumnName = "uuid";
+    final String expectedColumnName = "UUID";
     final Integer expectedType = Types.VARCHAR;
     final String expectedFieldName = "uuid";
 
@@ -45,7 +45,7 @@ public final class NotificationMetadataTest {
   public void getDataMap_outcomeIs_containsContentMapping() {
 
     // arrange.
-    final String expectedColumnName = "message";
+    final String expectedColumnName = "MESSAGE";
     final Integer expectedType = Types.VARCHAR;
     final String expectedFieldName = "content";
 
@@ -65,7 +65,7 @@ public final class NotificationMetadataTest {
   public void getDataMap_outcomeIs_containsSendAtMapping() {
 
     // arrange.
-    final String expectedColumnName = "send_at";
+    final String expectedColumnName = "SEND_AT";
     final Integer expectedType = Types.TIMESTAMP;
     final String expectedFieldName = "sendAt";
 
@@ -85,7 +85,7 @@ public final class NotificationMetadataTest {
   public void getDataMap_outcomeIs_containsSentAtMapping() {
 
     // arrange.
-    final String expectedColumnName = "sent_at";
+    final String expectedColumnName = "SENT_AT";
     final Integer expectedType = Types.TIMESTAMP;
     final String expectedFieldName = "sentAt";
 
@@ -105,7 +105,7 @@ public final class NotificationMetadataTest {
   public void getDataMap_outcomeIs_containsStatusMapping() {
 
     // arrange.
-    final String expectedColumnName = "status";
+    final String expectedColumnName = "STATUS";
     final Integer expectedType = Types.VARCHAR;
     final String expectedFieldName = "status";
 
@@ -125,7 +125,7 @@ public final class NotificationMetadataTest {
   public void getTableName_outcomeIs_correctTableName() {
 
     // arrange.
-    final String expectedTableName = "notification";
+    final String expectedTableName = "NOTIFICATION";
 
     // action.
     String tableName = this.sut.getDataMap().getTableName();

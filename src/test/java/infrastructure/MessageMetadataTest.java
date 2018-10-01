@@ -25,7 +25,7 @@ public final class MessageMetadataTest {
   public void getDataMap_outcomeIs_containsIDMapping() {
 
     // arrange.
-    final String expectedColumnName = "id";
+    final String expectedColumnName = "ID";
     final Integer expectedType = Types.BIGINT;
     final String expectedFieldName = "id";
 
@@ -45,7 +45,7 @@ public final class MessageMetadataTest {
   public void getDataMap_outcomeIs_containsContentMapping() {
 
     // arrange.
-    final String expectedColumnName = "content";
+    final String expectedColumnName = "CONTENT";
     final Integer expectedType = Types.VARCHAR;
     final String expectedFieldName = "content";
 
@@ -65,7 +65,7 @@ public final class MessageMetadataTest {
   public void getDataMap_outcomeIs_containsStatusMapping() {
 
     // arrange.
-    final String expectedColumnName = "status";
+    final String expectedColumnName = "STATUS";
     final Integer expectedType = Types.VARCHAR;
     final String expectedFieldName = "status";
 
@@ -85,7 +85,7 @@ public final class MessageMetadataTest {
   public void getDataMap_outcomeIs_containsFromMapping() {
 
     // arrange.
-    final String expectedColumnName = "`from`";
+    final String expectedColumnName = "`FROM`";
     final Integer expectedType = Types.VARCHAR;
     final String expectedFieldName = "from";
 
@@ -105,7 +105,7 @@ public final class MessageMetadataTest {
   public void getDataMap_outcomeIs_containsToMapping() {
 
     // arrange.
-    final String expectedColumnName = "`to`";
+    final String expectedColumnName = "`TO`";
     final Integer expectedType = Types.VARCHAR;
     final String expectedFieldName = "to";
 
@@ -125,7 +125,7 @@ public final class MessageMetadataTest {
   public void getDataMap_outcomeIs_containsExternalIDMapping() {
 
     // arrange.
-    final String expectedColumnName = "external_id";
+    final String expectedColumnName = "EXTERNAL_ID";
     final Integer expectedType = Types.VARCHAR;
     final String expectedFieldName = "externalID";
 
@@ -145,7 +145,7 @@ public final class MessageMetadataTest {
   public void getTableName_outcomeIs_correctTableName() {
 
     // arrange.
-    final String expectedTableName = "message";
+    final String expectedTableName = "MESSAGE";
 
     // action.
     String tableName = this.sut.getDataMap().getTableName();

@@ -25,7 +25,7 @@ public final class AudienceMetadataTest {
   public void getDataMap_outcomeIs_containsUUIDMapping() {
 
     // arrange.
-    final String expectedColumnName = "uuid";
+    final String expectedColumnName = "UUID";
     final Integer expectedType = Types.VARCHAR;
     final String expectedFieldName = "uuid";
 
@@ -45,7 +45,7 @@ public final class AudienceMetadataTest {
   public void getDataMap_outcomeIs_containsNameMapping() {
 
     // arrange.
-    final String expectedColumnName = "name";
+    final String expectedColumnName = "NAME";
     final Integer expectedType = Types.VARCHAR;
     final String expectedFieldName = "name";
 
@@ -65,7 +65,7 @@ public final class AudienceMetadataTest {
   public void getTableName_outcomeIs_correctTableName() {
 
     // arrange.
-    final String expectedTableName = "audience";
+    final String expectedTableName = "AUDIENCE";
 
     // action.
     String tableName = this.sut.getDataMap().getTableName();
