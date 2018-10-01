@@ -24,6 +24,7 @@ jobs:
         - 'npm --version'
         - 'node_modules/.bin/newman --version'
       script:
+        - 'mvn package'
         - 'docker-compose --file ./docker/docker-compose.yml up'
         - 'node_modules/.bin/newman run ./src/test/resources/noti_tests.postman_collection.json -e ./src/test/resources/noti_local.postman_environment.json'
         - 'docker-compose -f ./docker/docker-compose.yml down'
