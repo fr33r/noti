@@ -25,7 +25,7 @@ jobs:
         - 'node_modules/.bin/newman --version'
       script:
         - 'mvn package'
-        - 'docker-compose --file ./docker/docker-compose.yml --detach up'
+        - 'docker-compose --file ./docker/docker-compose.yml up --detach'
         - 'echo "Waiting 30 seconds for service startup :)" && sleep 30 && echo "We woke! Time to get to work!"'
         - 'node_modules/.bin/newman run ./src/test/resources/noti_tests.postman_collection.json -e ./src/test/resources/noti_local.postman_environment.json'
         - 'docker-compose -f ./docker/docker-compose.yml down'
