@@ -290,26 +290,30 @@ final class AudienceDataMapper extends DataMapper {
         }
       }
 
-      String associateMemberSQL = this.associateMemberSQL(toAssociate.size());
-      try (final PreparedStatement associateMemberStatement =
-          this.getUnitOfWork().createPreparedStatement(associateMemberSQL)) {
-        index = 0;
-        for (UUID uuid : toAssociate) {
-          associateMemberStatement.setString(++index, audience.getId().toString());
-          associateMemberStatement.setString(++index, uuid.toString());
+      if (!toAssociate.isEmpty()) {
+        String associateMemberSQL = this.associateMemberSQL(toAssociate.size());
+        try (final PreparedStatement associateMemberStatement =
+            this.getUnitOfWork().createPreparedStatement(associateMemberSQL)) {
+          index = 0;
+          for (UUID uuid : toAssociate) {
+            associateMemberStatement.setString(++index, audience.getId().toString());
+            associateMemberStatement.setString(++index, uuid.toString());
+          }
+          associateMemberStatement.executeUpdate();
         }
-        associateMemberStatement.executeUpdate();
       }
 
-      String disassociateMemberSQL = this.disassociateMemberSQL(toDisassociate.size());
-      try (final PreparedStatement disassociateMemberStatement =
-          this.getUnitOfWork().createPreparedStatement(disassociateMemberSQL)) {
-        index = 0;
-        for (UUID uuid : toDisassociate) {
-          disassociateMemberStatement.setString(++index, audience.getId().toString());
-          disassociateMemberStatement.setString(++index, uuid.toString());
+      if (!toDisassociate.isEmpty()) {
+        String disassociateMemberSQL = this.disassociateMemberSQL(toDisassociate.size());
+        try (final PreparedStatement disassociateMemberStatement =
+            this.getUnitOfWork().createPreparedStatement(disassociateMemberSQL)) {
+          index = 0;
+          for (UUID uuid : toDisassociate) {
+            disassociateMemberStatement.setString(++index, audience.getId().toString());
+            disassociateMemberStatement.setString(++index, uuid.toString());
+          }
+          disassociateMemberStatement.executeUpdate();
         }
-        disassociateMemberStatement.executeUpdate();
       }
     } catch (SQLException x) {
       throw new RuntimeException(x);
@@ -328,14 +332,16 @@ final class AudienceDataMapper extends DataMapper {
       createAudienceStatement.setString(++index, audience.name());
       createAudienceStatement.executeUpdate();
 
-      try (PreparedStatement associateMemberStatement =
-          this.getUnitOfWork().createPreparedStatement(associateMemberSQL)) {
-        index = 0;
-        for (Target member : audience.members()) {
-          associateMemberStatement.setString(++index, audience.getId().toString());
-          associateMemberStatement.setString(++index, member.getId().toString());
+      if (!audience.members().isEmpty()) {
+        try (PreparedStatement associateMemberStatement =
+            this.getUnitOfWork().createPreparedStatement(associateMemberSQL)) {
+          index = 0;
+          for (Target member : audience.members()) {
+            associateMemberStatement.setString(++index, audience.getId().toString());
+            associateMemberStatement.setString(++index, member.getId().toString());
+          }
+          associateMemberStatement.executeUpdate();
         }
-        associateMemberStatement.executeUpdate();
       }
     } catch (SQLException x) {
       throw new RuntimeException(x);

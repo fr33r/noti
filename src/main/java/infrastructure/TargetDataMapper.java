@@ -124,7 +124,7 @@ final class TargetDataMapper extends DataMapper {
   }
 
   private String disassociateFromAudienceSQL() {
-    String tableName = "NOTIFICATION_AUDIENCE";
+    String tableName = "NOTIFICATION_TARGET";
     String matchCriteria = "TARGET_UUID = ?";
     String sql = this.deleteSQL(1, tableName, matchCriteria);
     this.logger.debug(sql);

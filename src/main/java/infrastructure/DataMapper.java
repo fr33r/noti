@@ -32,6 +32,7 @@ class DataMapper {
         .append(tableName)
         .append("(")
         .append(String.join(",", columns))
+        .append(")")
         .append(" VALUES ");
     for (int i = 0; i < numOfInsertions; i++) {
       sb.append("(").append(placeholders).append(")");

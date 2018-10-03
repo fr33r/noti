@@ -92,7 +92,7 @@ public class AudienceResource extends Resource implements api.AudienceResource {
     Span span = this.getTracer().buildSpan(spanName).start();
     try (Scope scope = this.getTracer().scopeManager().activate(span, false)) {
       this.audienceService.deleteAudience(UUID.fromString(uuid));
-      return Response.ok().build();
+      return Response.noContent().build();
     } finally {
       span.finish();
     }
