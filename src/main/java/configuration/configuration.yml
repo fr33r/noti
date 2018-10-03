@@ -12,7 +12,7 @@ jaeger:
   serviceName: noti
 
 logging:
-  level: INFO
+    level: ${LOG_LEVEL:-INFO}
 
 kafka:
     producer:
