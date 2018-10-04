@@ -27,7 +27,7 @@ jobs:
         - 'mvn package -Dmaven.test.skip=true'
         - 'docker-compose --file ./docker/docker-compose.yml up -d'
         - 'echo "Waiting 30 seconds for service startup :)" && sleep 30 && echo "We woke! Time to get to work!"'
-        - 'curl http://127.0.0.1:9090/notifications -H "Accept:application/json" | jq  .'
+        - 'curl http://127.0.0.1:9090/notifications -H "Accept:application/json" --verbose'
         - 'node_modules/.bin/newman run ./src/test/resources/noti_tests.postman_collection.json -e ./src/test/resources/noti_local.postman_environment.json --bail'
         - 'docker-compose -f ./docker/docker-compose.yml down'
 cache:
