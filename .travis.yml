@@ -24,7 +24,7 @@ jobs:
         - 'node_modules/.bin/newman --version'
       script:
         - 'docker-compose --file ./docker/docker-compose.yml up -d'
-        - 'echo "Waiting 45 seconds for service startup :)" && sleep 45 && echo "We woke! Time to get to work!"'
+        - 'sleep $SERVICE_STARTUP_SLEEP_SECONDS'
         - 'node_modules/.bin/newman run ./src/test/resources/noti_tests.postman_collection.json -e ./src/test/resources/noti_local.postman_environment.json --bail'
         - 'docker-compose -f ./docker/docker-compose.yml down'
 cache:
