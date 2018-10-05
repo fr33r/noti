@@ -18,7 +18,6 @@ jobs:
     -
       stage: 'postman test'
       before_script:
-        - 'nvm install v8.12.0'
         - 'npm install newman'
         - 'node --version'
         - 'npm --version'
