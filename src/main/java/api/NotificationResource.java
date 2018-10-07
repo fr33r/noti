@@ -36,6 +36,7 @@ public interface NotificationResource {
    *     collection.
    */
   @GET
+  @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/vnd.siren+json"})
   Response getCollection(
       @Context HttpHeaders headers,
       @Context UriInfo uriInfo,
@@ -68,7 +69,7 @@ public interface NotificationResource {
    *     resource.
    */
   @POST
-  @Consumes({MediaType.APPLICATION_JSON})
+  @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
   Response createAndAppend(
       @Context HttpHeaders headers, @Context UriInfo uriInfo, Notification notification);
 
@@ -84,7 +85,7 @@ public interface NotificationResource {
    */
   @PUT
   @Path("{uuid}")
-  @Consumes({MediaType.APPLICATION_JSON})
+  @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
   Response replace(
       @Context HttpHeaders headers, @Context UriInfo uriInfo, Notification notification);
 

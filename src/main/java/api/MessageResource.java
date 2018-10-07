@@ -74,7 +74,7 @@ public interface MessageResource {
    */
   @PUT
   @Path("{id}")
-  @Consumes({MediaType.APPLICATION_JSON})
+  @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
   Response replace(
       @Context HttpHeaders headers,
       @Context UriInfo uriInfo,
