@@ -7,484 +7,1496 @@
 	},
 	"item": [
 		{
-			"name": "/notifications/",
-			"event": [
+			"name": "application/json",
+			"item": [
 				{
-					"listen": "test",
-					"script": {
-						"id": "84ffc0c7-b27b-46c8-9fe0-3e42ed865ed0",
-						"type": "text/javascript",
-						"exec": [
-							"pm.test(\"Status code = 200 OK\", function () {",
-							"    pm.response.to.have.status(200);",
-							"});"
-						]
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "Accept",
-						"value": "application/vnd.siren+json"
-					}
-				],
-				"body": {},
-				"url": {
-					"raw": "{{scheme}}://{{host}}:{{port}}/notifications/",
-					"protocol": "{{scheme}}",
-					"host": [
-						"{{host}}"
+					"name": "/notifications/",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "84ffc0c7-b27b-46c8-9fe0-3e42ed865ed0",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code = 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								]
+							}
+						}
 					],
-					"port": "{{port}}",
-					"path": [
-						"notifications",
-						""
-					]
-				},
-				"description": "Retrieves a representation of the notification collection resource."
-			},
-			"response": []
-		},
-		{
-			"name": "/audiences/",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"id": "1d272cca-8a62-41e7-b079-7d9d19141de2",
-						"type": "text/javascript",
-						"exec": [
-							"//tests.",
-							"pm.test(\"Status code = 201 Created\", function () {",
-							"    pm.response.to.have.status(201);",
-							"});",
-							"",
-							"pm.test(\"Content-Length header is present\", function () {",
-							"    pm.response.to.have.header(\"Content-Length\");",
-							"});",
-							"",
-							"pm.test(\"Location header is present\", function () {",
-							"    pm.response.to.have.header(\"Location\");",
-							"});",
-							"",
-							"//set globals.",
-							"var location = postman.getResponseHeader(\"Location\");",
-							"pm.globals.set(\"audience_location\", location);"
-						]
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Accept",
-						"value": "application/json"
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "{{scheme}}://{{host}}:{{port}}/notifications/",
+							"protocol": "{{scheme}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"notifications",
+								""
+							]
+						},
+						"description": "Retrieves a representation of the notification collection resource."
 					},
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n\t\"name\": \"Test Audience\",\n\t\"members\" : []\n}"
+					"response": []
 				},
-				"url": {
-					"raw": "{{scheme}}://{{host}}:{{port}}/audiences/",
-					"protocol": "{{scheme}}",
-					"host": [
-						"{{host}}"
-					],
-					"port": "{{port}}",
-					"path": [
-						"audiences",
-						""
-					]
-				},
-				"description": "Creates a new audience and appends it to the audience collection."
-			},
-			"response": []
-		},
-		{
-			"name": "/audiences/{uuid}",
-			"event": [
 				{
-					"listen": "test",
-					"script": {
-						"id": "9ae78646-1b11-4fa9-868d-94f9c6994909",
-						"type": "text/javascript",
-						"exec": [
-							"//tests.",
-							"pm.test(\"Status code = 200 OK\", function () {",
-							"    pm.response.to.have.status(200);",
-							"});",
-							"",
-							"pm.test(\"Content-Length header is present\", function () {",
-							"    pm.response.to.have.header(\"Content-Length\");",
-							"});",
-							"",
-							"pm.test(\"ETag header is present\", function () {",
-							"    pm.response.to.have.header(\"ETag\");",
-							"});",
-							"",
-							"pm.test(\"Last-Modified header is present\", function () {",
-							"    pm.response.to.have.header(\"Last-Modified\");",
-							"});",
-							"",
-							"pm.test(\"Date header is present\", function () {",
-							"    pm.response.to.have.header(\"Date\");",
-							"});",
-							"",
-							"pm.test(\"Vary header is present\", function () {",
-							"    pm.response.to.have.header(\"Vary\");",
-							"});",
-							"",
-							"//set globals.",
-							"pm.globals.set(\"audience_representation\", pm.response.text());"
-						]
-					}
+					"name": "/audiences/",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1d272cca-8a62-41e7-b079-7d9d19141de2",
+								"type": "text/javascript",
+								"exec": [
+									"//tests.",
+									"pm.test(\"Status code = 201 Created\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Content-Length header is present\", function () {",
+									"    pm.response.to.have.header(\"Content-Length\");",
+									"});",
+									"",
+									"pm.test(\"Location header is present\", function () {",
+									"    pm.response.to.have.header(\"Location\");",
+									"});",
+									"",
+									"//set globals.",
+									"var location = postman.getResponseHeader(\"Location\");",
+									"pm.globals.set(\"audience_location\", location);"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"Test Audience\",\n\t\"members\" : []\n}"
+						},
+						"url": {
+							"raw": "{{scheme}}://{{host}}:{{port}}/audiences/",
+							"protocol": "{{scheme}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"audiences",
+								""
+							]
+						},
+						"description": "Creates a new audience and appends it to the audience collection."
+					},
+					"response": []
+				},
+				{
+					"name": "/audiences/{uuid}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "9ae78646-1b11-4fa9-868d-94f9c6994909",
+								"type": "text/javascript",
+								"exec": [
+									"//tests.",
+									"pm.test(\"Status code = 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Content-Length header is present\", function () {",
+									"    pm.response.to.have.header(\"Content-Length\");",
+									"});",
+									"",
+									"pm.test(\"ETag header is present\", function () {",
+									"    pm.response.to.have.header(\"ETag\");",
+									"});",
+									"",
+									"pm.test(\"Last-Modified header is present\", function () {",
+									"    pm.response.to.have.header(\"Last-Modified\");",
+									"});",
+									"",
+									"pm.test(\"Date header is present\", function () {",
+									"    pm.response.to.have.header(\"Date\");",
+									"});",
+									"",
+									"pm.test(\"Vary header is present\", function () {",
+									"    pm.response.to.have.header(\"Vary\");",
+									"});",
+									"",
+									"//set globals.",
+									"pm.globals.set(\"audience_representation\", pm.response.text());"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "{{audience_location}}",
+							"host": [
+								"{{audience_location}}"
+							]
+						},
+						"description": "Retrieves the audience with the `UUID` provided."
+					},
+					"response": []
+				},
+				{
+					"name": "/audiences/{uuid}",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "ef672726-4647-499c-8018-023ea8aee18e",
+								"type": "text/javascript",
+								"exec": [
+									"var json_text = pm.globals.get(\"audience_representation\");",
+									"console.log(json_text);",
+									"var json_data = JSON.parse(json_text);",
+									"",
+									"json_data.name = \"Updated Test Audience\";",
+									"pm.globals.set(\"audience_representation\", JSON.stringify(json_data))"
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "524c4098-71ad-4dc7-ab4a-a184b192d9d7",
+								"type": "text/javascript",
+								"exec": [
+									"//tests.",
+									"pm.test(\"Status code = 204 No Content\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									"",
+									"//clear globals.",
+									"pm.globals.unset(\"audience_representation\");"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{{audience_representation}}"
+						},
+						"url": {
+							"raw": "{{audience_location}}",
+							"host": [
+								"{{audience_location}}"
+							]
+						},
+						"description": "Replaces the current state of the audience with the `UUID` provided with the state provided."
+					},
+					"response": []
+				},
+				{
+					"name": "/audiences/{uuid}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4b8a8059-fb80-4a29-8223-5ccfe66ca6d5",
+								"type": "text/javascript",
+								"exec": [
+									"//tests.",
+									"pm.test(\"Status code = 204 No Content\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									"",
+									"//clear globals.",
+									"pm.globals.unset(\"audience_location\");"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "{{audience_location}}",
+							"host": [
+								"{{audience_location}}"
+							]
+						},
+						"description": "Removes the audience with the `UUID` provided."
+					},
+					"response": []
+				},
+				{
+					"name": "/targets/",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "d10ab980-bb21-481a-a10b-a5d989a44839",
+								"type": "text/javascript",
+								"exec": [
+									"//tests.",
+									"pm.test(\"Status code = 201 Created\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Content-Length header is present\", function () {",
+									"    pm.response.to.have.header(\"Content-Length\");",
+									"});",
+									"",
+									"pm.test(\"Location header is present\", function () {",
+									"    pm.response.to.have.header(\"Location\");",
+									"});",
+									"",
+									"//set globals.",
+									"var location = postman.getResponseHeader(\"Location\");",
+									"pm.globals.set(\"target_location\", location);"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Jonny Freer\",\n    \"phoneNumber\": \"+16146573542\"\n}"
+						},
+						"url": {
+							"raw": "{{scheme}}://{{host}}:{{port}}/targets/",
+							"protocol": "{{scheme}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"targets",
+								""
+							]
+						},
+						"description": "Creates a new target and appends it to the target collection."
+					},
+					"response": []
+				},
+				{
+					"name": "/targets/{uuid}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "283625a7-bfb0-4a41-ac73-0cc005f880c5",
+								"type": "text/javascript",
+								"exec": [
+									"//tests.",
+									"pm.test(\"Status code = 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Content-Length header is present\", function () {",
+									"    pm.response.to.have.header(\"Content-Length\");",
+									"});",
+									"",
+									"pm.test(\"ETag header is present\", function () {",
+									"    pm.response.to.have.header(\"ETag\");",
+									"});",
+									"",
+									"pm.test(\"Last-Modified header is present\", function () {",
+									"    pm.response.to.have.header(\"Last-Modified\");",
+									"});",
+									"",
+									"pm.test(\"Date header is present\", function () {",
+									"    pm.response.to.have.header(\"Date\");",
+									"});",
+									"",
+									"pm.test(\"Vary header is present\", function () {",
+									"    pm.response.to.have.header(\"Vary\");",
+									"});",
+									"",
+									"//set globals.",
+									"pm.globals.set(\"target_representation\", pm.response.text());"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "{{target_location}}",
+							"host": [
+								"{{target_location}}"
+							]
+						},
+						"description": "Retrieves the target with the `UUID` provided."
+					},
+					"response": []
+				},
+				{
+					"name": "/targets/{uuid}",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "83172d7c-8469-428c-a234-996a22aaa8a4",
+								"type": "text/javascript",
+								"exec": [
+									"var json_text = pm.globals.get(\"target_representation\");",
+									"var json_data = JSON.parse(json_text);",
+									"",
+									"json_data.name = \"Updated Test Target\";",
+									"pm.globals.set(\"target_representation\", JSON.stringify(json_data))"
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "0534524e-b626-42ec-928b-9c21ad13cda8",
+								"type": "text/javascript",
+								"exec": [
+									"//tests.",
+									"pm.test(\"Status code = 204 No Content\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									"",
+									"//clear globals.",
+									"pm.globals.unset(\"target_representation\");"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{{target_representation}}"
+						},
+						"url": {
+							"raw": "{{target_location}}",
+							"host": [
+								"{{target_location}}"
+							]
+						},
+						"description": "Replaces the state of the target with the `UUID` provided with the state provided."
+					},
+					"response": []
+				},
+				{
+					"name": "/targets/{uuid}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "d9dc486c-d6de-4cc1-8ab3-969cedd4e9b6",
+								"type": "text/javascript",
+								"exec": [
+									"//tests.",
+									"pm.test(\"Status code = 204 No Content\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									"",
+									"//clear globals.",
+									"pm.globals.unset(\"target_location\");"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "{{target_location}}",
+							"host": [
+								"{{target_location}}"
+							]
+						},
+						"description": "Removes the target with the `UUID` provided."
+					},
+					"response": []
 				}
 			],
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "Accept",
-						"value": "application/json"
-					}
-				],
-				"body": {},
-				"url": {
-					"raw": "{{audience_location}}",
-					"host": [
-						"{{audience_location}}"
-					]
-				},
-				"description": "Retrieves the audience with the `UUID` provided."
-			},
-			"response": []
+			"description": "Performs protocol-related tests and verifications for `application/json` representations utilizing proactive negotiation."
 		},
 		{
-			"name": "/audiences/{uuid}",
+			"name": "application/vnd.siren+json",
+			"item": [
+				{
+					"name": "/notifications/",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "84ffc0c7-b27b-46c8-9fe0-3e42ed865ed0",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code = 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/vnd.siren+json"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "{{scheme}}://{{host}}:{{port}}/notifications/",
+							"protocol": "{{scheme}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"notifications",
+								""
+							]
+						},
+						"description": "Retrieves a representation of the notification collection resource."
+					},
+					"response": []
+				},
+				{
+					"name": "/audiences/",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1d272cca-8a62-41e7-b079-7d9d19141de2",
+								"type": "text/javascript",
+								"exec": [
+									"//tests.",
+									"pm.test(\"Status code = 201 Created\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Content-Length header is present\", function () {",
+									"    pm.response.to.have.header(\"Content-Length\");",
+									"});",
+									"",
+									"pm.test(\"Location header is present\", function () {",
+									"    pm.response.to.have.header(\"Location\");",
+									"});",
+									"",
+									"//set globals.",
+									"var location = postman.getResponseHeader(\"Location\");",
+									"pm.globals.set(\"audience_location\", location);"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/vnd.siren+json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"Test Audience\",\n\t\"members\" : []\n}"
+						},
+						"url": {
+							"raw": "{{scheme}}://{{host}}:{{port}}/audiences/",
+							"protocol": "{{scheme}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"audiences",
+								""
+							]
+						},
+						"description": "Creates a new audience and appends it to the audience collection."
+					},
+					"response": []
+				},
+				{
+					"name": "/audiences/{uuid}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "9ae78646-1b11-4fa9-868d-94f9c6994909",
+								"type": "text/javascript",
+								"exec": [
+									"//tests.",
+									"pm.test(\"Status code = 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Content-Length header is present\", function () {",
+									"    pm.response.to.have.header(\"Content-Length\");",
+									"});",
+									"",
+									"pm.test(\"ETag header is present\", function () {",
+									"    pm.response.to.have.header(\"ETag\");",
+									"});",
+									"",
+									"pm.test(\"Last-Modified header is present\", function () {",
+									"    pm.response.to.have.header(\"Last-Modified\");",
+									"});",
+									"",
+									"pm.test(\"Date header is present\", function () {",
+									"    pm.response.to.have.header(\"Date\");",
+									"});",
+									"",
+									"pm.test(\"Vary header is present\", function () {",
+									"    pm.response.to.have.header(\"Vary\");",
+									"});",
+									"",
+									"//set globals.",
+									"pm.globals.set(\"audience_representation\", pm.response.text());"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/vnd.siren+json"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "{{audience_location}}",
+							"host": [
+								"{{audience_location}}"
+							]
+						},
+						"description": "Retrieves the audience with the `UUID` provided."
+					},
+					"response": []
+				},
+				{
+					"name": "/audiences/{uuid}",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "93124949-5f21-4e10-b45b-4fcac23331d5",
+								"type": "text/javascript",
+								"exec": [
+									"var json_text = pm.globals.get(\"audience_representation\");",
+									"console.log(json_text);",
+									"var json_data = JSON.parse(json_text);",
+									"var properties = json_data.properties;",
+									"properties.name = \"Updated Test Audience\";",
+									"pm.globals.set(\"audience_representation\", JSON.stringify(properties))"
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "524c4098-71ad-4dc7-ab4a-a184b192d9d7",
+								"type": "text/javascript",
+								"exec": [
+									"//tests.",
+									"pm.test(\"Status code = 204 No Content\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									"",
+									"//clear globals.",
+									"pm.globals.unset(\"audience_representation\");"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/vnd.siren+json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{{audience_representation}}"
+						},
+						"url": {
+							"raw": "{{audience_location}}",
+							"host": [
+								"{{audience_location}}"
+							]
+						},
+						"description": "Replaces the current state of the audience with the `UUID` provided with the state provided."
+					},
+					"response": []
+				},
+				{
+					"name": "/audiences/{uuid}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4b8a8059-fb80-4a29-8223-5ccfe66ca6d5",
+								"type": "text/javascript",
+								"exec": [
+									"//tests.",
+									"pm.test(\"Status code = 204 No Content\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									"",
+									"//clear globals.",
+									"pm.globals.unset(\"audience_location\");"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/vnd.siren+json"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "{{audience_location}}",
+							"host": [
+								"{{audience_location}}"
+							]
+						},
+						"description": "Removes the audience with the `UUID` provided."
+					},
+					"response": []
+				},
+				{
+					"name": "/targets/",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "d10ab980-bb21-481a-a10b-a5d989a44839",
+								"type": "text/javascript",
+								"exec": [
+									"//tests.",
+									"pm.test(\"Status code = 201 Created\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Content-Length header is present\", function () {",
+									"    pm.response.to.have.header(\"Content-Length\");",
+									"});",
+									"",
+									"pm.test(\"Location header is present\", function () {",
+									"    pm.response.to.have.header(\"Location\");",
+									"});",
+									"",
+									"//set globals.",
+									"var location = postman.getResponseHeader(\"Location\");",
+									"pm.globals.set(\"target_location\", location);"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/vnd.siren+json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Jonny Freer\",\n    \"phoneNumber\": \"+16146573542\"\n}"
+						},
+						"url": {
+							"raw": "{{scheme}}://{{host}}:{{port}}/targets/",
+							"protocol": "{{scheme}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"targets",
+								""
+							]
+						},
+						"description": "Creates a new target and appends it to the target collection."
+					},
+					"response": []
+				},
+				{
+					"name": "/targets/{uuid}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "283625a7-bfb0-4a41-ac73-0cc005f880c5",
+								"type": "text/javascript",
+								"exec": [
+									"//tests.",
+									"pm.test(\"Status code = 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Content-Length header is present\", function () {",
+									"    pm.response.to.have.header(\"Content-Length\");",
+									"});",
+									"",
+									"pm.test(\"ETag header is present\", function () {",
+									"    pm.response.to.have.header(\"ETag\");",
+									"});",
+									"",
+									"pm.test(\"Last-Modified header is present\", function () {",
+									"    pm.response.to.have.header(\"Last-Modified\");",
+									"});",
+									"",
+									"pm.test(\"Date header is present\", function () {",
+									"    pm.response.to.have.header(\"Date\");",
+									"});",
+									"",
+									"pm.test(\"Vary header is present\", function () {",
+									"    pm.response.to.have.header(\"Vary\");",
+									"});",
+									"",
+									"//set globals.",
+									"pm.globals.set(\"target_representation\", pm.response.text());"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/vnd.siren+json"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "{{target_location}}",
+							"host": [
+								"{{target_location}}"
+							]
+						},
+						"description": "Retrieves the target with the `UUID` provided."
+					},
+					"response": []
+				},
+				{
+					"name": "/targets/{uuid}",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "9866b6b3-0478-49c5-8a56-a49b2275e1b6",
+								"type": "text/javascript",
+								"exec": [
+									"var json_text = pm.globals.get(\"target_representation\");",
+									"var json_data = JSON.parse(json_text);",
+									"var properties = json_data.properties;",
+									"",
+									"properties.name = \"Updated Test Target\";",
+									"pm.globals.set(\"target_representation\", JSON.stringify(properties))"
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "0534524e-b626-42ec-928b-9c21ad13cda8",
+								"type": "text/javascript",
+								"exec": [
+									"//tests.",
+									"pm.test(\"Status code = 204 No Content\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									"",
+									"//clear globals.",
+									"pm.globals.unset(\"target_representation\");"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/vnd.siren+json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{{target_representation}}"
+						},
+						"url": {
+							"raw": "{{target_location}}",
+							"host": [
+								"{{target_location}}"
+							]
+						},
+						"description": "Replaces the state of the target with the `UUID` provided with the state provided."
+					},
+					"response": []
+				},
+				{
+					"name": "/targets/{uuid}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "d9dc486c-d6de-4cc1-8ab3-969cedd4e9b6",
+								"type": "text/javascript",
+								"exec": [
+									"//tests.",
+									"pm.test(\"Status code = 204 No Content\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									"",
+									"//clear globals.",
+									"pm.globals.unset(\"target_location\");"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/vnd.siren+json"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "{{target_location}}",
+							"host": [
+								"{{target_location}}"
+							]
+						},
+						"description": "Removes the target with the `UUID` provided."
+					},
+					"response": []
+				}
+			],
+			"description": "Performs protocol-related tests and verifications for `application/vnd.siren+json` representations utilizing proactive negotiation.",
 			"event": [
 				{
 					"listen": "prerequest",
 					"script": {
-						"id": "ef672726-4647-499c-8018-023ea8aee18e",
+						"id": "28c481b3-c51d-4428-b60e-c8d55485ef27",
 						"type": "text/javascript",
 						"exec": [
-							"var json_text = pm.globals.get(\"audience_representation\");",
-							"console.log(json_text);",
-							"var json_data = JSON.parse(json_text);",
-							"",
-							"json_data.name = \"Updated Test Audience\";",
-							"pm.globals.set(\"audience_representation\", JSON.stringify(json_data))"
+							""
 						]
 					}
 				},
 				{
 					"listen": "test",
 					"script": {
-						"id": "524c4098-71ad-4dc7-ab4a-a184b192d9d7",
+						"id": "7e12288d-5245-48f4-9bad-e029675b8916",
 						"type": "text/javascript",
 						"exec": [
-							"//tests.",
-							"pm.test(\"Status code = 204 No Content\", function () {",
-							"    pm.response.to.have.status(204);",
-							"});",
-							"",
-							"//clear globals.",
-							"pm.globals.unset(\"audience_representation\");"
+							""
 						]
 					}
 				}
-			],
-			"request": {
-				"method": "PUT",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					},
-					{
-						"key": "Accept",
-						"value": "application/json"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{{audience_representation}}"
-				},
-				"url": {
-					"raw": "{{audience_location}}",
-					"host": [
-						"{{audience_location}}"
-					]
-				},
-				"description": "Replaces the current state of the audience with the `UUID` provided with the state provided."
-			},
-			"response": []
+			]
 		},
 		{
-			"name": "/audiences/{uuid}",
-			"event": [
+			"name": "application/xml",
+			"item": [
 				{
-					"listen": "test",
-					"script": {
-						"id": "4b8a8059-fb80-4a29-8223-5ccfe66ca6d5",
-						"type": "text/javascript",
-						"exec": [
-							"//tests.",
-							"pm.test(\"Status code = 204 No Content\", function () {",
-							"    pm.response.to.have.status(204);",
-							"});",
-							"",
-							"//clear globals.",
-							"pm.globals.unset(\"audience_location\");"
-						]
-					}
-				}
-			],
-			"request": {
-				"method": "DELETE",
-				"header": [
-					{
-						"key": "Accept",
-						"value": "application/json"
-					}
-				],
-				"body": {},
-				"url": {
-					"raw": "{{audience_location}}",
-					"host": [
-						"{{audience_location}}"
-					]
-				},
-				"description": "Removes the audience with the `UUID` provided."
-			},
-			"response": []
-		},
-		{
-			"name": "/targets/",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"id": "d10ab980-bb21-481a-a10b-a5d989a44839",
-						"type": "text/javascript",
-						"exec": [
-							"//tests.",
-							"pm.test(\"Status code = 201 Created\", function () {",
-							"    pm.response.to.have.status(201);",
-							"});",
-							"",
-							"pm.test(\"Content-Length header is present\", function () {",
-							"    pm.response.to.have.header(\"Content-Length\");",
-							"});",
-							"",
-							"pm.test(\"Location header is present\", function () {",
-							"    pm.response.to.have.header(\"Location\");",
-							"});",
-							"",
-							"//set globals.",
-							"var location = postman.getResponseHeader(\"Location\");",
-							"pm.globals.set(\"target_location\", location);"
-						]
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Accept",
-						"value": "application/json"
-					},
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"name\": \"Jonny Freer\",\n    \"phoneNumber\": \"+16146573542\"\n}"
-				},
-				"url": {
-					"raw": "{{scheme}}://{{host}}:{{port}}/targets/",
-					"protocol": "{{scheme}}",
-					"host": [
-						"{{host}}"
+					"name": "/notifications/",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "84ffc0c7-b27b-46c8-9fe0-3e42ed865ed0",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code = 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								]
+							}
+						}
 					],
-					"port": "{{port}}",
-					"path": [
-						"targets",
-						""
-					]
-				},
-				"description": "Creates a new target and appends it to the target collection."
-			},
-			"response": []
-		},
-		{
-			"name": "/targets/{uuid}",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"id": "283625a7-bfb0-4a41-ac73-0cc005f880c5",
-						"type": "text/javascript",
-						"exec": [
-							"//tests.",
-							"pm.test(\"Status code = 200 OK\", function () {",
-							"    pm.response.to.have.status(200);",
-							"});",
-							"",
-							"pm.test(\"Content-Length header is present\", function () {",
-							"    pm.response.to.have.header(\"Content-Length\");",
-							"});",
-							"",
-							"pm.test(\"ETag header is present\", function () {",
-							"    pm.response.to.have.header(\"ETag\");",
-							"});",
-							"",
-							"pm.test(\"Last-Modified header is present\", function () {",
-							"    pm.response.to.have.header(\"Last-Modified\");",
-							"});",
-							"",
-							"pm.test(\"Date header is present\", function () {",
-							"    pm.response.to.have.header(\"Date\");",
-							"});",
-							"",
-							"pm.test(\"Vary header is present\", function () {",
-							"    pm.response.to.have.header(\"Vary\");",
-							"});",
-							"",
-							"//set globals.",
-							"pm.globals.set(\"target_representation\", pm.response.text());"
-						]
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "Accept",
-						"value": "application/json"
-					}
-				],
-				"body": {},
-				"url": {
-					"raw": "{{target_location}}",
-					"host": [
-						"{{target_location}}"
-					]
-				},
-				"description": "Retrieves the target with the `UUID` provided."
-			},
-			"response": []
-		},
-		{
-			"name": "/targets/{uuid}",
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"id": "83172d7c-8469-428c-a234-996a22aaa8a4",
-						"type": "text/javascript",
-						"exec": [
-							"var json_text = pm.globals.get(\"target_representation\");",
-							"var json_data = JSON.parse(json_text);",
-							"",
-							"json_data.name = \"Updated Test Target\";",
-							"pm.globals.set(\"target_representation\", JSON.stringify(json_data))"
-						]
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"id": "0534524e-b626-42ec-928b-9c21ad13cda8",
-						"type": "text/javascript",
-						"exec": [
-							"//tests.",
-							"pm.test(\"Status code = 204 No Content\", function () {",
-							"    pm.response.to.have.status(204);",
-							"});",
-							"",
-							"//clear globals.",
-							"pm.globals.unset(\"target_representation\");"
-						]
-					}
-				}
-			],
-			"request": {
-				"method": "PUT",
-				"header": [
-					{
-						"key": "Accept",
-						"value": "application/json"
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/xml"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "{{scheme}}://{{host}}:{{port}}/notifications/",
+							"protocol": "{{scheme}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"notifications",
+								""
+							]
+						},
+						"description": "Retrieves a representation of the notification collection resource."
 					},
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{{target_representation}}"
+					"response": []
 				},
-				"url": {
-					"raw": "{{target_location}}",
-					"host": [
-						"{{target_location}}"
-					]
-				},
-				"description": "Replaces the state of the target with the `UUID` provided with the state provided."
-			},
-			"response": []
-		},
-		{
-			"name": "/targets/{uuid}",
-			"event": [
 				{
-					"listen": "test",
-					"script": {
-						"id": "d9dc486c-d6de-4cc1-8ab3-969cedd4e9b6",
-						"type": "text/javascript",
-						"exec": [
-							"//tests.",
-							"pm.test(\"Status code = 204 No Content\", function () {",
-							"    pm.response.to.have.status(204);",
-							"});",
-							"",
-							"//clear globals.",
-							"pm.globals.unset(\"target_location\");"
-						]
-					}
+					"name": "/audiences/",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1d272cca-8a62-41e7-b079-7d9d19141de2",
+								"type": "text/javascript",
+								"exec": [
+									"//tests.",
+									"pm.test(\"Status code = 201 Created\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Content-Length header is present\", function () {",
+									"    pm.response.to.have.header(\"Content-Length\");",
+									"});",
+									"",
+									"pm.test(\"Location header is present\", function () {",
+									"    pm.response.to.have.header(\"Location\");",
+									"});",
+									"",
+									"//set globals.",
+									"var location = postman.getResponseHeader(\"Location\");",
+									"pm.globals.set(\"audience_location\", location);"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/xml"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/xml"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "<audience>\n\t<name>Test Audience</name>\n</audience>"
+						},
+						"url": {
+							"raw": "{{scheme}}://{{host}}:{{port}}/audiences/",
+							"protocol": "{{scheme}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"audiences",
+								""
+							]
+						},
+						"description": "Creates a new audience and appends it to the audience collection."
+					},
+					"response": []
+				},
+				{
+					"name": "/audiences/{uuid}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "9ae78646-1b11-4fa9-868d-94f9c6994909",
+								"type": "text/javascript",
+								"exec": [
+									"//tests.",
+									"pm.test(\"Status code = 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Content-Length header is present\", function () {",
+									"    pm.response.to.have.header(\"Content-Length\");",
+									"});",
+									"",
+									"pm.test(\"ETag header is present\", function () {",
+									"    pm.response.to.have.header(\"ETag\");",
+									"});",
+									"",
+									"pm.test(\"Last-Modified header is present\", function () {",
+									"    pm.response.to.have.header(\"Last-Modified\");",
+									"});",
+									"",
+									"pm.test(\"Date header is present\", function () {",
+									"    pm.response.to.have.header(\"Date\");",
+									"});",
+									"",
+									"pm.test(\"Vary header is present\", function () {",
+									"    pm.response.to.have.header(\"Vary\");",
+									"});",
+									"",
+									"//set globals.",
+									"pm.globals.set(\"audience_representation\", pm.response.text());"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/xml"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "{{audience_location}}",
+							"host": [
+								"{{audience_location}}"
+							]
+						},
+						"description": "Retrieves the audience with the `UUID` provided."
+					},
+					"response": []
+				},
+				{
+					"name": "/audiences/{uuid}",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "d03d07bb-f468-4d17-9d93-f54f3d7ff5bf",
+								"type": "text/javascript",
+								"exec": [
+									"var xml_text = pm.globals.get(\"audience_representation\");",
+									"console.log(xml_text);",
+									"",
+									"name_regex = /<name>*<\\/name>/;",
+									"xml_text = xml_text.replace(",
+									"    name_regex,",
+									"    \"<name>Updated Test Audience</name>\"",
+									");",
+									"console.log(xml_text);",
+									"",
+									"pm.globals.set(\"audience_representation\", xml_text);"
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "524c4098-71ad-4dc7-ab4a-a184b192d9d7",
+								"type": "text/javascript",
+								"exec": [
+									"//tests.",
+									"pm.test(\"Status code = 204 No Content\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									"",
+									"//clear globals.",
+									"pm.globals.unset(\"audience_representation\");"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/xml"
+							},
+							{
+								"key": "Accept",
+								"value": "application/xml"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{{audience_representation}}"
+						},
+						"url": {
+							"raw": "{{audience_location}}",
+							"host": [
+								"{{audience_location}}"
+							]
+						},
+						"description": "Replaces the current state of the audience with the `UUID` provided with the state provided."
+					},
+					"response": []
+				},
+				{
+					"name": "/audiences/{uuid}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4b8a8059-fb80-4a29-8223-5ccfe66ca6d5",
+								"type": "text/javascript",
+								"exec": [
+									"//tests.",
+									"pm.test(\"Status code = 204 No Content\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									"",
+									"//clear globals.",
+									"pm.globals.unset(\"audience_location\");"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/xml"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "{{audience_location}}",
+							"host": [
+								"{{audience_location}}"
+							]
+						},
+						"description": "Removes the audience with the `UUID` provided."
+					},
+					"response": []
+				},
+				{
+					"name": "/targets/",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "d10ab980-bb21-481a-a10b-a5d989a44839",
+								"type": "text/javascript",
+								"exec": [
+									"//tests.",
+									"pm.test(\"Status code = 201 Created\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Content-Length header is present\", function () {",
+									"    pm.response.to.have.header(\"Content-Length\");",
+									"});",
+									"",
+									"pm.test(\"Location header is present\", function () {",
+									"    pm.response.to.have.header(\"Location\");",
+									"});",
+									"",
+									"//set globals.",
+									"var location = postman.getResponseHeader(\"Location\");",
+									"pm.globals.set(\"target_location\", location);"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/xml"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/xml"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "<target>\n\t<name>Jonny Freer</name>\n\t<phoneNumber>+16146573542</phoneNumber>\n</target>"
+						},
+						"url": {
+							"raw": "{{scheme}}://{{host}}:{{port}}/targets/",
+							"protocol": "{{scheme}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"targets",
+								""
+							]
+						},
+						"description": "Creates a new target and appends it to the target collection."
+					},
+					"response": []
+				},
+				{
+					"name": "/targets/{uuid}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "283625a7-bfb0-4a41-ac73-0cc005f880c5",
+								"type": "text/javascript",
+								"exec": [
+									"//tests.",
+									"pm.test(\"Status code = 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Content-Length header is present\", function () {",
+									"    pm.response.to.have.header(\"Content-Length\");",
+									"});",
+									"",
+									"pm.test(\"ETag header is present\", function () {",
+									"    pm.response.to.have.header(\"ETag\");",
+									"});",
+									"",
+									"pm.test(\"Last-Modified header is present\", function () {",
+									"    pm.response.to.have.header(\"Last-Modified\");",
+									"});",
+									"",
+									"pm.test(\"Date header is present\", function () {",
+									"    pm.response.to.have.header(\"Date\");",
+									"});",
+									"",
+									"pm.test(\"Vary header is present\", function () {",
+									"    pm.response.to.have.header(\"Vary\");",
+									"});",
+									"",
+									"//set globals.",
+									"pm.globals.set(\"target_representation\", pm.response.text());"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/xml"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "{{target_location}}",
+							"host": [
+								"{{target_location}}"
+							]
+						},
+						"description": "Retrieves the target with the `UUID` provided."
+					},
+					"response": []
+				},
+				{
+					"name": "/targets/{uuid}",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "9b71a0ee-4707-4708-ab9b-8b46216c3cdd",
+								"type": "text/javascript",
+								"exec": [
+									"var xml_text = pm.globals.get(\"target_representation\");",
+									"console.log(xml_text);",
+									"",
+									"name_regex = /<name>*<\\/name>/;",
+									"xml_text = xml_text.replace(",
+									"    name_regex,",
+									"    \"<name>Updated Test Target</name>\"",
+									");",
+									"console.log(xml_text);",
+									"",
+									"pm.globals.set(\"target_representation\", xml_text);"
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "0534524e-b626-42ec-928b-9c21ad13cda8",
+								"type": "text/javascript",
+								"exec": [
+									"//tests.",
+									"pm.test(\"Status code = 204 No Content\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									"",
+									"//clear globals.",
+									"pm.globals.unset(\"target_representation\");"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/xml"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/xml"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{{target_representation}}"
+						},
+						"url": {
+							"raw": "{{target_location}}",
+							"host": [
+								"{{target_location}}"
+							]
+						},
+						"description": "Replaces the state of the target with the `UUID` provided with the state provided."
+					},
+					"response": []
+				},
+				{
+					"name": "/targets/{uuid}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "d9dc486c-d6de-4cc1-8ab3-969cedd4e9b6",
+								"type": "text/javascript",
+								"exec": [
+									"//tests.",
+									"pm.test(\"Status code = 204 No Content\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									"",
+									"//clear globals.",
+									"pm.globals.unset(\"target_location\");"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/xml"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "{{target_location}}",
+							"host": [
+								"{{target_location}}"
+							]
+						},
+						"description": "Removes the target with the `UUID` provided."
+					},
+					"response": []
 				}
 			],
-			"request": {
-				"method": "DELETE",
-				"header": [
-					{
-						"key": "Accept",
-						"value": "application/json"
-					}
-				],
-				"body": {},
-				"url": {
-					"raw": "{{target_location}}",
-					"host": [
-						"{{target_location}}"
-					]
-				},
-				"description": "Removes the target with the `UUID` provided."
-			},
-			"response": []
+			"description": "Performs protocol-related tests and verifications for `application/json` representations utilizing proactive negotiation."
 		}
 	]
 }
