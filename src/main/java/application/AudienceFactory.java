@@ -15,16 +15,20 @@ public class AudienceFactory {
 
   public Audience createFrom(api.representations.json.Audience audience) {
     Set<Target> targets = new HashSet<>();
-    for (api.representations.json.Target target : audience.getMembers()) {
-      targets.add(this.targetFactory.createFrom(target));
+    if (audience.getMembers() != null) {
+      for (api.representations.json.Target target : audience.getMembers()) {
+        targets.add(this.targetFactory.createFrom(target));
+      }
     }
     return new Audience(audience.getUUID(), audience.getName(), targets);
   }
 
   public Audience createFrom(api.representations.xml.Audience audience) {
     Set<Target> targets = new HashSet<>();
-    for (api.representations.xml.Target target : audience.getMembers()) {
-      targets.add(this.targetFactory.createFrom(target));
+    if (audience.getMembers() != null) {
+      for (api.representations.xml.Target target : audience.getMembers()) {
+        targets.add(this.targetFactory.createFrom(target));
+      }
     }
     return new Audience(audience.getUUID(), audience.getName(), targets);
   }
