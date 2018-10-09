@@ -18,13 +18,7 @@ public final class HealthModule extends NotiModule {
         this.getConfiguration().getDatabaseConfiguration();
     final String username = databaseConfiguration.getUser();
     final String password = databaseConfiguration.getPassword();
-    final String host = databaseConfiguration.getHost();
-    final int port = databaseConfiguration.getPort();
-    final String name = databaseConfiguration.getName();
-    final boolean useLegacyDateTimeCode = databaseConfiguration.getUseLegacyDatetimeCode();
-    final boolean useSSL = databaseConfiguration.getUseSSL();
-    final String urlTemplate = "jdbc:mysql://%s:%s/%s?useLegacyDatetimeCode=%b&useSSL=%b";
-    final String url = String.format(urlTemplate, host, port, name, useLegacyDateTimeCode, useSSL);
+    final String url = databaseConfiguration.getURL();
 
     SQLUnitOfWorkFactory unitOfWorkFactory =
         new MySQLUnitOfWorkFactory(url, username, password, GlobalTracer.get());
