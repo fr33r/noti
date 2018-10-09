@@ -2,7 +2,6 @@ package api.resources;
 
 import api.representations.Representation;
 import api.representations.RepresentationFactory;
-import api.representations.json.Message;
 import application.MessageFactory;
 import application.Notification;
 import application.NotificationService;
@@ -110,6 +109,7 @@ public final class MessageResource extends Resource implements api.MessageResour
       span.finish();
     }
   }
+
   /**
    * {@inheritDoc}
    *
@@ -120,7 +120,36 @@ public final class MessageResource extends Resource implements api.MessageResour
    * @return {@inheritDoc}
    */
   public Response replace(
-      HttpHeaders headers, UriInfo uriInfo, String notificationUUID, Message message) {
+      HttpHeaders headers,
+      UriInfo uriInfo,
+      String notificationUUID,
+      api.representations.json.Message message) {
+    String className = this.getClass().getName();
+    String spanName = String.format("%s#replace", className);
+    Span span = this.getTracer().buildSpan(spanName).start();
+    try (Scope scope = this.getTracer().scopeManager().activate(span, false)) {
+      this.notificationService.updateNotificationMessage(
+          UUID.fromString(notificationUUID), this.messageFactory.createFrom(message));
+      return Response.noContent().build();
+    } finally {
+      span.finish();
+    }
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @param headers {@inheritDoc}
+   * @param uriInfo {@inheritDoc}
+   * @param notificationUUID {@inheritDoc}
+   * @param message {@inheritDoc}
+   * @return {@inheritDoc}
+   */
+  public Response replace(
+      HttpHeaders headers,
+      UriInfo uriInfo,
+      String notificationUUID,
+      api.representations.xml.Message message) {
     String className = this.getClass().getName();
     String spanName = String.format("%s#replace", className);
     Span span = this.getTracer().buildSpan(spanName).start();

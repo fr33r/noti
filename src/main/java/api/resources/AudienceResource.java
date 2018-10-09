@@ -105,10 +105,10 @@ public class AudienceResource extends Resource implements api.AudienceResource {
    * @return {@inheritDoc}
    */
   @Override
-  public Response createAndAppend_XML(
+  public Response createAndAppend(
       HttpHeaders headers, UriInfo uriInfo, api.representations.xml.Audience audience) {
     String className = AudienceResource.class.getName();
-    String spanName = String.format("%s#createAndAppend_XML", className);
+    String spanName = String.format("%s#createAndAppend", className);
     Span span = this.getTracer().buildSpan(spanName).start();
     try (Scope scope = this.getTracer().scopeManager().activate(span, false)) {
       UUID audienceUUID =
@@ -154,10 +154,10 @@ public class AudienceResource extends Resource implements api.AudienceResource {
    * @return {@inheritDoc}
    */
   @Override
-  public Response replace_XML(
+  public Response replace(
       HttpHeaders headers, UriInfo uriInfo, api.representations.xml.Audience audience) {
     String className = AudienceResource.class.getName();
-    String spanName = String.format("%s#replace_XML", className);
+    String spanName = String.format("%s#replace", className);
     Span span = this.getTracer().buildSpan(spanName).start();
     try (Scope scope = this.getTracer().scopeManager().activate(span, false)) {
       this.audienceService.replaceAudience(this.audienceFactory.createFrom(audience));

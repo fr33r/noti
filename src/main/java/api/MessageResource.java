@@ -1,6 +1,5 @@
 package api;
 
-import api.representations.json.Message;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
@@ -74,10 +73,32 @@ public interface MessageResource {
    */
   @PUT
   @Path("{id}")
-  @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+  @Consumes({MediaType.APPLICATION_JSON})
+  @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/vnd.siren+json"})
   Response replace(
       @Context HttpHeaders headers,
       @Context UriInfo uriInfo,
       @PathParam("uuid") String notificationUUID,
-      Message message);
+      api.representations.json.Message message);
+
+  /**
+   * Handles HTTP PUT requests for the notification message with the ID provided.
+   *
+   * @param headers The headers from the HTTP request.
+   * @param uriInfo Information about the URI of the HTTP request.
+   * @param notificationUUID The universally unique identifier for the notification the messages is
+   *     associated with.
+   * @param message The representation of the message resource to replace existing state.
+   * @return The HTTP {@link Response}, including the representation of the requested message
+   *     resource.
+   */
+  @PUT
+  @Path("{id}")
+  @Consumes({MediaType.APPLICATION_XML})
+  @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/vnd.siren+json"})
+  Response replace(
+      @Context HttpHeaders headers,
+      @Context UriInfo uriInfo,
+      @PathParam("uuid") String notificationUUID,
+      api.representations.xml.Message message);
 }

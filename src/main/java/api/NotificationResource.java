@@ -1,6 +1,5 @@
 package api;
 
-import api.representations.json.Notification;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -69,9 +68,29 @@ public interface NotificationResource {
    *     resource.
    */
   @POST
-  @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+  @Consumes({MediaType.APPLICATION_JSON})
+  @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/vnd.siren+json"})
   Response createAndAppend(
-      @Context HttpHeaders headers, @Context UriInfo uriInfo, Notification notification);
+      @Context HttpHeaders headers,
+      @Context UriInfo uriInfo,
+      api.representations.json.Notification notification);
+
+  /**
+   * Handles HTTP POST requests for the collection of notification resources.
+   *
+   * @param headers The headers from the HTTP request.
+   * @param uriInfo Information about the URI of the HTTP request.
+   * @param notification The representation of the notification resource to be created.
+   * @return The HTTP {@link Response}, including the representation of the requested notification
+   *     resource.
+   */
+  @POST
+  @Consumes({MediaType.APPLICATION_XML})
+  @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/vnd.siren+json"})
+  Response createAndAppend(
+      @Context HttpHeaders headers,
+      @Context UriInfo uriInfo,
+      api.representations.xml.Notification notification);
 
   /**
    * Handles HTTP PUT requests for the notification resource with the unique identifier provided.
@@ -85,9 +104,31 @@ public interface NotificationResource {
    */
   @PUT
   @Path("{uuid}")
-  @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+  @Consumes({MediaType.APPLICATION_JSON})
+  @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/vnd.siren+json"})
   Response replace(
-      @Context HttpHeaders headers, @Context UriInfo uriInfo, Notification notification);
+      @Context HttpHeaders headers,
+      @Context UriInfo uriInfo,
+      api.representations.json.Notification notification);
+
+  /**
+   * Handles HTTP PUT requests for the notification resource with the unique identifier provided.
+   *
+   * @param headers The headers from the HTTP request.
+   * @param uriInfo Information about the URI of the HTTP request.
+   * @param notification The representation of the notification resource to replace the current
+   *     existing state.
+   * @return The HTTP {@link Response}, including the representation of the requested notification
+   *     resource.
+   */
+  @PUT
+  @Path("{uuid}")
+  @Consumes({MediaType.APPLICATION_XML})
+  @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/vnd.siren+json"})
+  Response replace(
+      @Context HttpHeaders headers,
+      @Context UriInfo uriInfo,
+      api.representations.xml.Notification notification);
 
   /**
    * Handles HTTP DELETE requests for the notification resource with the unique identifier provided.

@@ -66,7 +66,7 @@ public interface TargetResource {
   @POST
   @Consumes({MediaType.APPLICATION_XML})
   @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/vnd.siren+json"})
-  Response createAndAppend_XML(
+  Response createAndAppend(
       @Context HttpHeaders headers,
       @Context UriInfo uriInfo,
       api.representations.xml.Target target);
@@ -102,7 +102,7 @@ public interface TargetResource {
   @Path("{uuid}")
   @Consumes({MediaType.APPLICATION_XML})
   @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/vnd.siren+json"})
-  Response replace_XML(
+  Response replace(
       @Context HttpHeaders headers,
       @Context UriInfo uriInfo,
       api.representations.xml.Target target);

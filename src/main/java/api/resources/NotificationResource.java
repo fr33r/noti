@@ -1,7 +1,6 @@
 package api.resources;
 
 import api.representations.RepresentationFactory;
-import api.representations.json.Notification;
 import application.AudienceFactory;
 import application.MessageFactory;
 import application.NotificationFactory;
@@ -127,7 +126,8 @@ public class NotificationResource extends Resource implements api.NotificationRe
    * @return {@inheritDoc}
    */
   @Override
-  public Response createAndAppend(HttpHeaders headers, UriInfo uriInfo, Notification notification) {
+  public Response createAndAppend(
+      HttpHeaders headers, UriInfo uriInfo, api.representations.json.Notification notification) {
     String className = NotificationResource.class.getName();
     String spanName = String.format("%s#createAndAppend", className);
     Span span = this.getTracer().buildSpan(spanName).start();
@@ -152,7 +152,57 @@ public class NotificationResource extends Resource implements api.NotificationRe
    * @return {@inheritDoc}
    */
   @Override
-  public Response replace(HttpHeaders headers, UriInfo uriInfo, Notification notification) {
+  public Response createAndAppend(
+      HttpHeaders headers, UriInfo uriInfo, api.representations.xml.Notification notification) {
+    String className = NotificationResource.class.getName();
+    String spanName = String.format("%s#createAndAppend", className);
+    Span span = this.getTracer().buildSpan(spanName).start();
+    try (Scope scope = this.getTracer().scopeManager().activate(span, false)) {
+      UUID uuid =
+          this.notificationService.createNotification(
+              this.notificationFactory.createFrom(notification));
+      URI location =
+          UriBuilder.fromUri(uriInfo.getRequestUri()).path("/{uuid}/").build(uuid.toString());
+      return Response.created(location).build();
+    } finally {
+      span.finish();
+    }
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @param headers {@inheritDoc}
+   * @param uriInfo {@inheritDoc}
+   * @param notification {@inheritDoc}
+   * @return {@inheritDoc}
+   */
+  @Override
+  public Response replace(
+      HttpHeaders headers, UriInfo uriInfo, api.representations.json.Notification notification) {
+    String className = NotificationResource.class.getName();
+    String spanName = String.format("%s#replace", className);
+    Span span = this.getTracer().buildSpan(spanName).start();
+    try (Scope scope = this.getTracer().scopeManager().activate(span, false)) {
+      this.notificationService.updateNotification(
+          this.notificationFactory.createFrom(notification));
+      return Response.noContent().build();
+    } finally {
+      span.finish();
+    }
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @param headers {@inheritDoc}
+   * @param uriInfo {@inheritDoc}
+   * @param notification {@inheritDoc}
+   * @return {@inheritDoc}
+   */
+  @Override
+  public Response replace(
+      HttpHeaders headers, UriInfo uriInfo, api.representations.xml.Notification notification) {
     String className = NotificationResource.class.getName();
     String spanName = String.format("%s#replace", className);
     Span span = this.getTracer().buildSpan(spanName).start();

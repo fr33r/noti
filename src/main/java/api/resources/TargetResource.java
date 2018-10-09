@@ -105,10 +105,10 @@ public final class TargetResource extends Resource implements api.TargetResource
    * @return {@inheritDoc}
    */
   @Override
-  public Response createAndAppend_XML(
+  public Response createAndAppend(
       HttpHeaders headers, UriInfo uriInfo, api.representations.xml.Target target) {
     String className = TargetResource.class.getName();
-    String spanName = String.format("%s#createAndAppend_XML", className);
+    String spanName = String.format("%s#createAndAppend", className);
     Span span = this.getTracer().buildSpan(spanName).start();
     try (Scope scope = this.getTracer().scopeManager().activate(span, false)) {
       UUID uuid = this.targetService.createTarget(this.targetFactory.createFrom(target));
@@ -151,10 +151,10 @@ public final class TargetResource extends Resource implements api.TargetResource
    * @return {@inheritDoc}
    */
   @Override
-  public Response replace_XML(
+  public Response replace(
       HttpHeaders headers, UriInfo uriInfo, api.representations.xml.Target target) {
     String className = TargetResource.class.getName();
-    String spanName = String.format("%s#replace_XML", className);
+    String spanName = String.format("%s#replace", className);
     Span span = this.getTracer().buildSpan(spanName).start();
     try (Scope scope = this.getTracer().scopeManager().activate(span, false)) {
       this.targetService.replaceTarget(this.targetFactory.createFrom(target));
