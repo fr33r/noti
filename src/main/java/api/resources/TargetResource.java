@@ -2,7 +2,6 @@ package api.resources;
 
 import api.representations.Representation;
 import api.representations.RepresentationFactory;
-import api.representations.json.Target;
 import application.TargetFactory;
 import application.TargetService;
 import io.opentracing.Scope;
@@ -54,6 +53,7 @@ public final class TargetResource extends Resource implements api.TargetResource
    * @param uriInfo {@inheritDoc}
    * @param uuid {@inheritDoc}
    */
+  @Override
   public Response get(HttpHeaders headers, UriInfo uriInfo, String uuid) {
     String className = TargetResource.class.getName();
     String spanName = String.format("%s#get", className);
@@ -80,7 +80,9 @@ public final class TargetResource extends Resource implements api.TargetResource
    * @param target {@inheritDoc}
    * @return {@inheritDoc}
    */
-  public Response createAndAppend(HttpHeaders headers, UriInfo uriInfo, Target target) {
+  @Override
+  public Response createAndAppend(
+      HttpHeaders headers, UriInfo uriInfo, api.representations.json.Target target) {
     String className = TargetResource.class.getName();
     String spanName = String.format("%s#createAndAppend", className);
     Span span = this.getTracer().buildSpan(spanName).start();
@@ -102,7 +104,55 @@ public final class TargetResource extends Resource implements api.TargetResource
    * @param target {@inheritDoc}
    * @return {@inheritDoc}
    */
-  public Response replace(HttpHeaders headers, UriInfo uriInfo, Target target) {
+  @Override
+  public Response createAndAppend(
+      HttpHeaders headers, UriInfo uriInfo, api.representations.xml.Target target) {
+    String className = TargetResource.class.getName();
+    String spanName = String.format("%s#createAndAppend", className);
+    Span span = this.getTracer().buildSpan(spanName).start();
+    try (Scope scope = this.getTracer().scopeManager().activate(span, false)) {
+      UUID uuid = this.targetService.createTarget(this.targetFactory.createFrom(target));
+      URI location =
+          UriBuilder.fromUri(uriInfo.getRequestUri()).path("/{uuid}/").build(uuid.toString());
+      return Response.created(location).build();
+    } finally {
+      span.finish();
+    }
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @param headers {@inheritDoc}
+   * @param uriInfo {@inheritDoc}
+   * @param target {@inheritDoc}
+   * @return {@inheritDoc}
+   */
+  @Override
+  public Response replace(
+      HttpHeaders headers, UriInfo uriInfo, api.representations.json.Target target) {
+    String className = TargetResource.class.getName();
+    String spanName = String.format("%s#replace", className);
+    Span span = this.getTracer().buildSpan(spanName).start();
+    try (Scope scope = this.getTracer().scopeManager().activate(span, false)) {
+      this.targetService.replaceTarget(this.targetFactory.createFrom(target));
+      return Response.noContent().build();
+    } finally {
+      span.finish();
+    }
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @param headers {@inheritDoc}
+   * @param uriInfo {@inheritDoc}
+   * @param target {@inheritDoc}
+   * @return {@inheritDoc}
+   */
+  @Override
+  public Response replace(
+      HttpHeaders headers, UriInfo uriInfo, api.representations.xml.Target target) {
     String className = TargetResource.class.getName();
     String spanName = String.format("%s#replace", className);
     Span span = this.getTracer().buildSpan(spanName).start();
@@ -121,6 +171,7 @@ public final class TargetResource extends Resource implements api.TargetResource
    * @param uriInfo {@inheritDoc}
    * @return {@inheritDoc}
    */
+  @Override
   public Response delete(UriInfo uriInfo, String uuid) {
     String className = TargetResource.class.getName();
     String spanName = String.format("%s#delete", className);
