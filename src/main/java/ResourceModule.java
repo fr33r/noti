@@ -2,6 +2,7 @@ import api.error.ApplicationExceptionMapper;
 import api.error.NotFoundExceptionMapper;
 import api.resources.AudienceResource;
 import api.resources.MessageResource;
+import api.resources.NotiResource;
 import api.resources.NotificationResource;
 import api.resources.TargetResource;
 import configuration.NotiConfiguration;
@@ -21,6 +22,7 @@ public final class ResourceModule extends NotiModule {
     this.getEnvironment().jersey().register(AudienceResource.class);
     this.getEnvironment().jersey().register(TargetResource.class);
     this.getEnvironment().jersey().register(MessageResource.class);
+    this.getEnvironment().jersey().register(NotiResource.class);
 
     // TODO move into its own module.
     this.getEnvironment().jersey().register(ApplicationExceptionMapper.class);
