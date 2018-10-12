@@ -255,6 +255,7 @@ final class TargetDataMapper extends DataMapper {
             this.getUnitOfWork().createPreparedStatement(countTargetsSQL);
         final ResultSet rs = countTargetsStatement.executeQuery()) {
       int index = 1;
+      rs.next();
       return rs.getInt(index);
     } catch (SQLException x) {
       throw new RuntimeException(x);

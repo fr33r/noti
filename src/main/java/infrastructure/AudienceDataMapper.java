@@ -376,6 +376,7 @@ final class AudienceDataMapper extends DataMapper {
             this.getUnitOfWork().createPreparedStatement(countAudiencesSQL);
         final ResultSet rs = countAudiencesStatement.executeQuery()) {
       int index = 1;
+      rs.next();
       return rs.getInt(index);
     } catch (SQLException x) {
       throw new RuntimeException(x);
