@@ -37,6 +37,21 @@ public final class AudienceService implements application.AudienceService {
   }
 
   @Override
+  public Integer getAudienceCount() {
+    SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+    try {
+      Repository<Audience, UUID> audienceRepository =
+          this.repositoryFactory.createAudienceRepository(unitOfWork);
+      return audienceRepository.size();
+    } catch (Exception x) {
+      unitOfWork.undo();
+      String errorMessage = "An error occurred when retrieving the total number of audiences.";
+      this.logger.error(errorMessage, x);
+      throw new InternalErrorException(errorMessage, x.getMessage());
+    }
+  }
+
+  @Override
   public UUID createAudience(final application.Audience audience) {
 
     Audience _audience = this.audienceFactory.createFrom(audience);

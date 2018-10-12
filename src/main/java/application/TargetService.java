@@ -38,4 +38,6 @@ public interface TargetService {
    * @param uuid The universally unique identifier of the {@link application.Target} to delete.
    */
   void deleteTarget(UUID uuid);
+
+  Integer getTargetCount();
 }

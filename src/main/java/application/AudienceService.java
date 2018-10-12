@@ -15,4 +15,6 @@ public interface AudienceService {
   void associateMemberToAudience(UUID audienceUUID, UUID memberUUID);
 
   void disassociateMemberFromAudience(UUID audienceUUID, UUID memberUUID);
+
+  Integer getAudienceCount();
 }

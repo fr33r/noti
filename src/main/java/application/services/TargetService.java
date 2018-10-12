@@ -35,6 +35,21 @@ public final class TargetService implements application.TargetService {
     this.logger = logger;
   }
 
+  @Override
+  public Integer getTargetCount() {
+    SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+    try {
+      Repository<Target, UUID> targetRepository =
+          this.repositoryFactory.createTargetRepository(unitOfWork);
+      return targetRepository.size();
+    } catch (Exception x) {
+      unitOfWork.undo();
+      String errorMessage = "An error occurred when retrieving the total number of targets.";
+      this.logger.error(errorMessage, x);
+      throw new InternalErrorException(errorMessage, x.getMessage());
+    }
+  }
+
   /**
    * {@inheritDoc}
    *
