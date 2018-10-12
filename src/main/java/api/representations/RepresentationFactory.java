@@ -160,4 +160,11 @@ public abstract class RepresentationFactory {
 
   public abstract Representation createErrorRepresentation(
       URI location, Locale language, ApplicationException exception);
+
+  public abstract Representation createNotiRepresentation(
+      URI location,
+      Locale language,
+      Integer notificationCount,
+      Integer audienceCount,
+      Integer targetCount);
 }

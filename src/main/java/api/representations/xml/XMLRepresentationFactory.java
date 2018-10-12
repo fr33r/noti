@@ -351,4 +351,27 @@ public final class XMLRepresentationFactory extends RepresentationFactory {
       span.finish();
     }
   }
+
+  @Override
+  public Representation createNotiRepresentation(
+      URI location,
+      Locale language,
+      Integer notificationCount,
+      Integer audienceCount,
+      Integer targetCount) {
+    String className = XMLRepresentationFactory.class.getName();
+    String spanName = String.format("%s#createNotiRepresentation", className);
+    Span span = this.tracer.buildSpan(spanName).asChildOf(this.tracer.activeSpan()).start();
+    try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
+      return new api.representations.xml.Noti.Builder()
+          .notificationCount(notificationCount)
+          .audienceCount(audienceCount)
+          .targetCount(targetCount)
+          .location(location)
+          .language(language)
+          .build();
+    } finally {
+      span.finish();
+    }
+  }
 }

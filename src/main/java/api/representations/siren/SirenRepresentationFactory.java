@@ -961,6 +961,88 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
     }
   }
 
+  @Override
+  public Representation createNotiRepresentation(
+      URI location,
+      Locale language,
+      Integer notificationCount,
+      Integer audienceCount,
+      Integer targetCount) {
+    String className = SirenRepresentationFactory.class.getName();
+    String spanName = String.format("%s#createNotiRepresentation", className);
+    Span span = this.tracer.buildSpan(spanName).asChildOf(this.tracer.activeSpan()).start();
+    try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
+
+      Link.Builder linkBuilder = this.linkBuilderFactory.create();
+      Link self =
+          linkBuilder
+              .rel(Relation.SELF)
+              .title("Self")
+              .type(this.getMediaType().toString())
+              .klasses("root", "noti", "billboard")
+              .href(location)
+              .build();
+
+      EmbeddedLinkSubEntity.Builder embeddedLinkSubEntityBuilder =
+          this.embeddedLinkSubEntityBuilderFactory.create();
+
+      // create target collection entity.
+      EmbeddedLinkSubEntity targetCollectionSubEntity =
+          embeddedLinkSubEntityBuilder
+              .klasses("target", "collection")
+              .title("Target Collection")
+              .rel(Relation.COLLECTION)
+              .type(this.getMediaType().toString())
+              .href(UriBuilder.fromUri(location).replacePath("/targets/").build())
+              .build();
+
+      embeddedLinkSubEntityBuilder.clear();
+
+      // create audience collection entity.
+      EmbeddedLinkSubEntity audienceCollectionSubEntity =
+          embeddedLinkSubEntityBuilder
+              .klasses("audience", "collection")
+              .title("Audience Collection")
+              .rel(Relation.COLLECTION)
+              .type(this.getMediaType().toString())
+              .href(UriBuilder.fromUri(location).replacePath("/audiences/").build())
+              .build();
+
+      embeddedLinkSubEntityBuilder.clear();
+
+      EmbeddedLinkSubEntity notificationCollectionSubEntity =
+          embeddedLinkSubEntityBuilder
+              .klasses("notification", "collection")
+              .title("Notification Collection")
+              .rel(Relation.COLLECTION)
+              .type(this.getMediaType().toString())
+              .href(UriBuilder.fromUri(location).replacePath("/notifications/").build())
+              .build();
+
+      Entity.Builder entityBuilder = this.entityBuilderFactory.create();
+      Entity entity =
+          entityBuilder
+              .klasses("root", "noti", "billboard")
+              .property("notificationCount", notificationCount)
+              .property("audienceCount", audienceCount)
+              .property("targetCount", targetCount)
+              .links(self)
+              .subEntities(
+                  notificationCollectionSubEntity,
+                  audienceCollectionSubEntity,
+                  targetCollectionSubEntity)
+              .build();
+
+      Representation representation =
+          new SirenEntityRepresentation.Builder().entity(entity).language(language).build();
+      return representation;
+    } catch (URISyntaxException x) {
+      throw new RuntimeException(x);
+    } finally {
+      span.finish();
+    }
+  }
+
   private boolean hasPreviousLink(Integer skip, Integer take, Integer total) {
     boolean hasPrevious = false;
     if (take != null && skip != null) {
