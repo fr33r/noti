@@ -10,6 +10,47 @@
 			"name": "application/json",
 			"item": [
 				{
+					"name": "/",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "fd197e6c-57f9-4371-8cf9-ea7fa3f53c86",
+								"type": "text/javascript",
+								"exec": [
+									"//tests.",
+									"pm.test(\"Status code = 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "{{scheme}}://{{host}}:{{port}}/",
+							"protocol": "{{scheme}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								""
+							]
+						},
+						"description": "Retrieves the `root` (`billboard`/`noti`) resource."
+					},
+					"response": []
+				},
+				{
 					"name": "/notifications/",
 					"event": [
 						{
@@ -496,17 +537,46 @@
 			"name": "application/vnd.siren+json",
 			"item": [
 				{
-					"name": "/notifications/",
+					"name": "/",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
-								"id": "84ffc0c7-b27b-46c8-9fe0-3e42ed865ed0",
+								"id": "d1ad5122-dbe8-4a70-a12b-7c265e3eb4a0",
 								"type": "text/javascript",
 								"exec": [
+									"//tests.",
 									"pm.test(\"Status code = 200 OK\", function () {",
 									"    pm.response.to.have.status(200);",
-									"});"
+									"});",
+									"",
+									"//set globals.",
+									"var json_data = JSON.parse(pm.response.text());",
+									"var audiences_collection;",
+									"var notifications_collection;",
+									"var targets_collection;",
+									"for(i = 0; i < json_data.entities.length; i++) {",
+									"    entity = json_data.entities[i];",
+									"    if (entity.class.includes(\"notification\")) {",
+									"        notifications_collection = entity;",
+									"    } else if (entity.class.includes(\"target\")) {",
+									"        targets_collection = entity;",
+									"    } else if (entity.class.includes(\"audience\")) {",
+									"        audiences_collection = entity;",
+									"    }",
+									"}",
+									"",
+									"var audiences_location = audiences_collection.href;",
+									"var notifications_location = notifications_collection.href;",
+									"var targets_location = targets_collection.href;",
+									"",
+									"console.log(audiences_location);",
+									"console.log(notifications_location);",
+									"console.log(targets_location);",
+									"",
+									"pm.globals.set(\"audiences_location\", audiences_location);",
+									"pm.globals.set(\"notifications_location\", notifications_location);",
+									"pm.globals.set(\"targets_location\", targets_location);"
 								]
 							}
 						}
@@ -521,15 +591,52 @@
 						],
 						"body": {},
 						"url": {
-							"raw": "{{scheme}}://{{host}}:{{port}}/notifications/",
+							"raw": "{{scheme}}://{{host}}:{{port}}/",
 							"protocol": "{{scheme}}",
 							"host": [
 								"{{host}}"
 							],
 							"port": "{{port}}",
 							"path": [
-								"notifications",
 								""
+							]
+						},
+						"description": "Retrieves the `root` (`billboard`/`noti`) resource."
+					},
+					"response": []
+				},
+				{
+					"name": "/notifications/",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "07274766-2d6e-47ec-bbec-9bff36597fba",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code = 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"//clear globals.",
+									"pm.globals.unset(\"notifications_location\");"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/vnd.siren+json"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "{{notifications_location}}",
+							"host": [
+								"{{notifications_location}}"
 							]
 						},
 						"description": "Retrieves a representation of the notification collection resource."
@@ -542,7 +649,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "1d272cca-8a62-41e7-b079-7d9d19141de2",
+								"id": "5ad43bb3-0d07-4a40-899c-fbd463429817",
 								"type": "text/javascript",
 								"exec": [
 									"//tests.",
@@ -560,7 +667,10 @@
 									"",
 									"//set globals.",
 									"var location = postman.getResponseHeader(\"Location\");",
-									"pm.globals.set(\"audience_location\", location);"
+									"pm.globals.set(\"audience_location\", location);",
+									"",
+									"//clear globals.",
+									"pm.globals.unset(\"audiences_location\");"
 								]
 							}
 						}
@@ -582,15 +692,9 @@
 							"raw": "{\n\t\"name\": \"Test Audience\",\n\t\"members\" : []\n}"
 						},
 						"url": {
-							"raw": "{{scheme}}://{{host}}:{{port}}/audiences/",
-							"protocol": "{{scheme}}",
+							"raw": "{{audiences_location}}",
 							"host": [
-								"{{host}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"audiences",
-								""
+								"{{audiences_location}}"
 							]
 						},
 						"description": "Creates a new audience and appends it to the audience collection."
@@ -762,7 +866,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "d10ab980-bb21-481a-a10b-a5d989a44839",
+								"id": "09510f6d-1c18-4fd8-a941-9eb97de1909b",
 								"type": "text/javascript",
 								"exec": [
 									"//tests.",
@@ -780,7 +884,10 @@
 									"",
 									"//set globals.",
 									"var location = postman.getResponseHeader(\"Location\");",
-									"pm.globals.set(\"target_location\", location);"
+									"pm.globals.set(\"target_location\", location);",
+									"",
+									"//clear globals.",
+									"pm.globals.unset(\"targets_location\");"
 								]
 							}
 						}
@@ -802,15 +909,9 @@
 							"raw": "{\n    \"name\": \"Jonny Freer\",\n    \"phoneNumber\": \"+16146573542\"\n}"
 						},
 						"url": {
-							"raw": "{{scheme}}://{{host}}:{{port}}/targets/",
-							"protocol": "{{scheme}}",
+							"raw": "{{targets_location}}",
 							"host": [
-								"{{host}}"
-							],
-							"port": "{{port}}",
-							"path": [
-								"targets",
-								""
+								"{{targets_location}}"
 							]
 						},
 						"description": "Creates a new target and appends it to the target collection."
@@ -1004,6 +1105,47 @@
 		{
 			"name": "application/xml",
 			"item": [
+				{
+					"name": "/",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "511f3beb-7ba5-4638-b9ed-53ece965142a",
+								"type": "text/javascript",
+								"exec": [
+									"//tests.",
+									"pm.test(\"Status code = 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/xml"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "{{scheme}}://{{host}}:{{port}}/",
+							"protocol": "{{scheme}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								""
+							]
+						},
+						"description": "Retrieves the `root` (`billboard`/`noti`) resource."
+					},
+					"response": []
+				},
 				{
 					"name": "/notifications/",
 					"event": [
