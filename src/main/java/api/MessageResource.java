@@ -1,5 +1,6 @@
 package api;
 
+import com.fasterxml.jackson.jaxrs.yaml.YAMLMediaTypes;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
@@ -32,7 +33,16 @@ public interface MessageResource {
    *     resource.
    */
   @GET
-  @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/vnd.siren+json"})
+  @Produces({
+    MediaType.APPLICATION_JSON,
+    MediaType.APPLICATION_XML,
+    YAMLMediaTypes.APPLICATION_JACKSON_YAML,
+    YAMLMediaTypes.TEXT_JACKSON_YAML,
+    "application/vnd.siren+json",
+    "application/x-yaml",
+    "text/x-yaml",
+    "text/vnd.yaml"
+  })
   Response getCollection(
       @Context HttpHeaders headers,
       @Context UriInfo uriInfo,
@@ -53,7 +63,16 @@ public interface MessageResource {
    */
   @GET
   @Path("{id}")
-  @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/vnd.siren+json"})
+  @Produces({
+    MediaType.APPLICATION_JSON,
+    MediaType.APPLICATION_XML,
+    YAMLMediaTypes.APPLICATION_JACKSON_YAML,
+    YAMLMediaTypes.TEXT_JACKSON_YAML,
+    "application/vnd.siren+json",
+    "application/x-yaml",
+    "text/x-yaml",
+    "text/vnd.yaml"
+  })
   Response get(
       @Context HttpHeaders headers,
       @Context UriInfo uriInfo,
@@ -74,7 +93,16 @@ public interface MessageResource {
   @PUT
   @Path("{id}")
   @Consumes({MediaType.APPLICATION_JSON})
-  @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/vnd.siren+json"})
+  @Produces({
+    MediaType.APPLICATION_JSON,
+    MediaType.APPLICATION_XML,
+    YAMLMediaTypes.APPLICATION_JACKSON_YAML,
+    YAMLMediaTypes.TEXT_JACKSON_YAML,
+    "application/vnd.siren+json",
+    "application/x-yaml",
+    "text/x-yaml",
+    "text/vnd.yaml"
+  })
   Response replace(
       @Context HttpHeaders headers,
       @Context UriInfo uriInfo,
@@ -95,7 +123,16 @@ public interface MessageResource {
   @PUT
   @Path("{id}")
   @Consumes({MediaType.APPLICATION_XML})
-  @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, "application/vnd.siren+json"})
+  @Produces({
+    MediaType.APPLICATION_JSON,
+    MediaType.APPLICATION_XML,
+    YAMLMediaTypes.APPLICATION_JACKSON_YAML,
+    YAMLMediaTypes.TEXT_JACKSON_YAML,
+    "application/vnd.siren+json",
+    "application/x-yaml",
+    "text/x-yaml",
+    "text/vnd.yaml"
+  })
   Response replace(
       @Context HttpHeaders headers,
       @Context UriInfo uriInfo,
