@@ -218,6 +218,11 @@
 			<artifactId>failsafe</artifactId>
 			<version>${failsafe.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.jaxrs</groupId>
+			<artifactId>jackson-jaxrs-yaml-provider</artifactId>
+			<version>${jackson.yaml.version}</version>
+		</dependency>
 	</dependencies>
 
 	<properties>
@@ -233,5 +238,6 @@
 		<avro.serializer.version>3.3.1</avro.serializer.version>
 		<junit.version>4.12</junit.version>
 		<failsafe.version>1.1.0</failsafe.version>
+		<jackson.yaml.version>2.9.6</jackson.yaml.version>
 	</properties>
 </project>
