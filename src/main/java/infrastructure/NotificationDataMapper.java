@@ -263,7 +263,9 @@ final class NotificationDataMapper extends DataMapper {
 
   private String insertMessageSQL() {
     DataMap messageDataMap = this.messageMetadata.getDataMap();
-    String sql = this.insertSQL(1, messageDataMap);
+    List<String> columnNames = messageDataMap.getAllColumnNames();
+    columnNames.add("NOTIFICATION_UUID");
+    String sql = this.insertSQL(1, messageDataMap.getTableName(), columnNames);
     this.logger.debug(sql);
     return sql;
   }
@@ -577,8 +579,8 @@ final class NotificationDataMapper extends DataMapper {
           createMessageStatement.setString(++index, message.getTo().toE164());
           createMessageStatement.setString(++index, message.getContent());
           createMessageStatement.setString(++index, message.getStatus().toString());
-          createMessageStatement.setString(++index, notification.getId().toString());
           createMessageStatement.setString(++index, message.getExternalId());
+          createMessageStatement.setString(++index, notification.getId().toString());
           createMessageStatement.executeUpdate();
         }
       }

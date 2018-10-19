@@ -154,8 +154,8 @@ public class NotificationSQLFactory extends EntitySQLFactory<Notification, UUID>
     Set<Message> messages = new HashSet<Message>();
     while (results.next()) {
       Integer id = results.getInt(idColumn);
-      String from = results.getString(fromColumn);
-      String to = results.getString(toColumn);
+      String from = results.getString(fromColumn.replace("`", ""));
+      String to = results.getString(toColumn.replace("`", ""));
       String content = results.getString(contentColumn);
       String status = results.getString(statusColumn);
       String externalId = results.getString(externalIdColumn);

@@ -32,8 +32,8 @@ public final class NotificationMetadata extends MetadataMapper {
     super(new DataMap("NOTIFICATION", "N"));
     this.getDataMap().addColumn("UUID", Types.VARCHAR, UUID);
     this.getDataMap().addColumn("MESSAGE", Types.VARCHAR, CONTENT);
+    this.getDataMap().addColumn("STATUS", Types.VARCHAR, STATUS);
     this.getDataMap().addColumn("SEND_AT", Types.TIMESTAMP, SEND_AT);
     this.getDataMap().addColumn("SENT_AT", Types.TIMESTAMP, SENT_AT);
-    this.getDataMap().addColumn("STATUS", Types.VARCHAR, STATUS);
   }
 }
