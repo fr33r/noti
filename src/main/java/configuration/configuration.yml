@@ -18,8 +18,8 @@ kafka:
     producer:
         acks: all
         bootstrap.servers:
-            - 10.0.1.2:9092
-        schema.registry.url: http://10.0.1.2:8081
+            - ${KAFKA_BOOTSTRAP_SERVERS:-10.0.1.6:9092}
+        schema.registry.url: ${SCHEMA_REGISTRY_URL:-http://localhost:8081}
         #buffer.memory:
         #compression.type:
         #retries:
