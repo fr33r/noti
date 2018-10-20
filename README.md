@@ -5,3 +5,8 @@
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=com.jonfreer%3Anoti&metric=coverage)](https://sonarcloud.io/component_measures?id=com.jonfreer%3Anoti&metric=Coverage)
 
 A RESTful API offering resources to power an notification system.
+
+## [Wiki](https://github.com/freerjm/noti/wiki)
+
+1. [Up & Running](https://github.com/freerjm/noti/wiki/Up-and-Running)
+2. [Testing](https://github.com/freerjm/noti/wiki/Testing)
