@@ -52,7 +52,7 @@ services:
   schema-registry:
     image: 'confluentinc/cp-schema-registry:4.1.0'
     restart: always
-    env_file: ./schema-service.env
+    env_file: ./schema-registry.env
     depends_on:
       - kafka
 
