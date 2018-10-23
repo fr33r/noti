@@ -844,44 +844,6 @@
 					"response": []
 				},
 				{
-					"name": "/notifications/",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "07274766-2d6e-47ec-bbec-9bff36597fba",
-								"type": "text/javascript",
-								"exec": [
-									"pm.test(\"Status code = 200 OK\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"//clear globals.",
-									"pm.globals.unset(\"notifications_location\");"
-								]
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Accept",
-								"value": "application/vnd.siren+json"
-							}
-						],
-						"body": {},
-						"url": {
-							"raw": "{{notifications_location}}",
-							"host": [
-								"{{notifications_location}}"
-							]
-						},
-						"description": "Retrieves a representation of the notification collection resource."
-					},
-					"response": []
-				},
-				{
 					"name": "/audiences/",
 					"event": [
 						{
@@ -1124,7 +1086,6 @@
 							"listen": "test",
 							"script": {
 								"id": "283625a7-bfb0-4a41-ac73-0cc005f880c5",
-								"type": "text/javascript",
 								"exec": [
 									"//tests.",
 									"pm.test(\"Status code = 200 OK\", function () {",
@@ -1152,8 +1113,14 @@
 									"});",
 									"",
 									"//set globals.",
-									"pm.globals.set(\"target_representation\", pm.response.text());"
-								]
+									"pm.globals.set(\"target_representation\", pm.response.text());",
+									"var targetEntity = JSON.parse(pm.response.text());",
+									"var target = targetEntity.properties;",
+									"pm.globals.set(\"target_uuid\", \"\\\"\" + target.uuid + \"\\\"\");",
+									"pm.globals.set(\"target_name\", \"\\\"\" + target.name + \"\\\"\");",
+									"pm.globals.set(\"target_phone_number\", \"\\\"\" + target.phoneNumber + \"\\\"\");"
+								],
+								"type": "text/javascript"
 							}
 						}
 					],
@@ -1183,7 +1150,6 @@
 							"listen": "prerequest",
 							"script": {
 								"id": "9866b6b3-0478-49c5-8a56-a49b2275e1b6",
-								"type": "text/javascript",
 								"exec": [
 									"var json_text = pm.globals.get(\"target_representation\");",
 									"var json_data = JSON.parse(json_text);",
@@ -1191,14 +1157,14 @@
 									"",
 									"properties.name = \"Updated Test Target\";",
 									"pm.globals.set(\"target_representation\", JSON.stringify(properties))"
-								]
+								],
+								"type": "text/javascript"
 							}
 						},
 						{
 							"listen": "test",
 							"script": {
 								"id": "0534524e-b626-42ec-928b-9c21ad13cda8",
-								"type": "text/javascript",
 								"exec": [
 									"//tests.",
 									"pm.test(\"Status code = 204 No Content\", function () {",
@@ -1207,7 +1173,8 @@
 									"",
 									"//clear globals.",
 									"pm.globals.unset(\"target_representation\");"
-								]
+								],
+								"type": "text/javascript"
 							}
 						}
 					],
@@ -1234,6 +1201,294 @@
 							]
 						},
 						"description": "Replaces the state of the target with the `UUID` provided with the state provided."
+					},
+					"response": []
+				},
+				{
+					"name": "/notifications/",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "07274766-2d6e-47ec-bbec-9bff36597fba",
+								"exec": [
+									"pm.test(\"Status code = 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/vnd.siren+json"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "{{notifications_location}}",
+							"host": [
+								"{{notifications_location}}"
+							]
+						},
+						"description": "Retrieves a representation of the notification collection resource."
+					},
+					"response": []
+				},
+				{
+					"name": "/notifications/",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "da2307a1-3856-4ea1-be7c-3ac17bd43df3",
+								"exec": [
+									"//tests.",
+									"pm.test(\"Status code = 201 Created\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Content-Length header is present\", function () {",
+									"    pm.response.to.have.header(\"Content-Length\");",
+									"});",
+									"",
+									"pm.test(\"Location header is present\", function () {",
+									"    pm.response.to.have.header(\"Location\");",
+									"});",
+									"",
+									"//set globals.",
+									"var location = postman.getResponseHeader(\"Location\");",
+									"pm.globals.set(\"notification_location\", location);",
+									"",
+									"//clear globals.",
+									"pm.globals.unset(\"target_uuid\");",
+									"pm.globals.unset(\"target_name\");",
+									"pm.globals.unset(\"target_phone_number\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/vnd.siren+json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"content\": \"TESTING! 🤖\",\n  \"status\": \"PENDING\",\n  \"targets\": [\n    {\n      \"uuid\": {{target_uuid}},\n      \"name\": {{target_name}},\n      \"phoneNumber\": {{target_phone_number}}\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{scheme}}://{{host}}:{{port}}/notifications/",
+							"protocol": "{{scheme}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"notifications",
+								""
+							]
+						},
+						"description": "Creates a new notification resource based on the representation provided."
+					},
+					"response": []
+				},
+				{
+					"name": "/notifications/{uuid}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "56b65784-679d-492e-972b-004559eda549",
+								"exec": [
+									"//tests.",
+									"pm.test(\"Status code = 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Content-Length header is present\", function () {",
+									"    pm.response.to.have.header(\"Content-Length\");",
+									"});",
+									"",
+									"pm.test(\"ETag header is present\", function () {",
+									"    pm.response.to.have.header(\"ETag\");",
+									"});",
+									"",
+									"pm.test(\"Last-Modified header is present\", function () {",
+									"    pm.response.to.have.header(\"Last-Modified\");",
+									"});",
+									"",
+									"pm.test(\"Date header is present\", function () {",
+									"    pm.response.to.have.header(\"Date\");",
+									"});",
+									"",
+									"pm.test(\"Vary header is present\", function () {",
+									"    pm.response.to.have.header(\"Vary\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/vnd.siren+json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{notification_location}}",
+							"host": [
+								"{{notification_location}}"
+							]
+						},
+						"description": "Retrieves the notification resource representation with the UUID provided."
+					},
+					"response": []
+				},
+				{
+					"name": "/notifications/{uuid}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "56b65784-679d-492e-972b-004559eda549",
+								"exec": [
+									"//tests.",
+									"pm.test(\"Status code = 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Content-Length header is present\", function () {",
+									"    pm.response.to.have.header(\"Content-Length\");",
+									"});",
+									"",
+									"pm.test(\"ETag header is present\", function () {",
+									"    pm.response.to.have.header(\"ETag\");",
+									"});",
+									"",
+									"pm.test(\"Last-Modified header is present\", function () {",
+									"    pm.response.to.have.header(\"Last-Modified\");",
+									"});",
+									"",
+									"pm.test(\"Date header is present\", function () {",
+									"    pm.response.to.have.header(\"Date\");",
+									"});",
+									"",
+									"pm.test(\"Vary header is present\", function () {",
+									"    pm.response.to.have.header(\"Vary\");",
+									"});",
+									"",
+									"//set globals.",
+									"pm.globals.set(\"notification_representation\", pm.response.text());"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{notification_location}}",
+							"host": [
+								"{{notification_location}}"
+							]
+						},
+						"description": "Retrieves the notification resource representation with the UUID provided."
+					},
+					"response": []
+				},
+				{
+					"name": "/notifications/{uuid}",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "83172d7c-8469-428c-a234-996a22aaa8a4",
+								"exec": [
+									"var json_text = pm.globals.get(\"notification_representation\");",
+									"var json_data = JSON.parse(json_text);",
+									"",
+									"json_data.content = \"Updated Content!\";",
+									"pm.globals.set(\"notification_representation\", JSON.stringify(json_data))"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "0534524e-b626-42ec-928b-9c21ad13cda8",
+								"exec": [
+									"//tests.",
+									"pm.test(\"Status code = 204 No Content\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									"",
+									"//clear globals.",
+									"pm.globals.unset(\"notification_representation\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/vnd.siren+json"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{{notification_representation}}"
+						},
+						"url": {
+							"raw": "{{notification_location}}",
+							"host": [
+								"{{notification_location}}"
+							]
+						},
+						"description": "Replaces the state of the notification with the `UUID` provided with the state provided."
 					},
 					"response": []
 				},
@@ -1312,6 +1567,49 @@
 							]
 						},
 						"description": "Removes the target with the `UUID` provided."
+					},
+					"response": []
+				},
+				{
+					"name": "/notifications/{uuid}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "207d1099-7613-4140-b876-1a4bb795955d",
+								"exec": [
+									"//tests.",
+									"pm.test(\"Status code = 204 No Content\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									"",
+									"//clear globals.",
+									"pm.globals.unset(\"notification_location\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/vnd.siren+json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{notification_location}}",
+							"host": [
+								"{{notification_location}}"
+							]
+						},
+						"description": "Removes the notification resource with the UUID provided."
 					},
 					"response": []
 				}
