@@ -8,7 +8,7 @@
 
 >to provide a standardized interface for sending notifications across multiple mediums at scale.
 
-### [Wiki](https://github.com/freerjm/noti/wiki/Wiki) Contents
+### [About](https://github.com/freerjm/noti/wiki) Contents
 
 1. [Up & Running](https://github.com/freerjm/noti/wiki/Up-and-Running)
 2. [Development](https://github.com/freerjm/noti/wiki/Development)
