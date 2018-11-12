@@ -55,4 +55,11 @@ services:
     env_file: ./schema-registry.env
     depends_on:
       - kafka
+  noti-consumer:
+    image: 'freerjm/noti-consumer:wip'
+    restart: always
+    env_file: ./noti-consumer.env
+    depends_on:
+      - kafka
+      - schema-registry
 
