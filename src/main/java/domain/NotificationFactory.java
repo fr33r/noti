@@ -24,7 +24,7 @@ public class NotificationFactory {
 
   private Set<Message> createMessages(Notification notification) {
     Set<Message> messages = new HashSet<>();
-    final PhoneNumber from = new PhoneNumber("1", "614", "412", "5540");
+    final PhoneNumber from = new PhoneNumber("1", "812", "487", "1699");
     int sequenceNum = 0;
 
     for (Target target : notification.directRecipients()) {
