@@ -23,6 +23,8 @@ services:
     restart: always
     ports:
       - '80:80'
+    volumes:
+      - './graphite/conf/:/opt/graphite/conf/'
   grafana:
     image: grafana/grafana
     restart: always
