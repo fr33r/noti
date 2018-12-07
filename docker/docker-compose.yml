@@ -26,10 +26,14 @@ services:
     volumes:
       - './graphite/conf/:/opt/graphite/conf/'
   grafana:
-    image: grafana/grafana
+    image: 'grafana/grafana:5.1.0'
     restart: always
     ports:
       - '3000:3000'
+    volumes:
+      - './grafana/provisioning/dashboards/:/var/lib/grafana/dashboards/'
+      - './grafana/provisioning/data-sources/:/etc/grafana/provisioning/datasources/'
+      - './grafana/provisioning/dashboard-providers/:/etc/grafana/provisioning/dashboards/'
   jaegar:
     image: 'jaegertracing/all-in-one:1.6'
     ports:
