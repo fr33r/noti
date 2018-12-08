@@ -21,13 +21,14 @@ public abstract class Resource {
   }
 
   public RepresentationFactory getRepresentationFactory(HttpHeaders headers) {
-    RepresentationFactory representationFactory = null;
     for (MediaType acceptableMediaType : headers.getAcceptableMediaTypes()) {
-      if (this.representationIndustry.containsKey(acceptableMediaType)) {
-        representationFactory = this.representationIndustry.get(acceptableMediaType);
-        break;
+      for (Map.Entry<MediaType, RepresentationFactory> factoryEntry :
+          this.representationIndustry.entrySet()) {
+        if (acceptableMediaType.isCompatible(factoryEntry.getKey())) {
+          return factoryEntry.getValue();
+        }
       }
     }
-    return representationFactory;
+    return null;
   }
 }
