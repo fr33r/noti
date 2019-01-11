@@ -1,12 +1,12 @@
 import configuration.NotiConfiguration;
 import domain.Notification;
 import infrastructure.MessageQueueService;
-import infrastructure.MySQLUnitOfWorkFactory;
 import infrastructure.NotificationQueryFactory;
 import infrastructure.QueryFactory;
 import infrastructure.RepositoryFactory;
 import infrastructure.SQLRepositoryFactory;
 import infrastructure.SQLUnitOfWorkFactory;
+import infrastructure.UnitOfWorkFactory;
 import infrastructure.services.RepresentationMetadataService;
 import infrastructure.services.SMSQueueService;
 import io.dropwizard.setup.Environment;
@@ -31,7 +31,7 @@ public final class NotiInfrastructureModule extends NotiModule {
               protected void configure() {
 
                 this.bind(SQLRepositoryFactory.class).to(RepositoryFactory.class);
-                this.bind(MySQLUnitOfWorkFactory.class).to(SQLUnitOfWorkFactory.class);
+                this.bind(SQLUnitOfWorkFactory.class).to(UnitOfWorkFactory.class);
                 this.bind(RepresentationMetadataService.class)
                     .to(infrastructure.RepresentationMetadataService.class);
                 this.bind(SMSQueueService.class).to(MessageQueueService.class);

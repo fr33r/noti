@@ -3,6 +3,7 @@ package infrastructure;
 import domain.Audience;
 import domain.EntitySQLFactory;
 import domain.Target;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -14,7 +15,7 @@ import java.util.UUID;
 import javax.inject.Named;
 import org.slf4j.Logger;
 
-final class AudienceDataMapper extends DataMapper {
+final class AudienceDataMapper extends DataMapper<Audience> {
 
   private final EntitySQLFactory<Audience, UUID> audienceFactory;
   private final AudienceMetadata audienceMetadata;
@@ -22,10 +23,10 @@ final class AudienceDataMapper extends DataMapper {
   private final Logger logger;
 
   AudienceDataMapper(
-      SQLUnitOfWork unitOfWork,
+      Connection connection,
       EntitySQLFactory<Audience, UUID> audienceFactory,
       @Named("infrastructure.AudienceDataMapper") Logger logger) {
-    super(unitOfWork);
+    super(connection);
 
     this.audienceFactory = audienceFactory;
     this.audienceMetadata = new AudienceMetadata();
@@ -193,7 +194,7 @@ final class AudienceDataMapper extends DataMapper {
     int index = 0;
     Set<Audience> audiences = new HashSet<>();
     try (PreparedStatement audiencesStatement =
-        this.getUnitOfWork().createPreparedStatement(audiencesSQL)) {
+        this.getConnection().prepareStatement(audiencesSQL)) {
       audiencesStatement.setString(++index, notificationUUID.toString());
 
       try (ResultSet audiencesRS = audiencesStatement.executeQuery()) {
@@ -204,7 +205,7 @@ final class AudienceDataMapper extends DataMapper {
 
         while (audiencesRS.next()) {
           try (PreparedStatement membersStatement =
-              this.getUnitOfWork().createPreparedStatement(membersSQL)) {
+              this.getConnection().prepareStatement(membersSQL)) {
             membersStatement.setString(1, uuid);
 
             try (ResultSet membersRS = membersStatement.executeQuery()) {
@@ -219,6 +220,7 @@ final class AudienceDataMapper extends DataMapper {
     }
   }
 
+  @Override
   Audience find(final UUID uuid) {
 
     String audienceSQL = this.findAudienceSQL();
@@ -226,9 +228,9 @@ final class AudienceDataMapper extends DataMapper {
 
     Audience audience = null;
     try (final PreparedStatement getAudienceStatement =
-            this.getUnitOfWork().createPreparedStatement(audienceSQL);
+            this.getConnection().prepareStatement(audienceSQL);
         final PreparedStatement getAudienceMembersStatement =
-            this.getUnitOfWork().createPreparedStatement(membersSQL)) {
+            this.getConnection().prepareStatement(membersSQL)) {
       int index = 1;
       getAudienceStatement.setString(index, uuid.toString());
       getAudienceMembersStatement.setString(index, uuid.toString());
@@ -245,6 +247,7 @@ final class AudienceDataMapper extends DataMapper {
     }
   }
 
+  @Override
   void update(final Audience audience) {
 
     String audienceSQL = this.updateAudienceSQL();
@@ -253,7 +256,7 @@ final class AudienceDataMapper extends DataMapper {
     if (existingAudience == null) return;
 
     try (final PreparedStatement updateAudienceStatement =
-        this.getUnitOfWork().createPreparedStatement(audienceSQL); ) {
+        this.getConnection().prepareStatement(audienceSQL); ) {
       int index = 0;
       updateAudienceStatement.setString(++index, audience.name());
       updateAudienceStatement.setString(++index, audience.getId().toString());
@@ -293,7 +296,7 @@ final class AudienceDataMapper extends DataMapper {
       if (!toAssociate.isEmpty()) {
         String associateMemberSQL = this.associateMemberSQL(toAssociate.size());
         try (final PreparedStatement associateMemberStatement =
-            this.getUnitOfWork().createPreparedStatement(associateMemberSQL)) {
+            this.getConnection().prepareStatement(associateMemberSQL)) {
           index = 0;
           for (UUID uuid : toAssociate) {
             associateMemberStatement.setString(++index, audience.getId().toString());
@@ -306,7 +309,7 @@ final class AudienceDataMapper extends DataMapper {
       if (!toDisassociate.isEmpty()) {
         String disassociateMemberSQL = this.disassociateMemberSQL(toDisassociate.size());
         try (final PreparedStatement disassociateMemberStatement =
-            this.getUnitOfWork().createPreparedStatement(disassociateMemberSQL)) {
+            this.getConnection().prepareStatement(disassociateMemberSQL)) {
           index = 0;
           for (UUID uuid : toDisassociate) {
             disassociateMemberStatement.setString(++index, audience.getId().toString());
@@ -320,13 +323,14 @@ final class AudienceDataMapper extends DataMapper {
     }
   }
 
+  @Override
   void insert(final Audience audience) {
 
     String audienceSQL = this.insertAudienceSQL();
     String associateMemberSQL = this.associateMemberSQL(audience.members().size());
 
     try (final PreparedStatement createAudienceStatement =
-        this.getUnitOfWork().createPreparedStatement(audienceSQL)) {
+        this.getConnection().prepareStatement(audienceSQL)) {
       int index = 0;
       createAudienceStatement.setString(++index, audience.getId().toString());
       createAudienceStatement.setString(++index, audience.name());
@@ -334,7 +338,7 @@ final class AudienceDataMapper extends DataMapper {
 
       if (!audience.members().isEmpty()) {
         try (PreparedStatement associateMemberStatement =
-            this.getUnitOfWork().createPreparedStatement(associateMemberSQL)) {
+            this.getConnection().prepareStatement(associateMemberSQL)) {
           index = 0;
           for (Target member : audience.members()) {
             associateMemberStatement.setString(++index, audience.getId().toString());
@@ -348,15 +352,16 @@ final class AudienceDataMapper extends DataMapper {
     }
   }
 
+  @Override
   void delete(final UUID uuid) {
 
     String disassociateMembersSQL = this.disassociateMembersSQL();
     String audienceSQL = this.deleteAudienceSQL();
 
     try (final PreparedStatement removeAudienceStatement =
-            this.getUnitOfWork().createPreparedStatement(audienceSQL);
+            this.getConnection().prepareStatement(audienceSQL);
         final PreparedStatement disassociateMembersStatement =
-            this.getUnitOfWork().createPreparedStatement(disassociateMembersSQL)) {
+            this.getConnection().prepareStatement(disassociateMembersSQL)) {
       int index = 1;
       disassociateMembersStatement.setString(index, uuid.toString());
       disassociateMembersStatement.executeUpdate();
@@ -368,12 +373,13 @@ final class AudienceDataMapper extends DataMapper {
     }
   }
 
+  @Override
   int count() {
 
     final String countAudiencesSQL = this.countAudiencesSQL();
 
     try (final PreparedStatement countAudiencesStatement =
-            this.getUnitOfWork().createPreparedStatement(countAudiencesSQL);
+            this.getConnection().prepareStatement(countAudiencesSQL);
         final ResultSet rs = countAudiencesStatement.executeQuery()) {
       int index = 1;
       rs.next();

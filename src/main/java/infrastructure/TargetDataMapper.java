@@ -2,6 +2,7 @@ package infrastructure;
 
 import domain.EntitySQLFactory;
 import domain.Target;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -11,15 +12,15 @@ import java.util.Set;
 import java.util.UUID;
 import org.slf4j.Logger;
 
-final class TargetDataMapper extends DataMapper {
+final class TargetDataMapper extends DataMapper<Target> {
 
   private final EntitySQLFactory<Target, UUID> targetFactory;
   private final TargetMetadata targetMetadata;
   private final Logger logger;
 
   TargetDataMapper(
-      SQLUnitOfWork unitOfWork, EntitySQLFactory<Target, UUID> targetFactory, Logger logger) {
-    super(unitOfWork);
+      Connection connection, EntitySQLFactory<Target, UUID> targetFactory, Logger logger) {
+    super(connection);
 
     this.targetFactory = targetFactory;
     this.targetMetadata = new TargetMetadata();
@@ -152,7 +153,7 @@ final class TargetDataMapper extends DataMapper {
 
     int index = 0;
     Set<Target> targets = new HashSet<>();
-    try (PreparedStatement statement = this.getUnitOfWork().createPreparedStatement(sql)) {
+    try (PreparedStatement statement = this.getConnection().prepareStatement(sql)) {
       statement.setString(++index, notificationUUID.toString());
       try (ResultSet rs = statement.executeQuery()) {
         while (rs.next()) {
@@ -165,13 +166,13 @@ final class TargetDataMapper extends DataMapper {
     }
   }
 
+  @Override
   Target find(final UUID uuid) {
 
     final String targetSQL = this.findTargetSQL();
 
     Target target = null;
-    try (PreparedStatement getTargetStatement =
-        this.getUnitOfWork().createPreparedStatement(targetSQL)) {
+    try (PreparedStatement getTargetStatement = this.getConnection().prepareStatement(targetSQL)) {
 
       int index = 1;
       getTargetStatement.setString(index, uuid.toString());
@@ -186,12 +187,13 @@ final class TargetDataMapper extends DataMapper {
     }
   }
 
+  @Override
   void insert(final Target target) {
 
     final String insertTargetSQL = this.insertTargetSQL();
 
     try (PreparedStatement insertTargetStatement =
-        this.getUnitOfWork().createPreparedStatement(insertTargetSQL)) {
+        this.getConnection().prepareStatement(insertTargetSQL)) {
 
       int index = 0;
       insertTargetStatement.setString(++index, target.getId().toString());
@@ -203,12 +205,13 @@ final class TargetDataMapper extends DataMapper {
     }
   }
 
+  @Override
   void update(final Target target) {
 
     final String updateTargetSQL = this.updateTargetSQL();
 
     try (PreparedStatement updateTargetStatement =
-        this.getUnitOfWork().createPreparedStatement(updateTargetSQL)) {
+        this.getConnection().prepareStatement(updateTargetSQL)) {
 
       int index = 0;
       updateTargetStatement.setString(++index, target.getName());
@@ -220,6 +223,7 @@ final class TargetDataMapper extends DataMapper {
     }
   }
 
+  @Override
   void delete(final UUID uuid) {
 
     final String deleteTargetSQL = this.deleteTargetSQL();
@@ -227,11 +231,11 @@ final class TargetDataMapper extends DataMapper {
     final String disassociateFromAudienceSQL = this.disassociateFromAudienceSQL();
 
     try (PreparedStatement disassociateFromNotificationStatement =
-            this.getUnitOfWork().createPreparedStatement(disassociateFromNotificationSQL);
+            this.getConnection().prepareStatement(disassociateFromNotificationSQL);
         PreparedStatement disassociateFromAudienceStatement =
-            this.getUnitOfWork().createPreparedStatement(disassociateFromAudienceSQL);
+            this.getConnection().prepareStatement(disassociateFromAudienceSQL);
         PreparedStatement deleteTargetStatement =
-            this.getUnitOfWork().createPreparedStatement(deleteTargetSQL)) {
+            this.getConnection().prepareStatement(deleteTargetSQL)) {
 
       int index = 1;
       disassociateFromNotificationStatement.setString(index, uuid.toString());
@@ -247,12 +251,13 @@ final class TargetDataMapper extends DataMapper {
     }
   }
 
+  @Override
   int count() {
 
     final String countTargetsSQL = this.countTargetsSQL();
 
     try (final PreparedStatement countTargetsStatement =
-            this.getUnitOfWork().createPreparedStatement(countTargetsSQL);
+            this.getConnection().prepareStatement(countTargetsSQL);
         final ResultSet rs = countTargetsStatement.executeQuery()) {
       int index = 1;
       rs.next();

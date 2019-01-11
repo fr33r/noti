@@ -7,14 +7,14 @@ package infrastructure;
  */
 public abstract class SQLRepository {
 
-  private SQLUnitOfWork unitOfWork;
+  private UnitOfWork unitOfWork;
 
   /**
    * Constructs a new {@link SQLRepository}.
    *
    * @param unitOfWork The unit of work that this repository will contribue to.
    */
-  public SQLRepository(SQLUnitOfWork unitOfWork) {
+  public SQLRepository(UnitOfWork unitOfWork) {
     this.unitOfWork = unitOfWork;
   }
 
@@ -23,7 +23,7 @@ public abstract class SQLRepository {
    *
    * @return The unit of work for the repository.
    */
-  public SQLUnitOfWork getUnitOfWork() {
+  public UnitOfWork getUnitOfWork() {
     return this.unitOfWork;
   }
 }

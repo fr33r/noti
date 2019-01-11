@@ -17,7 +17,6 @@ public final class NotificationRepository extends SQLRepository
     implements Repository<Notification, UUID> {
 
   private final EntitySQLFactory<Notification, UUID> notificationFactory;
-  private final NotificationDataMapper notificationDataMapper;
   private final Tracer tracer;
 
   /**
@@ -25,19 +24,16 @@ public final class NotificationRepository extends SQLRepository
    *
    * @param unitOfWork The unit of work that this repository will contribute to.
    * @param notificationFactory The factory that reconstitutes {@link Notification} entities.
-   * @param notificationDataMapper The data mapper that maps {@link Notification} entites to the
    *     database.
    * @param tracer The tracer conforming to the OpenTracing standard utilized for instrumentation.
    */
   public NotificationRepository(
-      SQLUnitOfWork unitOfWork,
+      UnitOfWork unitOfWork,
       EntitySQLFactory<Notification, UUID> notificationFactory,
-      NotificationDataMapper notificationDataMapper,
       Tracer tracer) {
     super(unitOfWork);
 
     this.notificationFactory = notificationFactory;
-    this.notificationDataMapper = notificationDataMapper;
     this.tracer = tracer;
   }
 
@@ -49,11 +45,9 @@ public final class NotificationRepository extends SQLRepository
    */
   @Override
   public Set<Notification> get(final Query<Notification> query) {
-    final Span span =
-        this.tracer
-            .buildSpan("NotificationRepostory#get(query)")
-            .asChildOf(this.tracer.activeSpan())
-            .start();
+    final String className = NotificationRepository.class.getName();
+    final String spanName = String.format("%s#get(query)", className);
+    final Span span = this.tracer.buildSpan(spanName).asChildOf(this.tracer.activeSpan()).start();
     try (final Scope scope = this.tracer.scopeManager().activate(span, false)) {
       return query.execute();
     } finally {
@@ -69,13 +63,12 @@ public final class NotificationRepository extends SQLRepository
    */
   @Override
   public Notification get(final UUID uuid) {
-    final Span span =
-        this.tracer
-            .buildSpan("NotificationRepostory#get(uuid)")
-            .asChildOf(this.tracer.activeSpan())
-            .start();
+    final String className = NotificationRepository.class.getName();
+    final String spanName = String.format("%s#get(uuid)", className);
+    final Span span = this.tracer.buildSpan(spanName).asChildOf(this.tracer.activeSpan()).start();
     try (final Scope scope = this.tracer.scopeManager().activate(span, false)) {
-      return this.notificationDataMapper.find(uuid);
+      DataMapper dm = this.getUnitOfWork().dataMappers().get(Notification.class);
+      return (Notification) dm.find(uuid);
     } finally {
       span.finish();
     }
@@ -90,16 +83,14 @@ public final class NotificationRepository extends SQLRepository
    */
   @Override
   public void put(final Notification notification) {
-    final Span span =
-        this.tracer
-            .buildSpan("NotificationRepository#put")
-            .asChildOf(this.tracer.activeSpan())
-            .start();
+    final String className = NotificationRepository.class.getName();
+    final String spanName = String.format("%s#put", className);
+    final Span span = this.tracer.buildSpan(spanName).asChildOf(this.tracer.activeSpan()).start();
     try (final Scope scope = this.tracer.scopeManager().activate(span, false)) {
       if (this.get(notification.getId()) == null) {
         this.add(notification);
       } else {
-        this.notificationDataMapper.update(notification);
+        this.getUnitOfWork().alter(notification);
       }
     } finally {
       span.finish();
@@ -113,13 +104,11 @@ public final class NotificationRepository extends SQLRepository
    */
   @Override
   public void add(final Notification notification) {
-    final Span span =
-        this.tracer
-            .buildSpan("NotificationRepository#add")
-            .asChildOf(this.tracer.activeSpan())
-            .start();
+    final String className = NotificationRepository.class.getName();
+    final String spanName = String.format("%s#add", className);
+    final Span span = this.tracer.buildSpan(spanName).asChildOf(this.tracer.activeSpan()).start();
     try (final Scope scope = this.tracer.scopeManager().activate(span, false)) {
-      this.notificationDataMapper.insert(notification);
+      this.getUnitOfWork().add(notification);
     } finally {
       span.finish();
     }
@@ -132,13 +121,14 @@ public final class NotificationRepository extends SQLRepository
    */
   @Override
   public void remove(final UUID uuid) {
-    final Span span =
-        this.tracer
-            .buildSpan("NotificationRepository#remove")
-            .asChildOf(this.tracer.activeSpan())
-            .start();
+    final String className = NotificationRepository.class.getName();
+    final String spanName = String.format("%s#remove", className);
+    final Span span = this.tracer.buildSpan(spanName).asChildOf(this.tracer.activeSpan()).start();
     try (final Scope scope = this.tracer.scopeManager().activate(span, false)) {
-      this.notificationDataMapper.delete(uuid);
+      Notification notification = this.get(uuid);
+      if (notification != null) {
+        this.getUnitOfWork().remove(notification);
+      }
     } finally {
       span.finish();
     }
@@ -151,13 +141,12 @@ public final class NotificationRepository extends SQLRepository
    */
   @Override
   public int size() {
-    final Span span =
-        this.tracer
-            .buildSpan("NotificationRepository#size")
-            .asChildOf(this.tracer.activeSpan())
-            .start();
+    final String className = NotificationRepository.class.getName();
+    final String spanName = String.format("%s#size", className);
+    final Span span = this.tracer.buildSpan(spanName).asChildOf(this.tracer.activeSpan()).start();
     try (final Scope scope = this.tracer.scopeManager().activate(span, false)) {
-      return this.notificationDataMapper.count();
+      DataMapper dm = this.getUnitOfWork().dataMappers().get(Notification.class);
+      return dm.count();
     } finally {
       span.finish();
     }

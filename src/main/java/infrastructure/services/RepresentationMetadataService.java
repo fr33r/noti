@@ -1,8 +1,7 @@
 package infrastructure.services;
 
+import infrastructure.ConnectionFactory;
 import infrastructure.RepresentationMetadata;
-import infrastructure.SQLUnitOfWork;
-import infrastructure.SQLUnitOfWorkFactory;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -10,6 +9,7 @@ import java.net.URI;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -37,17 +37,17 @@ import org.slf4j.Logger;
 @Service
 public class RepresentationMetadataService implements infrastructure.RepresentationMetadataService {
 
-  private final SQLUnitOfWorkFactory unitOfWorkFactory;
+  private final ConnectionFactory connectionFactory;
   private final Tracer tracer;
   private final Calendar calendar;
   private final Logger logger;
 
   @Inject
   public RepresentationMetadataService(
-      SQLUnitOfWorkFactory unitOfWorkFactory,
+      ConnectionFactory connectionFactory,
       Tracer tracer,
       @Named("infrastructure.services.RepresentationMetadataService") Logger logger) {
-    this.unitOfWorkFactory = unitOfWorkFactory;
+    this.connectionFactory = connectionFactory;
     this.calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
     this.tracer = tracer;
     this.logger = logger;
@@ -77,9 +77,10 @@ public class RepresentationMetadataService implements infrastructure.Representat
       lang = language.toString();
     }
 
-    try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
-      SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
-      try (PreparedStatement statement = unitOfWork.createPreparedStatement(sql)) {
+    try (Scope scope = this.tracer.scopeManager().activate(span, false);
+        Connection connection = this.connectionFactory.createConnection()) {
+
+      try (PreparedStatement statement = connection.prepareStatement(sql)) {
         int columnIndex = 0;
         statement.setString(++columnIndex, uri.toString());
         statement.setString(++columnIndex, contentType.toString());
@@ -110,12 +111,11 @@ public class RepresentationMetadataService implements infrastructure.Representat
                     lastModified,
                     new EntityTag(entityTag));
           }
-          unitOfWork.save();
+          connection.commit();
         }
-      } catch (SQLException x) {
-        unitOfWork.undo();
-        throw new RuntimeException(x);
       }
+    } catch (SQLException x) {
+      throw new RuntimeException(x);
     } finally {
       span.finish();
     }
@@ -151,9 +151,9 @@ public class RepresentationMetadataService implements infrastructure.Representat
     this.logger.debug(sql);
     List<RepresentationMetadata> representationMetadata = new ArrayList<>();
 
-    try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
-      SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
-      try (PreparedStatement statement = unitOfWork.createPreparedStatement(sql)) {
+    try (Scope scope = this.tracer.scopeManager().activate(span, false);
+        Connection connection = this.connectionFactory.createConnection()) {
+      try (PreparedStatement statement = connection.prepareStatement(sql)) {
         int columnIndex = 0;
         statement.setString(++columnIndex, uri.toString());
         try (ResultSet results = statement.executeQuery()) {
@@ -176,12 +176,11 @@ public class RepresentationMetadataService implements infrastructure.Representat
                     lastModified,
                     new EntityTag(entityTag)));
           }
-          unitOfWork.save();
+          connection.commit();
         }
-      } catch (SQLException x) {
-        unitOfWork.undo();
-        throw new RuntimeException(x);
       }
+    } catch (SQLException x) {
+      throw new RuntimeException(x);
     } finally {
       span.finish();
     }
@@ -218,9 +217,10 @@ public class RepresentationMetadataService implements infrastructure.Representat
             .toString();
 
     this.logger.debug(sql);
-    try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
-      SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
-      try (PreparedStatement statement = unitOfWork.createPreparedStatement(sql)) {
+    try (Scope scope = this.tracer.scopeManager().activate(span, false);
+        Connection connection = this.connectionFactory.createConnection()) {
+
+      try (PreparedStatement statement = connection.prepareStatement(sql)) {
         MessageDigest digest = MessageDigest.getInstance("MD5");
         byte[] bytesMD5 =
             digest.digest(
@@ -247,11 +247,10 @@ public class RepresentationMetadataService implements infrastructure.Representat
             this.calendar);
         statement.setString(++columnIndex, representationMetadata.getEntityTag().toString());
         statement.executeUpdate();
-        unitOfWork.save();
-      } catch (SQLException | NoSuchAlgorithmException x) {
-        unitOfWork.undo();
-        throw new RuntimeException(x);
+        connection.commit();
       }
+    } catch (SQLException | NoSuchAlgorithmException x) {
+      throw new RuntimeException(x);
     } finally {
       span.finish();
     }
@@ -296,14 +295,14 @@ public class RepresentationMetadataService implements infrastructure.Representat
       this.logger.debug(sql);
 
       try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
-        SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+        Connection connection = this.connectionFactory.createConnection();
 
         String contentLanguage = null;
         if (representationMetadata.getContentLanguage() != null) {
           contentLanguage = representationMetadata.getContentLanguage().toString();
         }
 
-        try (PreparedStatement statement = unitOfWork.createPreparedStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
           int columnIndex = 0;
           statement.setTimestamp(
               ++columnIndex,
@@ -318,11 +317,10 @@ public class RepresentationMetadataService implements infrastructure.Representat
           statement.setString(++columnIndex, representationMetadata.getContentEncoding());
           statement.setString(++columnIndex, representationMetadata.getContentEncoding());
           statement.executeUpdate();
-          unitOfWork.save();
-        } catch (SQLException x) {
-          unitOfWork.undo();
-          throw new RuntimeException(x);
+          connection.commit();
         }
+      } catch (SQLException x) {
+        throw new RuntimeException(x);
       } finally {
         span.finish();
       }
@@ -351,20 +349,19 @@ public class RepresentationMetadataService implements infrastructure.Representat
             .toString();
     this.logger.debug(sql);
 
-    try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
-      SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
-      try (PreparedStatement statement = unitOfWork.createPreparedStatement(sql)) {
+    try (Scope scope = this.tracer.scopeManager().activate(span, false);
+        Connection connection = this.connectionFactory.createConnection()) {
+      try (PreparedStatement statement = connection.prepareStatement(sql)) {
         int columnIndex = 0;
         statement.setString(++columnIndex, uri.toString());
         statement.setString(++columnIndex, contentType.toString());
         statement.setString(++columnIndex, language.toString());
         statement.setString(++columnIndex, encoding);
         statement.executeUpdate();
-        unitOfWork.save();
-      } catch (SQLException x) {
-        unitOfWork.undo();
-        throw new RuntimeException(x);
+        connection.commit();
       }
+    } catch (SQLException x) {
+      throw new RuntimeException(x);
     } finally {
       span.finish();
     }
@@ -389,17 +386,16 @@ public class RepresentationMetadataService implements infrastructure.Representat
             .toString();
     this.logger.debug(sql);
 
-    try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
-      SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
-      try (PreparedStatement statement = unitOfWork.createPreparedStatement(sql)) {
+    try (Scope scope = this.tracer.scopeManager().activate(span, false);
+        Connection connection = this.connectionFactory.createConnection()) {
+      try (PreparedStatement statement = connection.prepareStatement(sql)) {
         int columnIndex = 0;
         statement.setString(++columnIndex, uri.toString());
         statement.executeUpdate();
-        unitOfWork.save();
-      } catch (SQLException x) {
-        unitOfWork.undo();
-        throw new RuntimeException(x);
+        connection.commit();
       }
+    } catch (SQLException x) {
+      throw new RuntimeException(x);
     } finally {
       span.finish();
     }

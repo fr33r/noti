@@ -5,6 +5,7 @@ import domain.EntitySQLFactory;
 import domain.Message;
 import domain.Notification;
 import domain.Target;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -18,7 +19,7 @@ import java.util.UUID;
 import javax.inject.Named;
 import org.slf4j.Logger;
 
-final class NotificationDataMapper extends DataMapper {
+final class NotificationDataMapper extends DataMapper<Notification> {
 
   private final EntitySQLFactory<Notification, UUID> notificationFactory;
   private final EntitySQLFactory<Target, UUID> targetFactory;
@@ -30,12 +31,12 @@ final class NotificationDataMapper extends DataMapper {
   private final Logger logger;
 
   NotificationDataMapper(
-      SQLUnitOfWork unitOfWork,
+      Connection connection,
       EntitySQLFactory<Notification, UUID> notificationFactory,
       EntitySQLFactory<Target, UUID> targetFactory,
       EntitySQLFactory<Audience, UUID> audienceFactory,
       @Named("infrastructure.NotificationDataMapper") Logger logger) {
-    super(unitOfWork);
+    super(connection);
 
     this.notificationFactory = notificationFactory;
     this.targetFactory = targetFactory;
@@ -425,7 +426,7 @@ final class NotificationDataMapper extends DataMapper {
 
     // find all matching notifications.
     try (PreparedStatement notificationsStatement =
-        this.getUnitOfWork().createPreparedStatement(notificationSQL)) {
+        this.getConnection().prepareStatement(notificationSQL)) {
 
       for (Query.QueryArgument arg : args) {
         notificationsStatement.setObject(arg.getIndex(), arg.getValue(), arg.getType());
@@ -441,13 +442,13 @@ final class NotificationDataMapper extends DataMapper {
           UUID uuid = UUID.fromString(uuidString);
 
           try (final PreparedStatement getTargetsStatement =
-                  this.getUnitOfWork().createPreparedStatement(recipientsSQL);
+                  this.getConnection().prepareStatement(recipientsSQL);
               final PreparedStatement getMessagesStatement =
-                  this.getUnitOfWork().createPreparedStatement(messagesSQL);
+                  this.getConnection().prepareStatement(messagesSQL);
               final PreparedStatement getAudiencesStatement =
-                  this.getUnitOfWork().createPreparedStatement(audiencesSQL);
+                  this.getConnection().prepareStatement(audiencesSQL);
               final PreparedStatement getAudienceMembersStatement =
-                  this.getUnitOfWork().createPreparedStatement(audienceMembersSQL)) {
+                  this.getConnection().prepareStatement(audienceMembersSQL)) {
 
             getTargetsStatement.setString(1, uuid.toString());
             getMessagesStatement.setString(1, uuid.toString());
@@ -472,6 +473,7 @@ final class NotificationDataMapper extends DataMapper {
     }
   }
 
+  @Override
   Notification find(final UUID uuid) {
 
     // define SQL.
@@ -485,15 +487,15 @@ final class NotificationDataMapper extends DataMapper {
 
     // find matching notification.
     try (final PreparedStatement getNotificationStatement =
-            this.getUnitOfWork().createPreparedStatement(notificationSQL);
+            this.getConnection().prepareStatement(notificationSQL);
         final PreparedStatement getTargetsStatement =
-            this.getUnitOfWork().createPreparedStatement(recipientsSQL);
+            this.getConnection().prepareStatement(recipientsSQL);
         final PreparedStatement getMessagesStatement =
-            this.getUnitOfWork().createPreparedStatement(messagesSQL);
+            this.getConnection().prepareStatement(messagesSQL);
         final PreparedStatement getAudiencesStatement =
-            this.getUnitOfWork().createPreparedStatement(audiencesSQL);
+            this.getConnection().prepareStatement(audiencesSQL);
         final PreparedStatement getAudienceMembersStatement =
-            this.getUnitOfWork().createPreparedStatement(audienceMembersSQL)) {
+            this.getConnection().prepareStatement(audienceMembersSQL)) {
 
       int index = 1;
       getNotificationStatement.setString(index, uuid.toString());
@@ -520,6 +522,7 @@ final class NotificationDataMapper extends DataMapper {
     }
   }
 
+  @Override
   void insert(final Notification notification) {
 
     final String notificationSQL = this.insertNotificationSQL();
@@ -528,7 +531,7 @@ final class NotificationDataMapper extends DataMapper {
     final String associateAudienceSQL = this.associateAudienceSQL();
 
     try (final PreparedStatement createNotificationStatement =
-        this.getUnitOfWork().createPreparedStatement(notificationSQL)) {
+        this.getConnection().prepareStatement(notificationSQL)) {
       int index = 0;
       createNotificationStatement.setString(++index, notification.getId().toString());
       createNotificationStatement.setString(++index, notification.content());
@@ -552,7 +555,7 @@ final class NotificationDataMapper extends DataMapper {
 
       for (Target target : notification.directRecipients()) {
         try (final PreparedStatement associateTargetStatement =
-            this.getUnitOfWork().createPreparedStatement(associateTargetSQL)) {
+            this.getConnection().prepareStatement(associateTargetSQL)) {
           index = 0;
           associateTargetStatement.setString(++index, notification.getId().toString());
           associateTargetStatement.setString(++index, target.getId().toString());
@@ -562,7 +565,7 @@ final class NotificationDataMapper extends DataMapper {
 
       for (Audience audience : notification.audiences()) {
         try (final PreparedStatement associateAudienceStatement =
-            this.getUnitOfWork().createPreparedStatement(associateAudienceSQL)) {
+            this.getConnection().prepareStatement(associateAudienceSQL)) {
           index = 0;
           associateAudienceStatement.setString(++index, notification.getId().toString());
           associateAudienceStatement.setString(++index, audience.getId().toString());
@@ -572,7 +575,7 @@ final class NotificationDataMapper extends DataMapper {
 
       for (Message message : notification.messages()) {
         try (final PreparedStatement createMessageStatement =
-            this.getUnitOfWork().createPreparedStatement(messageSQL)) {
+            this.getConnection().prepareStatement(messageSQL)) {
           index = 0;
           createMessageStatement.setInt(++index, message.getId());
           createMessageStatement.setString(++index, message.getFrom().toE164());
@@ -591,6 +594,7 @@ final class NotificationDataMapper extends DataMapper {
   }
 
   // TODO - should do a diff between targets and audiences.
+  @Override
   void update(final Notification notification) {
 
     String notificationSQL = this.updateNotificationSQL();
@@ -598,7 +602,7 @@ final class NotificationDataMapper extends DataMapper {
     if (existingNotification == null) return;
 
     try (final PreparedStatement updateNotificationStatement =
-        this.getUnitOfWork().createPreparedStatement(notificationSQL)) {
+        this.getConnection().prepareStatement(notificationSQL)) {
       int index = 0;
       updateNotificationStatement.setString(++index, notification.content());
       updateNotificationStatement.setString(++index, notification.status().toString());
@@ -682,7 +686,7 @@ final class NotificationDataMapper extends DataMapper {
       if (!audiencesToAssociate.isEmpty()) {
         String associateAudiencesSQL = this.associateAudiencesSQL(audiencesToAssociate.size());
         try (final PreparedStatement associateAudienceStatement =
-            this.getUnitOfWork().createPreparedStatement(associateAudiencesSQL)) {
+            this.getConnection().prepareStatement(associateAudiencesSQL)) {
           index = 0;
           for (UUID uuid : audiencesToAssociate) {
             associateAudienceStatement.setString(++index, notification.getId().toString());
@@ -696,7 +700,7 @@ final class NotificationDataMapper extends DataMapper {
         String disassociateAudiencesSQL =
             this.disassociateAudiencesSQL(audiencesToDisassociate.size());
         try (final PreparedStatement disassociateAudiencesStatement =
-            this.getUnitOfWork().createPreparedStatement(disassociateAudiencesSQL)) {
+            this.getConnection().prepareStatement(disassociateAudiencesSQL)) {
           index = 0;
           for (UUID uuid : audiencesToDisassociate) {
             disassociateAudiencesStatement.setString(++index, notification.getId().toString());
@@ -709,7 +713,7 @@ final class NotificationDataMapper extends DataMapper {
       if (!messagesToInsert.isEmpty()) {
         String insertMessagesSQL = this.insertMessagesSQL(messagesToInsert.size());
         try (final PreparedStatement insertMessagesStatement =
-            this.getUnitOfWork().createPreparedStatement(insertMessagesSQL)) {
+            this.getConnection().prepareStatement(insertMessagesSQL)) {
           index = 0;
           for (Integer id : messagesToInsert) {
             insertMessagesStatement.setString(++index, notification.getId().toString());
@@ -722,7 +726,7 @@ final class NotificationDataMapper extends DataMapper {
       if (!messagesToDelete.isEmpty()) {
         String deleteMessagesSQL = this.deleteMessagesSQL(messagesToDelete.size());
         try (final PreparedStatement deleteMessagesStatement =
-            this.getUnitOfWork().createPreparedStatement(deleteMessagesSQL)) {
+            this.getConnection().prepareStatement(deleteMessagesSQL)) {
           index = 0;
           for (Integer id : messagesToDelete) {
             deleteMessagesStatement.setString(++index, notification.getId().toString());
@@ -738,7 +742,7 @@ final class NotificationDataMapper extends DataMapper {
           index = 0;
           Message message = notification.message(id);
           try (final PreparedStatement updateMessageStatement =
-              this.getUnitOfWork().createPreparedStatement(updateMessageSQL)) {
+              this.getConnection().prepareStatement(updateMessageSQL)) {
             updateMessageStatement.setString(++index, message.getContent());
             updateMessageStatement.setString(++index, message.getTo().toE164());
             updateMessageStatement.setString(++index, message.getFrom().toE164());
@@ -755,6 +759,7 @@ final class NotificationDataMapper extends DataMapper {
     }
   }
 
+  @Override
   void delete(final UUID uuid) {
 
     final String deleteNotificationSQL = this.deleteNotificationSQL();
@@ -763,13 +768,13 @@ final class NotificationDataMapper extends DataMapper {
     final String deleteAudienceAssociationsSQL = this.dissociateAudienceSQL();
 
     try (final PreparedStatement deleteMessagesStatement =
-            this.getUnitOfWork().createPreparedStatement(deleteMessagesSQL);
+            this.getConnection().prepareStatement(deleteMessagesSQL);
         final PreparedStatement deleteNotificationStatement =
-            this.getUnitOfWork().createPreparedStatement(deleteNotificationSQL);
+            this.getConnection().prepareStatement(deleteNotificationSQL);
         final PreparedStatement deleteTargetAssociationsStatement =
-            this.getUnitOfWork().createPreparedStatement(deleteTargetAssociationsSQL);
+            this.getConnection().prepareStatement(deleteTargetAssociationsSQL);
         final PreparedStatement deleteAudienceAssociationsStatement =
-            this.getUnitOfWork().createPreparedStatement(deleteAudienceAssociationsSQL)) {
+            this.getConnection().prepareStatement(deleteAudienceAssociationsSQL)) {
 
       int index = 1;
       deleteMessagesStatement.setString(index, uuid.toString());
@@ -789,12 +794,13 @@ final class NotificationDataMapper extends DataMapper {
     }
   }
 
+  @Override
   int count() {
 
     final String countNotificationsSQL = this.countNotificationsSQL();
 
     try (final PreparedStatement countNotificationsStatement =
-            this.getUnitOfWork().createPreparedStatement(countNotificationsSQL);
+            this.getConnection().prepareStatement(countNotificationsSQL);
         final ResultSet rs = countNotificationsStatement.executeQuery()) {
       int index = 1;
       rs.next();
