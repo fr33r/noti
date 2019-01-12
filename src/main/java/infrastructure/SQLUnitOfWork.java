@@ -19,21 +19,18 @@ public class SQLUnitOfWork extends UnitOfWork {
   private final EntitySQLFactory<Target, UUID> targetFactory;
   private final EntitySQLFactory<Audience, UUID> audienceFactory;
   private final ConnectionFactory connectionFactory;
-  private final Map<Class, DataMap> dataMaps;
   private final Tracer tracer;
   private final Map<Class, DataMapper> dataMappers;
   private final Connection connection;
 
   public SQLUnitOfWork(
       ConnectionFactory connectionFactory,
-      Map<Class, DataMap> dataMaps,
       EntitySQLFactory<Notification, UUID> notificationFactory,
       EntitySQLFactory<Target, UUID> targetFactory,
       EntitySQLFactory<Audience, UUID> audienceFactory,
       Tracer tracer) {
     super();
     this.connectionFactory = connectionFactory;
-    this.dataMaps = dataMaps;
     this.notificationFactory = notificationFactory;
     this.targetFactory = targetFactory;
     this.audienceFactory = audienceFactory;
