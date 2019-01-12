@@ -1,6 +1,8 @@
 import configuration.NotiConfiguration;
 import domain.Notification;
+import infrastructure.ConnectionFactory;
 import infrastructure.MessageQueueService;
+import infrastructure.MySQLConnectionFactory;
 import infrastructure.NotificationQueryFactory;
 import infrastructure.QueryFactory;
 import infrastructure.RepositoryFactory;
@@ -30,6 +32,7 @@ public final class NotiInfrastructureModule extends NotiModule {
               @Override
               protected void configure() {
 
+                this.bind(MySQLConnectionFactory.class).to(ConnectionFactory.class);
                 this.bind(SQLRepositoryFactory.class).to(RepositoryFactory.class);
                 this.bind(SQLUnitOfWorkFactory.class).to(UnitOfWorkFactory.class);
                 this.bind(RepresentationMetadataService.class)
