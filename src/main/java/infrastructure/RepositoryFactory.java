@@ -13,13 +13,13 @@ public abstract class RepositoryFactory {
   // create abstract product A.
   // could change this to be "less" abstract by creating NotificationSQLRepository abstract class.
   public abstract Repository<Notification, UUID> createNotificationRepository(
-      SQLUnitOfWork unitOfWork);
+      UnitOfWork unitOfWork);
 
   // create abstract product B.
   // could change this to be "less" abstract by creating TargetSQLRepository abstract class.
-  public abstract Repository<Target, UUID> createTargetRepository(SQLUnitOfWork unitOfWork);
+  public abstract Repository<Target, UUID> createTargetRepository(UnitOfWork unitOfWork);
 
   // create abstract product C.
   // could change this to be "less" abstract by create AudienceSQLRepository abstract class.
-  public abstract Repository<Audience, UUID> createAudienceRepository(SQLUnitOfWork unitOfWork);
+  public abstract Repository<Audience, UUID> createAudienceRepository(UnitOfWork unitOfWork);
 }

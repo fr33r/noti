@@ -16,7 +16,6 @@ import java.util.UUID;
 public final class AudienceRepository extends SQLRepository implements Repository<Audience, UUID> {
 
   private final EntitySQLFactory<Audience, UUID> audienceFactory;
-  private final AudienceDataMapper audienceDataMapper;
   private final Tracer tracer;
 
   /**
@@ -24,18 +23,13 @@ public final class AudienceRepository extends SQLRepository implements Repositor
    *
    * @param unitOfWork The unit of work that this repository will contribue to.
    * @param audienceFactory The factory that reconstitutes {@link Audience} entities.
-   * @param audienceDataMapper The data mapper that maps {@link Audience} entities to the database.
    * @param tracer The tracer conforming to the OpenTracing standard utilized for instrumentation.
    */
   public AudienceRepository(
-      SQLUnitOfWork unitOfWork,
-      EntitySQLFactory<Audience, UUID> audienceFactory,
-      AudienceDataMapper audienceDataMapper,
-      Tracer tracer) {
+      UnitOfWork unitOfWork, EntitySQLFactory<Audience, UUID> audienceFactory, Tracer tracer) {
     super(unitOfWork);
 
     this.audienceFactory = audienceFactory;
-    this.audienceDataMapper = audienceDataMapper;
     this.tracer = tracer;
   }
 
@@ -47,11 +41,9 @@ public final class AudienceRepository extends SQLRepository implements Repositor
    */
   @Override
   public Set<Audience> get(Query<Audience> query) {
-    final Span span =
-        this.tracer
-            .buildSpan("AudienceRepostory#get(query)")
-            .asChildOf(this.tracer.activeSpan())
-            .start();
+    final String className = AudienceRepository.class.getName();
+    final String spanName = String.format("%s#get(query)", className);
+    final Span span = this.tracer.buildSpan(spanName).asChildOf(this.tracer.activeSpan()).start();
     try (final Scope scope = this.tracer.scopeManager().activate(span, false)) {
       return query.execute();
     } finally {
@@ -67,13 +59,12 @@ public final class AudienceRepository extends SQLRepository implements Repositor
    */
   @Override
   public Audience get(final UUID uuid) {
-    final Span span =
-        this.tracer
-            .buildSpan("AudienceRepository#get(uuid)")
-            .asChildOf(this.tracer.activeSpan())
-            .start();
+    final String className = AudienceRepository.class.getName();
+    final String spanName = String.format("%s#get(uuid)", className);
+    final Span span = this.tracer.buildSpan(spanName).asChildOf(this.tracer.activeSpan()).start();
     try (final Scope scope = this.tracer.scopeManager().activate(span, false)) {
-      return this.audienceDataMapper.find(uuid);
+      DataMapper dm = this.getUnitOfWork().dataMappers().get(Audience.class);
+      return (Audience) dm.find(uuid);
     } finally {
       span.finish();
     }
@@ -88,14 +79,15 @@ public final class AudienceRepository extends SQLRepository implements Repositor
    */
   @Override
   public void put(final Audience audience) {
-    final Span span =
-        this.tracer.buildSpan("AudienceRepository#put").asChildOf(this.tracer.activeSpan()).start();
+    final String className = AudienceRepository.class.getName();
+    final String spanName = String.format("%s#put", className);
+    final Span span = this.tracer.buildSpan(spanName).asChildOf(this.tracer.activeSpan()).start();
     try (final Scope scope = this.tracer.scopeManager().activate(span, false)) {
       Audience existingAudience = this.get(audience.getId());
       if (existingAudience == null) {
         this.add(audience);
       } else {
-        this.audienceDataMapper.update(audience);
+        this.getUnitOfWork().alter(audience);
       }
     } finally {
       span.finish();
@@ -109,10 +101,11 @@ public final class AudienceRepository extends SQLRepository implements Repositor
    */
   @Override
   public void add(final Audience audience) {
-    final Span span =
-        this.tracer.buildSpan("AudienceRepository#add").asChildOf(this.tracer.activeSpan()).start();
+    final String className = AudienceRepository.class.getName();
+    final String spanName = String.format("%s#add", className);
+    final Span span = this.tracer.buildSpan(spanName).asChildOf(this.tracer.activeSpan()).start();
     try (final Scope scope = this.tracer.scopeManager().activate(span, false)) {
-      this.audienceDataMapper.insert(audience);
+      this.getUnitOfWork().add(audience);
     } finally {
       span.finish();
     }
@@ -125,10 +118,14 @@ public final class AudienceRepository extends SQLRepository implements Repositor
    */
   @Override
   public void remove(final UUID uuid) {
-    final Span span =
-        this.tracer.buildSpan("AudienceRepository#add").asChildOf(this.tracer.activeSpan()).start();
+    final String className = AudienceRepository.class.getName();
+    final String spanName = String.format("%s#remove", className);
+    final Span span = this.tracer.buildSpan(spanName).asChildOf(this.tracer.activeSpan()).start();
     try (final Scope scope = this.tracer.scopeManager().activate(span, false)) {
-      this.audienceDataMapper.delete(uuid);
+      Audience audience = this.get(uuid);
+      if (audience != null) {
+        this.getUnitOfWork().remove(audience);
+      }
     } finally {
       span.finish();
     }
@@ -141,13 +138,12 @@ public final class AudienceRepository extends SQLRepository implements Repositor
    */
   @Override
   public int size() {
-    final Span span =
-        this.tracer
-            .buildSpan("AudienceRepository#size")
-            .asChildOf(this.tracer.activeSpan())
-            .start();
+    final String className = AudienceRepository.class.getName();
+    final String spanName = String.format("%s#size", className);
+    final Span span = this.tracer.buildSpan(spanName).asChildOf(this.tracer.activeSpan()).start();
     try (final Scope scope = this.tracer.scopeManager().activate(span, false)) {
-      return this.audienceDataMapper.count();
+      DataMapper dm = this.getUnitOfWork().dataMappers().get(Audience.class);
+      return dm.count();
     } finally {
       span.finish();
     }

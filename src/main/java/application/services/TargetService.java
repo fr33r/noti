@@ -6,8 +6,8 @@ import domain.Target;
 import domain.TargetFactory;
 import infrastructure.Repository;
 import infrastructure.RepositoryFactory;
-import infrastructure.SQLUnitOfWork;
-import infrastructure.SQLUnitOfWorkFactory;
+import infrastructure.UnitOfWork;
+import infrastructure.UnitOfWorkFactory;
 import java.util.UUID;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -15,7 +15,7 @@ import org.slf4j.Logger;
 
 public final class TargetService implements application.TargetService {
 
-  private final SQLUnitOfWorkFactory unitOfWorkFactory;
+  private final UnitOfWorkFactory unitOfWorkFactory;
   private final RepositoryFactory repositoryFactory;
   private final TargetFactory targetFactory;
   private final application.TargetFactory applicationTargetFactory;
@@ -23,7 +23,7 @@ public final class TargetService implements application.TargetService {
 
   @Inject
   public TargetService(
-      SQLUnitOfWorkFactory unitOfWorkFactory,
+      UnitOfWorkFactory unitOfWorkFactory,
       RepositoryFactory repositoryFactory,
       TargetFactory targetFactory,
       application.TargetFactory applicationTargetFactory,
@@ -37,13 +37,12 @@ public final class TargetService implements application.TargetService {
 
   @Override
   public Integer getTargetCount() {
-    SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+    UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork();
     try {
       Repository<Target, UUID> targetRepository =
           this.repositoryFactory.createTargetRepository(unitOfWork);
       return targetRepository.size();
     } catch (Exception x) {
-      unitOfWork.undo();
       String errorMessage = "An error occurred when retrieving the total number of targets.";
       this.logger.error(errorMessage, x);
       throw new InternalErrorException(errorMessage, x.getMessage());
@@ -60,7 +59,7 @@ public final class TargetService implements application.TargetService {
   public UUID createTarget(application.Target target) {
 
     Target _target = this.targetFactory.createFrom(target);
-    SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+    UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork();
 
     try {
       Repository<Target, UUID> targetRepository =
@@ -69,7 +68,6 @@ public final class TargetService implements application.TargetService {
       unitOfWork.save();
       return _target.getId();
     } catch (Exception x) {
-      unitOfWork.undo();
       String errorMessage = "An error occurred when creating the target.";
       this.logger.error(errorMessage, x);
       throw new InternalErrorException(errorMessage, x.getMessage());
@@ -86,7 +84,7 @@ public final class TargetService implements application.TargetService {
   public application.Target getTarget(UUID uuid) {
 
     Target target = null;
-    SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+    UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork();
 
     try {
       Repository<Target, UUID> targetRepository =
@@ -94,7 +92,6 @@ public final class TargetService implements application.TargetService {
       target = targetRepository.get(uuid);
       unitOfWork.save();
     } catch (Exception x) {
-      unitOfWork.undo();
       String errorMessage = "An error occurred when retrieving the target.";
       this.logger.error(errorMessage, x);
       throw new InternalErrorException(errorMessage, x.getMessage());
@@ -120,7 +117,7 @@ public final class TargetService implements application.TargetService {
   public void replaceTarget(application.Target target) {
 
     Target _target = this.targetFactory.createFrom(target);
-    SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+    UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork();
 
     try {
       Repository<Target, UUID> targetRepository =
@@ -128,7 +125,6 @@ public final class TargetService implements application.TargetService {
       targetRepository.put(_target);
       unitOfWork.save();
     } catch (Exception x) {
-      unitOfWork.undo();
       String errorMessage = "An error occurred when updating the target.";
       this.logger.error(errorMessage, x);
       throw new InternalErrorException(errorMessage, x.getMessage());
@@ -143,7 +139,7 @@ public final class TargetService implements application.TargetService {
   @Override
   public void deleteTarget(UUID uuid) {
 
-    SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+    UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork();
 
     try {
       Repository<Target, UUID> targetRepository =
@@ -151,7 +147,6 @@ public final class TargetService implements application.TargetService {
       targetRepository.remove(uuid);
       unitOfWork.save();
     } catch (Exception x) {
-      unitOfWork.undo();
       String errorMessage = "An error occurred when deleting the target.";
       this.logger.error(errorMessage, x);
       throw new InternalErrorException(errorMessage, x.getMessage());

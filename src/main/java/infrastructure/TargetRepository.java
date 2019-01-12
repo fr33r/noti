@@ -17,25 +17,19 @@ public final class TargetRepository extends SQLRepository implements Repository<
 
   private final EntitySQLFactory<Target, UUID> targetFactory;
   private final Tracer tracer;
-  private final TargetDataMapper targetDataMapper;
 
   /**
    * Constructs a new {@link TargetRepository}.
    *
    * @param unitOfWork The unit of work that this repository will contribute to.
    * @param targetFactory The factory that reconstitutes {@link Target} entities.
-   * @param targetDataMapper The data mapper that maps {@link Target} entites to the database.
    * @param tracer The tracer conforming to the OpenTracing standard utilized for instrumentation.
    */
   public TargetRepository(
-      SQLUnitOfWork unitOfWork,
-      EntitySQLFactory<Target, UUID> targetFactory,
-      TargetDataMapper targetDataMapper,
-      Tracer tracer) {
+      UnitOfWork unitOfWork, EntitySQLFactory<Target, UUID> targetFactory, Tracer tracer) {
     super(unitOfWork);
 
     this.targetFactory = targetFactory;
-    this.targetDataMapper = targetDataMapper;
     this.tracer = tracer;
   }
 
@@ -47,11 +41,9 @@ public final class TargetRepository extends SQLRepository implements Repository<
    */
   @Override
   public Set<Target> get(Query<Target> query) {
-    Span span =
-        this.tracer
-            .buildSpan("TargetRepository#get(query)")
-            .asChildOf(this.tracer.activeSpan())
-            .start();
+    String className = TargetRepository.class.getName();
+    String spanName = String.format("%s#get(query)", className);
+    Span span = this.tracer.buildSpan(spanName).asChildOf(this.tracer.activeSpan()).start();
     try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
       return query.execute();
     } finally {
@@ -67,13 +59,12 @@ public final class TargetRepository extends SQLRepository implements Repository<
    */
   @Override
   public Target get(UUID uuid) {
-    Span span =
-        this.tracer
-            .buildSpan("TargetRepository#get(uuid)")
-            .asChildOf(this.tracer.activeSpan())
-            .start();
+    String className = TargetRepository.class.getName();
+    String spanName = String.format("%s#get(uuid)", className);
+    Span span = this.tracer.buildSpan(spanName).asChildOf(this.tracer.activeSpan()).start();
     try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
-      return this.targetDataMapper.find(uuid);
+      DataMapper dm = this.getUnitOfWork().dataMappers().get(Target.class);
+      return (Target) dm.find(uuid);
     } finally {
       span.finish();
     }
@@ -88,14 +79,15 @@ public final class TargetRepository extends SQLRepository implements Repository<
    */
   @Override
   public void put(Target target) {
-    Span span =
-        this.tracer.buildSpan("TargetRepository#put").asChildOf(this.tracer.activeSpan()).start();
+    String className = TargetRepository.class.getName();
+    String spanName = String.format("%s#put", className);
+    Span span = this.tracer.buildSpan(spanName).asChildOf(this.tracer.activeSpan()).start();
     try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
       Target existingTarget = this.get(target.getId());
       if (existingTarget == null) {
         this.add(target);
       } else {
-        this.targetDataMapper.update(target);
+        this.getUnitOfWork().alter(target);
       }
     } finally {
       span.finish();
@@ -109,10 +101,11 @@ public final class TargetRepository extends SQLRepository implements Repository<
    */
   @Override
   public void add(Target target) {
-    Span span =
-        this.tracer.buildSpan("TargetRepository#add").asChildOf(this.tracer.activeSpan()).start();
+    String className = TargetRepository.class.getName();
+    String spanName = String.format("%s#add", className);
+    Span span = this.tracer.buildSpan(spanName).asChildOf(this.tracer.activeSpan()).start();
     try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
-      this.targetDataMapper.insert(target);
+      this.getUnitOfWork().add(target);
     } finally {
       span.finish();
     }
@@ -125,13 +118,14 @@ public final class TargetRepository extends SQLRepository implements Repository<
    */
   @Override
   public void remove(UUID uuid) {
-    Span span =
-        this.tracer
-            .buildSpan("TargetRepository#remove")
-            .asChildOf(this.tracer.activeSpan())
-            .start();
+    String className = TargetRepository.class.getName();
+    String spanName = String.format("%s#remove", className);
+    Span span = this.tracer.buildSpan(spanName).asChildOf(this.tracer.activeSpan()).start();
     try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
-      this.targetDataMapper.delete(uuid);
+      Target target = this.get(uuid);
+      if (target != null) {
+        this.getUnitOfWork().remove(target);
+      }
     } finally {
       span.finish();
     }
@@ -144,10 +138,12 @@ public final class TargetRepository extends SQLRepository implements Repository<
    */
   @Override
   public int size() {
-    final Span span =
-        this.tracer.buildSpan("TargetRepository#size").asChildOf(this.tracer.activeSpan()).start();
+    String className = TargetRepository.class.getName();
+    String spanName = String.format("%s#size", className);
+    final Span span = this.tracer.buildSpan(spanName).asChildOf(this.tracer.activeSpan()).start();
     try (final Scope scope = this.tracer.scopeManager().activate(span, false)) {
-      return this.targetDataMapper.count();
+      DataMapper dm = this.getUnitOfWork().dataMappers().get(Target.class);
+      return dm.count();
     } finally {
       span.finish();
     }

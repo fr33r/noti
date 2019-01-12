@@ -12,8 +12,8 @@ import infrastructure.Query;
 import infrastructure.QueryFactory;
 import infrastructure.Repository;
 import infrastructure.RepositoryFactory;
-import infrastructure.SQLUnitOfWork;
-import infrastructure.SQLUnitOfWorkFactory;
+import infrastructure.UnitOfWork;
+import infrastructure.UnitOfWorkFactory;
 import io.opentracing.Tracer;
 import java.util.Calendar;
 import java.util.Date;
@@ -27,7 +27,7 @@ import org.slf4j.Logger;
 
 public final class NotificationService implements application.NotificationService {
 
-  private final SQLUnitOfWorkFactory unitOfWorkFactory;
+  private final UnitOfWorkFactory unitOfWorkFactory;
   private final RepositoryFactory repositoryFactory;
   private final NotificationFactory notificationFactory;
   private final application.NotificationFactory applicationNotificationFactory;
@@ -40,7 +40,7 @@ public final class NotificationService implements application.NotificationServic
 
   @Inject
   public NotificationService(
-      SQLUnitOfWorkFactory unitOfWorkFactory,
+      UnitOfWorkFactory unitOfWorkFactory,
       RepositoryFactory repositoryFactory,
       MessageQueueService smsQueueService,
       NotificationFactory notificationFactory,
@@ -64,7 +64,7 @@ public final class NotificationService implements application.NotificationServic
 
   public Set<application.Notification> getNotifications(
       String externalMessageID, Integer skip, Integer take) {
-    SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+    UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork();
     try {
       Repository<Notification, UUID> notificationRepository =
           this.repositoryFactory.createNotificationRepository(unitOfWork);
@@ -97,7 +97,6 @@ public final class NotificationService implements application.NotificationServic
       this.logger.info("Retrieved {} matching notifications.", notifications.size());
       return notifications;
     } catch (Exception x) {
-      unitOfWork.undo();
       String errorMessage = "An error occurred when retrieving notifications.";
       this.logger.error(errorMessage, x);
       throw new InternalErrorException(errorMessage, x.getMessage());
@@ -106,13 +105,12 @@ public final class NotificationService implements application.NotificationServic
 
   public Integer getNotificationCount() {
 
-    SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+    UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork();
     try {
       Repository<Notification, UUID> notificationRepository =
           this.repositoryFactory.createNotificationRepository(unitOfWork);
       return notificationRepository.size();
     } catch (Exception x) {
-      unitOfWork.undo();
       String errorMessage = "An error occurred when retrieving the total number of notifications.";
       this.logger.error(errorMessage, x);
       throw new InternalErrorException(errorMessage, x.getMessage());
@@ -121,7 +119,7 @@ public final class NotificationService implements application.NotificationServic
 
   public Set<application.Target> getNotificationDirectRecipients(
       UUID uuid, Integer skip, Integer take) {
-    SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+    UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork();
     try {
       Repository<Notification, UUID> notificationRepository =
           this.repositoryFactory.createNotificationRepository(unitOfWork);
@@ -149,7 +147,6 @@ public final class NotificationService implements application.NotificationServic
       }
       return filteredTargets;
     } catch (Exception x) {
-      unitOfWork.undo();
       String errorMessage =
           "An error occurred when retrieving the direct recipients of the notification.";
       this.logger.error(errorMessage, x);
@@ -158,7 +155,7 @@ public final class NotificationService implements application.NotificationServic
   }
 
   public Set<application.Audience> getNotificationAudiences(UUID uuid, Integer skip, Integer take) {
-    SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+    UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork();
     try {
       Repository<Notification, UUID> notificationRepository =
           this.repositoryFactory.createNotificationRepository(unitOfWork);
@@ -186,7 +183,6 @@ public final class NotificationService implements application.NotificationServic
       }
       return filteredAudiences;
     } catch (Exception x) {
-      unitOfWork.undo();
       String errorMessage = "An error occurred when retrieving the audiences of the notification.";
       this.logger.error(errorMessage, x);
       throw new InternalErrorException(errorMessage, x.getMessage());
@@ -194,7 +190,7 @@ public final class NotificationService implements application.NotificationServic
   }
 
   public Set<application.Message> getNotificationMessages(UUID uuid, Integer skip, Integer take) {
-    SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+    UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork();
     try {
       Repository<Notification, UUID> notificationRepository =
           this.repositoryFactory.createNotificationRepository(unitOfWork);
@@ -222,7 +218,6 @@ public final class NotificationService implements application.NotificationServic
       }
       return filteredMessages;
     } catch (Exception x) {
-      unitOfWork.undo();
       String errorMessage = "An error occurred when retrieving the messages of the notification.";
       this.logger.error(errorMessage, x);
       throw new InternalErrorException(errorMessage, x.getMessage());
@@ -237,7 +232,7 @@ public final class NotificationService implements application.NotificationServic
    */
   public UUID createNotification(application.Notification notification) {
 
-    SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+    UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork();
     Date now = Calendar.getInstance(TimeZone.getTimeZone("UTC")).getTime();
     Notification noti_domain = this.notificationFactory.createFrom(notification);
 
@@ -265,7 +260,6 @@ public final class NotificationService implements application.NotificationServic
       unitOfWork.save();
       return noti_domain.getId();
     } catch (Exception x) {
-      unitOfWork.undo();
       String errorMessage = "An error occurred when creating the notification.";
       this.logger.error(errorMessage, x);
       throw new InternalErrorException(errorMessage, x.getMessage());
@@ -280,7 +274,7 @@ public final class NotificationService implements application.NotificationServic
    */
   public application.Notification getNotification(UUID uuid) {
 
-    SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+    UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork();
     Notification notification = null;
 
     try {
@@ -289,7 +283,6 @@ public final class NotificationService implements application.NotificationServic
       notification = notificationRepository.get(uuid);
       unitOfWork.save();
     } catch (Exception x) {
-      unitOfWork.undo();
       String errorMessage = "An error occurred when retrieving the notification.";
       this.logger.error(errorMessage, x);
       throw new InternalErrorException(errorMessage, x.getMessage());
@@ -313,7 +306,7 @@ public final class NotificationService implements application.NotificationServic
    */
   public void deleteNotification(UUID uuid) {
 
-    SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+    UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork();
 
     try {
       Repository<Notification, UUID> notificationRepository =
@@ -321,7 +314,6 @@ public final class NotificationService implements application.NotificationServic
       notificationRepository.remove(uuid);
       unitOfWork.save();
     } catch (Exception x) {
-      unitOfWork.undo();
       String errorMessage = "An error occurred when deleting the notification.";
       this.logger.error(errorMessage, x);
       throw new InternalErrorException(errorMessage, x.getMessage());
@@ -335,7 +327,7 @@ public final class NotificationService implements application.NotificationServic
    */
   public void updateNotification(application.Notification notification) {
 
-    SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+    UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork();
 
     try {
       Repository<Notification, UUID> notificationRepository =
@@ -344,7 +336,6 @@ public final class NotificationService implements application.NotificationServic
       notificationRepository.put(noti_domain);
       unitOfWork.save();
     } catch (Exception x) {
-      unitOfWork.undo();
       String errorMessage = "An error occurred when updating the notification.";
       this.logger.error(errorMessage, x);
       throw new InternalErrorException(errorMessage, x.getMessage());
@@ -352,7 +343,7 @@ public final class NotificationService implements application.NotificationServic
   }
 
   public application.Message getNotificationMessage(UUID notificationUUID, Integer messageID) {
-    SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+    UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork();
 
     try {
       Repository<Notification, UUID> notificationRepository =
@@ -380,7 +371,6 @@ public final class NotificationService implements application.NotificationServic
       Message message = _notification.message(messageID);
       return this.applicationMessageFactory.createFrom(message);
     } catch (Exception x) {
-      unitOfWork.undo();
       String errorMessage = "An error occurred when retrieving the notification messages.";
       this.logger.error(errorMessage, x);
       throw new InternalErrorException(errorMessage, x.getMessage());
@@ -388,7 +378,7 @@ public final class NotificationService implements application.NotificationServic
   }
 
   public void updateNotificationMessage(UUID notificationUUID, application.Message message) {
-    SQLUnitOfWork unitOfWork = this.unitOfWorkFactory.create();
+    UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork();
 
     try {
       Repository<Notification, UUID> notificationRepository =
@@ -424,7 +414,6 @@ public final class NotificationService implements application.NotificationServic
       notificationRepository.put(_notification);
       unitOfWork.save();
     } catch (Exception x) {
-      unitOfWork.undo();
       String errorMessage = "An error occurred when updating the notification messages.";
       this.logger.error(errorMessage, x);
       throw new InternalErrorException(errorMessage, x.getMessage());

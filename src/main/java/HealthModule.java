@@ -1,8 +1,8 @@
 import api.health.DatabaseHealthCheck;
 import configuration.DatabaseConfiguration;
 import configuration.NotiConfiguration;
-import infrastructure.MySQLUnitOfWorkFactory;
-import infrastructure.SQLUnitOfWorkFactory;
+import infrastructure.ConnectionFactory;
+import infrastructure.MySQLConnectionFactory;
 import io.dropwizard.setup.Environment;
 import io.opentracing.util.GlobalTracer;
 
@@ -20,10 +20,10 @@ public final class HealthModule extends NotiModule {
     final String password = databaseConfiguration.getPassword();
     final String url = databaseConfiguration.getURL();
 
-    SQLUnitOfWorkFactory unitOfWorkFactory =
-        new MySQLUnitOfWorkFactory(url, username, password, GlobalTracer.get());
+    ConnectionFactory connectionFactory =
+        new MySQLConnectionFactory(url, username, password, GlobalTracer.get());
     this.getEnvironment()
         .healthChecks()
-        .register("database", new DatabaseHealthCheck(unitOfWorkFactory));
+        .register("database", new DatabaseHealthCheck(connectionFactory));
   }
 }

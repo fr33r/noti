@@ -1,29 +1,32 @@
 package api.health;
 
 import com.codahale.metrics.health.HealthCheck;
-import infrastructure.SQLUnitOfWork;
-import infrastructure.SQLUnitOfWorkFactory;
+import infrastructure.ConnectionFactory;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 
 public final class DatabaseHealthCheck extends HealthCheck {
 
-  private final SQLUnitOfWorkFactory unitOfWorkFactory;
+  private final ConnectionFactory connectionFactory;
 
-  public DatabaseHealthCheck(SQLUnitOfWorkFactory unitOfWorkFactory) {
-    this.unitOfWorkFactory = unitOfWorkFactory;
+  public DatabaseHealthCheck(ConnectionFactory connectionFactory) {
+    this.connectionFactory = connectionFactory;
   }
 
   @Override
   public Result check() throws Exception {
-    SQLUnitOfWork unitOfWork = null;
+    Connection connection = null;
     try {
-      unitOfWork = this.unitOfWorkFactory.create();
-      PreparedStatement healthStatement = unitOfWork.createPreparedStatement("SELECT 1;");
+      connection = this.connectionFactory.createConnection();
+      PreparedStatement healthStatement = connection.prepareStatement("SELECT 1;");
       healthStatement.executeQuery();
-      unitOfWork.save();
+      connection.commit();
       return Result.healthy();
     } catch (Exception x) {
-      unitOfWork.undo();
+      if (connection != null) {
+        connection.rollback();
+        connection.close();
+      }
       return Result.unhealthy(x.getMessage());
     }
   }

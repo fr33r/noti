@@ -1,9 +1,6 @@
 package infrastructure;
 
-import domain.AudienceSQLFactory;
 import domain.Notification;
-import domain.NotificationSQLFactory;
-import domain.TargetSQLFactory;
 import io.opentracing.Tracer;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
@@ -22,15 +19,8 @@ public final class NotificationQueryFactory extends QueryFactory<Notification> {
   }
 
   @Override
-  public Query<Notification> createQuery(SQLUnitOfWork unitOfWork) {
-    NotificationDataMapper dataMapper =
-        new NotificationDataMapper(
-            unitOfWork,
-            new NotificationSQLFactory(this.tracer),
-            new TargetSQLFactory(this.tracer),
-            new AudienceSQLFactory(this.tracer),
-            this.logger);
-
-    return new NotificationQuery(dataMapper);
+  public Query<Notification> createQuery(UnitOfWork unitOfWork) {
+    DataMapper dm = unitOfWork.dataMappers().get(Notification.class);
+    return new NotificationQuery((NotificationDataMapper) dm);
   }
 }

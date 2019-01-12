@@ -1,18 +1,21 @@
 package infrastructure;
 
+import domain.Entity;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
-class DataMapper {
+abstract class DataMapper<T extends Entity> {
 
-  private final SQLUnitOfWork unitOfWork;
+  private final Connection connection;
 
-  DataMapper(SQLUnitOfWork unitOfWork) {
-    this.unitOfWork = unitOfWork;
+  DataMapper(Connection connection) {
+    this.connection = connection;
   }
 
-  SQLUnitOfWork getUnitOfWork() {
-    return this.unitOfWork;
+  Connection getConnection() {
+    return this.connection;
   }
 
   String insertSQL(int numOfInsertions, DataMap dataMap) {
@@ -42,6 +45,10 @@ class DataMapper {
     return sql;
   }
 
+  abstract void insert(T entity);
+
+  abstract void update(T entity);
+
   String deleteSQL(int numOfDeletions, DataMap dataMap, String matchCriteria) {
     return this.deleteSQL(numOfDeletions, dataMap.getTableName(), matchCriteria);
   }
@@ -56,4 +63,10 @@ class DataMapper {
     String sql = sb.toString();
     return sql;
   }
+
+  abstract void delete(UUID uuid);
+
+  abstract int count();
+
+  abstract T find(UUID uuid);
 }
