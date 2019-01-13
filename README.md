@@ -1,4 +1,17 @@
 # noti
+```
+                          _             _          _          _
+                         /\ \     _    /\ \       /\ \       /\ \
+                        /  \ \   /\_\ /  \ \      \_\ \      \ \ \
+                       / /\ \ \_/ / // /\ \ \     /\__ \     /\ \_\
+                      / / /\ \___/ // / /\ \ \   / /_ \ \   / /\/_/    ...
+                     / / /  \/____// / /  \ \_\ / / /\ \ \ / / /     /`   `\
+    _________       / / /    / / // / /   / / // / /  \/_// / /     /       \
+   |~~      @|     / / /    / / // / /   / / // / /      / / /     |\~~~~~~~/|
+   |  ====   |    / / /    / / // / /___/ / // / /   ___/ / /__    | \=====/ |
+   |  ====   |   / / /    / / // / /____\/ //_/ /   /\__\/_/___\   | /`...'\ |
+   |_________|   \/_/     \/_/ \/_________/ \_\/    \/_________/   |/_______\|
+```
 
 [![Build Status](https://travis-ci.org/freerjm/noti.svg?branch=master)](https://travis-ci.org/freerjm/noti)
 [![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=com.jonfreer%3Anoti&metric=alert_status)](https://sonarcloud.io/dashboard?id=com.jonfreer%3Anoti)
@@ -25,7 +38,7 @@
     - [System Sequence Diagram]() - TBD
     - [Jaeger Tracing & OpenTracing]() - TBD
     - [HTTP & REST]() - TBD
-    - [Applied Design Patterns]() - TBD
+    - [Applied Design Patterns](https://github.com/freerjm/noti/wiki/Applied-Design-Patterns)
     - [Use Case Diagram](https://github.com/freerjm/noti/wiki/Use-Cases)
 5. [Major System Dependencies]() - TBD
     - [Jaeger Tracing]() - TBD
