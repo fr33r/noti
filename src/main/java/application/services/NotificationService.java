@@ -405,12 +405,7 @@ public final class NotificationService implements application.NotificationServic
       }
 
       // update the message.
-      Message _existing_message = _notification.message(_message.getId());
-
-      // TODO - use state pattern instead to enforce invarients. throw error
-      // if the provided status is invalid.
-      _existing_message.setStatus(_message.getStatus());
-      _existing_message.setExternalId(_message.getExternalId());
+      _notification.message(_message);
       notificationRepository.put(_notification);
       unitOfWork.save();
     } catch (Exception x) {
