@@ -70,7 +70,7 @@ public abstract class Query<T> {
    */
   public QueryExpression string(String string) {
     this.args.add(new QueryArgument<String>(++this.index, string, Types.VARCHAR));
-    QueryExpression ex = new StringExpression(string);
+    TerminalQueryExpression ex = new StringExpression(string);
     ex.usePlaceholders(true);
     return ex;
   }
@@ -83,7 +83,7 @@ public abstract class Query<T> {
    */
   public QueryExpression bool(boolean bool) {
     this.args.add(new QueryArgument<Boolean>(++this.index, bool, Types.BOOLEAN));
-    QueryExpression ex = new BooleanLiteralExpression(bool);
+    TerminalQueryExpression ex = new BooleanLiteralExpression(bool);
     ex.usePlaceholders(true);
     return ex;
   }
@@ -96,7 +96,7 @@ public abstract class Query<T> {
    */
   public QueryExpression integer(int integer) {
     this.args.add(new QueryArgument<Integer>(++this.index, integer, Types.INTEGER));
-    QueryExpression ex = new IntegerExpression(integer);
+    TerminalQueryExpression ex = new IntegerExpression(integer);
     ex.usePlaceholders(true);
     return ex;
   }
@@ -109,7 +109,7 @@ public abstract class Query<T> {
    */
   public QueryExpression floatingPoint(float floatingPoint) {
     this.args.add(new QueryArgument<Float>(++this.index, floatingPoint, Types.FLOAT));
-    QueryExpression ex = new FloatExpression(floatingPoint);
+    TerminalQueryExpression ex = new FloatExpression(floatingPoint);
     ex.usePlaceholders(true);
     return ex;
   }
@@ -243,7 +243,7 @@ public abstract class Query<T> {
    */
   public void skip(Integer amount) {
     this.args.add(new QueryArgument<Integer>(++this.index, amount, Types.INTEGER));
-    QueryExpression ex = new IntegerExpression(amount);
+    TerminalQueryExpression ex = new IntegerExpression(amount);
     ex.usePlaceholders(true);
     this.skipExpression = ex;
   }
@@ -264,7 +264,7 @@ public abstract class Query<T> {
    */
   public void limit(Integer amount) {
     this.args.add(new QueryArgument<Integer>(++this.index, amount, Types.INTEGER));
-    QueryExpression ex = new IntegerExpression(amount);
+    TerminalQueryExpression ex = new IntegerExpression(amount);
     ex.usePlaceholders(true);
     this.limitExpression = ex;
   }

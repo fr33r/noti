@@ -7,7 +7,7 @@ package infrastructure;
  *
  * @author Jon Freer
  */
-public final class FloatExpression extends QueryExpression {
+public final class FloatExpression extends TerminalQueryExpression {
 
   private final Float floatingPoint;
 

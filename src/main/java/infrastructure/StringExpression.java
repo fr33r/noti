@@ -7,7 +7,7 @@ package infrastructure;
  *
  * @author Jon Freer
  */
-public final class StringExpression extends QueryExpression {
+public final class StringExpression extends TerminalQueryExpression {
 
   private final String string;
 

@@ -7,7 +7,7 @@ package infrastructure;
  *
  * @author Jon Freer
  */
-public final class BooleanLiteralExpression extends QueryExpression {
+public final class BooleanLiteralExpression extends TerminalQueryExpression {
 
   private final Boolean bool;
 
@@ -26,6 +26,7 @@ public final class BooleanLiteralExpression extends QueryExpression {
    * @param bool The boolean literal that this expression represents.
    */
   public BooleanLiteralExpression(Boolean bool) {
+    super();
     this.bool = bool;
   }
 

@@ -7,11 +7,11 @@ package infrastructure;
  *
  * @author Jon Freer
  */
-public final class PlaceholderExpression extends QueryExpression {
+public final class PlaceholderExpression extends TerminalQueryExpression {
 
   /** Constructs a new {@link PlaceholderExpression}. */
   public PlaceholderExpression() {
-    super();
+    super(true);
   }
 
   /**

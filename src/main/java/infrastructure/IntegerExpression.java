@@ -7,7 +7,7 @@ package infrastructure;
  *
  * @author Jon Freer
  */
-public final class IntegerExpression extends QueryExpression {
+public final class IntegerExpression extends TerminalQueryExpression {
 
   private final Integer integer;
 
