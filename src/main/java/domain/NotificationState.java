@@ -1,9 +1,9 @@
 package domain;
 
 public abstract class NotificationState {
-  abstract void changeStatus(final Notification notification);
+  abstract void next(final Notification notification);
 
-  boolean changeToFailedState(final Notification notification) {
+  boolean failed(final Notification notification) {
     final int TOTAL_MESSAGE_COUNT = notification.messages().size();
     int failedCount = 0;
 
@@ -15,7 +15,7 @@ public abstract class NotificationState {
     return failedCount == TOTAL_MESSAGE_COUNT;
   }
 
-  boolean changeToSentState(final Notification notification) {
+  boolean sent(final Notification notification) {
     final int TOTAL_MESSAGE_COUNT = notification.messages().size();
 
     int sentCount = 0, deliveredCount = 0;
@@ -30,7 +30,7 @@ public abstract class NotificationState {
     return sentCount + deliveredCount == TOTAL_MESSAGE_COUNT;
   }
 
-  boolean changeToSendingState(final Notification notification) {
+  boolean sending(final Notification notification) {
     final int TOTAL_MESSAGE_COUNT = notification.messages().size();
 
     int sentCount = 0, deliveredCount = 0, pendingCount = 0;

@@ -73,6 +73,16 @@ public class Message extends Entity<Integer> {
     this.externalId = externalId;
   }
 
+  public Message(Message message) {
+    this(
+        message.getId(),
+        message.getFrom(),
+        message.getTo(),
+        message.getContent(),
+        message.getStatus(),
+        message.getExternalId());
+  }
+
   @Override
   public boolean isAggregateRoot() {
     return false;

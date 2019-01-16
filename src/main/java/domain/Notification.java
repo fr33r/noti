@@ -107,6 +107,7 @@ public class Notification extends Entity<UUID> {
 
   protected void sentAt(Date sentAt) {
     this.sentAt = sentAt;
+    this.state().next(this);
   }
 
   private void content(String content) {
@@ -115,6 +116,7 @@ public class Notification extends Entity<UUID> {
 
   private void sendAt(Date sendAt) {
     this.sendAt = sendAt;
+    this.state().next(this);
   }
 
   public void directRecipients(Set<Target> targets) {
@@ -139,6 +141,7 @@ public class Notification extends Entity<UUID> {
     } else {
       this.messages = messages;
     }
+    this.state().next(this);
   }
 
   public boolean containsMessage(Message message) {
@@ -188,6 +191,31 @@ public class Notification extends Entity<UUID> {
       }
     }
 
-    return desiredMessage;
+    return new Message(desiredMessage);
+  }
+
+  public void messageExternalID(Integer messageID, String externalID) {
+    if (this.containsMessage(messageID)) {
+      Message message = this.message(messageID);
+      message.setExternalId(externalID);
+      this.state().next(this);
+    }
+  }
+
+  public void messageStatus(Integer messageID, MessageStatus status) {
+    if (this.containsMessage(messageID)) {
+      Message message = this.message(messageID);
+      message.setStatus(status);
+      this.state().next(this);
+    }
+  }
+
+  public void message(Message message) {
+    if (this.containsMessage(message.getId())) {
+      Message _message = this.message(message.getId());
+      _message.setExternalId(message.getExternalId());
+      _message.setStatus(message.getStatus());
+      this.state().next(this);
+    }
   }
 }

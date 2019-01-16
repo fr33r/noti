@@ -3,17 +3,17 @@ package domain;
 public class PendingState extends NotificationState {
 
   @Override
-  public void changeStatus(Notification notification) {
+  public void next(Notification notification) {
 
     // valid transitions:
     //	-->	SENDING.
     //	-->	FAILED.
     //	--> (NONE) PENDING.
 
-    if (this.changeToFailedState(notification)) {
+    if (this.failed(notification)) {
       notification.status(NotificationStatus.FAILED);
       notification.setState(new FailedState());
-    } else if (this.changeToSendingState(notification)) {
+    } else if (this.sending(notification)) {
       notification.status(NotificationStatus.SENDING);
       notification.setState(new SendingState());
     }
