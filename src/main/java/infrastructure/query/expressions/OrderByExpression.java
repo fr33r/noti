@@ -1,7 +1,7 @@
 package infrastructure.query.expressions;
 
 /**
- * Nonterminal expression representing the sort expression.
+ * Nonterminal expression representing the order by expression.
  *
  * <p>See Interpreter pattern.
  *
@@ -9,19 +9,20 @@ package infrastructure.query.expressions;
  */
 public class OrderByExpression extends QueryExpression {
 
-  private final QueryExpression left;
-  private final QueryExpression right;
+  private final ColumnListExpression columnListExpression;
+  private final TerminalExpression sortExpression;
 
   /**
    * Constructs a new {@link OrderByExpression}.
    *
-   * @param left The left operand of the sort expression.
-   * @param right The right operand of the sort expression.
+   * @param columnListExpression The column list of the sort expression.
+   * @param sortExpression The sort expression indicating the sort direction.
    */
-  public OrderByExpression(QueryExpression left, QueryExpression right) {
+  public OrderByExpression(
+      ColumnListExpression columnListExpression, TerminalExpression sortExpression) {
     super();
-    this.left = left;
-    this.right = right;
+    this.columnListExpression = columnListExpression;
+    this.sortExpression = sortExpression;
   }
 
   /**
@@ -32,9 +33,9 @@ public class OrderByExpression extends QueryExpression {
   @Override
   public String interpret() {
     return new StringBuilder()
-        .append(this.left.interpret())
+        .append(this.columnListExpression.interpret())
         .append(" ")
-        .append(this.right.interpret())
+        .append(this.sortExpression.interpret())
         .toString();
   }
 }

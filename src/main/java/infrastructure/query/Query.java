@@ -295,7 +295,7 @@ public abstract class Query<T> {
    *
    * @param expressions The expressions to sort by.
    */
-  public void ascending(QueryExpression... expressions) {
+  public void ascending(ColumnExpression... expressions) {
     this.orderByExpression =
         new OrderByExpression(new ColumnListExpression(expressions), new AscendingExpression());
   }
@@ -306,7 +306,7 @@ public abstract class Query<T> {
    *
    * @param expressions The expressions to sort by.
    */
-  public void descending(QueryExpression... expressions) {
+  public void descending(ColumnExpression... expressions) {
     this.orderByExpression =
         new OrderByExpression(new ColumnListExpression(expressions), new DescendingExpression());
   }

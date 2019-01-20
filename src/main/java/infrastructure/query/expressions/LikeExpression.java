@@ -9,19 +9,19 @@ package infrastructure.query.expressions;
  */
 public final class LikeExpression extends QueryExpression {
 
-  private final QueryExpression left;
-  private final QueryExpression right;
+  private final ColumnExpression columnExpression;
+  private final StringExpression patternExpression;
 
   /**
    * Constructs a new {@link LikeExpression}.
    *
-   * @param left The left operand of the pattern matching operation.
-   * @param right The right operand of the pattern matching operation.
+   * @param columnExpression The column expression of the pattern matching operation.
+   * @param stringExpression The pattern within the pattern matching operation.
    */
-  public LikeExpression(QueryExpression left, QueryExpression right) {
+  public LikeExpression(ColumnExpression columnExpression, StringExpression patternExpression) {
     super();
-    this.left = left;
-    this.right = right;
+    this.columnExpression = columnExpression;
+    this.patternExpression = patternExpression;
   }
 
   /**
@@ -32,9 +32,9 @@ public final class LikeExpression extends QueryExpression {
   @Override
   public String interpret() {
     return new StringBuilder()
-        .append(this.left.interpret())
+        .append(this.columnExpression.interpret())
         .append(" LIKE ")
-        .append(this.right.interpret())
+        .append(this.patternExpression.interpret())
         .toString();
   }
 }
