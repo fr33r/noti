@@ -7,7 +7,7 @@ package infrastructure;
  *
  * @author Jon Freer
  */
-public class ColumnExpression extends TerminalQueryExpression {
+public class ColumnExpression extends TerminalExpression {
 
   private final String columnName;
   private final String referenceAlias;

@@ -7,7 +7,7 @@ package infrastructure;
  *
  * @author Jon Freer
  */
-public class AscendingExpression extends TerminalQueryExpression {
+public class AscendingExpression extends TerminalExpression {
 
   /** Constructs a new {@link AscendingExpression}. */
   public AscendingExpression() {

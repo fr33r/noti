@@ -7,7 +7,7 @@ package infrastructure;
  *
  * @author Jon Freer
  */
-public final class BooleanLiteralExpression extends TerminalQueryExpression {
+public final class BooleanLiteralExpression extends TerminalExpression {
 
   private final Boolean bool;
 

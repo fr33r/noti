@@ -1,20 +1,20 @@
 package infrastructure;
 
-public abstract class TerminalQueryExpression extends QueryExpression {
+public abstract class TerminalExpression extends QueryExpression {
 
   private boolean usePlaceholders;
 
-  /** Constructs a new {@link TerminalQueryExpression}. */
-  public TerminalQueryExpression() {
+  /** Constructs a new {@link TerminalExpression}. */
+  public TerminalExpression() {
     this(false);
   }
 
   /**
-   * Constructs a new {@link TerminalQueryExpression}.
+   * Constructs a new {@link TerminalExpression}.
    *
    * @param usePlaceholders Indicates whether to utilize placeholders within the expression.
    */
-  public TerminalQueryExpression(boolean usePlaceholders) {
+  public TerminalExpression(boolean usePlaceholders) {
     super();
     this.usePlaceholders(usePlaceholders);
   }
