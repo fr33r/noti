@@ -1,5 +1,25 @@
-package infrastructure;
+package infrastructure.query;
 
+import infrastructure.DataMap;
+import infrastructure.query.expressions.AndExpression;
+import infrastructure.query.expressions.AscendingExpression;
+import infrastructure.query.expressions.BooleanLiteralExpression;
+import infrastructure.query.expressions.ColumnExpression;
+import infrastructure.query.expressions.ColumnListExpression;
+import infrastructure.query.expressions.DescendingExpression;
+import infrastructure.query.expressions.EqualToExpression;
+import infrastructure.query.expressions.FloatExpression;
+import infrastructure.query.expressions.GreaterThanExpression;
+import infrastructure.query.expressions.GreaterThanOrEqualToExpression;
+import infrastructure.query.expressions.IntegerExpression;
+import infrastructure.query.expressions.LessThanExpression;
+import infrastructure.query.expressions.LessThanOrEqualToExpression;
+import infrastructure.query.expressions.NotEqualToExpression;
+import infrastructure.query.expressions.OrExpression;
+import infrastructure.query.expressions.OrderByExpression;
+import infrastructure.query.expressions.QueryExpression;
+import infrastructure.query.expressions.StringExpression;
+import infrastructure.query.expressions.TerminalExpression;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
@@ -70,7 +90,7 @@ public abstract class Query<T> {
    */
   public QueryExpression string(String string) {
     this.args.add(new QueryArgument<String>(++this.index, string, Types.VARCHAR));
-    QueryExpression ex = new StringExpression(string);
+    TerminalExpression ex = new StringExpression(string);
     ex.usePlaceholders(true);
     return ex;
   }
@@ -83,7 +103,7 @@ public abstract class Query<T> {
    */
   public QueryExpression bool(boolean bool) {
     this.args.add(new QueryArgument<Boolean>(++this.index, bool, Types.BOOLEAN));
-    QueryExpression ex = new BooleanLiteralExpression(bool);
+    TerminalExpression ex = new BooleanLiteralExpression(bool);
     ex.usePlaceholders(true);
     return ex;
   }
@@ -96,7 +116,7 @@ public abstract class Query<T> {
    */
   public QueryExpression integer(int integer) {
     this.args.add(new QueryArgument<Integer>(++this.index, integer, Types.INTEGER));
-    QueryExpression ex = new IntegerExpression(integer);
+    TerminalExpression ex = new IntegerExpression(integer);
     ex.usePlaceholders(true);
     return ex;
   }
@@ -109,7 +129,7 @@ public abstract class Query<T> {
    */
   public QueryExpression floatingPoint(float floatingPoint) {
     this.args.add(new QueryArgument<Float>(++this.index, floatingPoint, Types.FLOAT));
-    QueryExpression ex = new FloatExpression(floatingPoint);
+    TerminalExpression ex = new FloatExpression(floatingPoint);
     ex.usePlaceholders(true);
     return ex;
   }
@@ -243,7 +263,7 @@ public abstract class Query<T> {
    */
   public void skip(Integer amount) {
     this.args.add(new QueryArgument<Integer>(++this.index, amount, Types.INTEGER));
-    QueryExpression ex = new IntegerExpression(amount);
+    TerminalExpression ex = new IntegerExpression(amount);
     ex.usePlaceholders(true);
     this.skipExpression = ex;
   }
@@ -264,7 +284,7 @@ public abstract class Query<T> {
    */
   public void limit(Integer amount) {
     this.args.add(new QueryArgument<Integer>(++this.index, amount, Types.INTEGER));
-    QueryExpression ex = new IntegerExpression(amount);
+    TerminalExpression ex = new IntegerExpression(amount);
     ex.usePlaceholders(true);
     this.limitExpression = ex;
   }
@@ -275,7 +295,7 @@ public abstract class Query<T> {
    *
    * @param expressions The expressions to sort by.
    */
-  public void ascending(QueryExpression... expressions) {
+  public void ascending(ColumnExpression... expressions) {
     this.orderByExpression =
         new OrderByExpression(new ColumnListExpression(expressions), new AscendingExpression());
   }
@@ -286,7 +306,7 @@ public abstract class Query<T> {
    *
    * @param expressions The expressions to sort by.
    */
-  public void descending(QueryExpression... expressions) {
+  public void descending(ColumnExpression... expressions) {
     this.orderByExpression =
         new OrderByExpression(new ColumnListExpression(expressions), new DescendingExpression());
   }

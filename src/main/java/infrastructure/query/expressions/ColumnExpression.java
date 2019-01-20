@@ -1,4 +1,4 @@
-package infrastructure;
+package infrastructure.query.expressions;
 
 /**
  * Terminal expression representing a database column name.
@@ -7,7 +7,7 @@ package infrastructure;
  *
  * @author Jon Freer
  */
-public class ColumnExpression extends QueryExpression {
+public class ColumnExpression extends TerminalExpression {
 
   private final String columnName;
   private final String referenceAlias;
@@ -19,9 +19,7 @@ public class ColumnExpression extends QueryExpression {
    * @param columnName The name of the database column.
    */
   public ColumnExpression(String columnName) {
-    this.columnName = columnName;
-    this.referenceAlias = null;
-    this.columnAlias = null;
+    this(null, columnName, null);
   }
 
   /**
@@ -31,9 +29,7 @@ public class ColumnExpression extends QueryExpression {
    * @param columnName The database column name.
    */
   public ColumnExpression(String referenceAlias, String columnName) {
-    this.referenceAlias = referenceAlias;
-    this.columnName = columnName;
-    this.columnAlias = null;
+    this(referenceAlias, columnName, null);
   }
 
   /**
@@ -44,6 +40,7 @@ public class ColumnExpression extends QueryExpression {
    * @param columnAlias The alias of the database column.
    */
   public ColumnExpression(String referenceAlias, String columnName, String columnAlias) {
+    super();
     this.referenceAlias = referenceAlias;
     this.columnName = columnName;
     this.columnAlias = columnAlias;

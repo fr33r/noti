@@ -5,6 +5,7 @@ import domain.EntitySQLFactory;
 import domain.Message;
 import domain.Notification;
 import domain.Target;
+import infrastructure.query.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -19,7 +20,7 @@ import java.util.UUID;
 import javax.inject.Named;
 import org.slf4j.Logger;
 
-final class NotificationDataMapper extends DataMapper<Notification> {
+public final class NotificationDataMapper extends DataMapper<Notification> {
 
   private final EntitySQLFactory<Notification, UUID> notificationFactory;
   private final EntitySQLFactory<Target, UUID> targetFactory;
@@ -412,7 +413,7 @@ final class NotificationDataMapper extends DataMapper<Notification> {
     return sql;
   }
 
-  Set<Notification> find(
+  public Set<Notification> find(
       String conditions, String orderBy, String skip, String take, List<Query.QueryArgument> args) {
 
     // define SQL.
@@ -474,7 +475,7 @@ final class NotificationDataMapper extends DataMapper<Notification> {
   }
 
   @Override
-  Notification find(final UUID uuid) {
+  public Notification find(final UUID uuid) {
 
     // define SQL.
     String notificationSQL = this.findNotificationSQL();
@@ -523,7 +524,7 @@ final class NotificationDataMapper extends DataMapper<Notification> {
   }
 
   @Override
-  void insert(final Notification notification) {
+  public void insert(final Notification notification) {
 
     final String notificationSQL = this.insertNotificationSQL();
     final String associateTargetSQL = this.associateTargetSQL();
@@ -595,7 +596,7 @@ final class NotificationDataMapper extends DataMapper<Notification> {
 
   // TODO - should do a diff between targets and audiences.
   @Override
-  void update(final Notification notification) {
+  public void update(final Notification notification) {
 
     String notificationSQL = this.updateNotificationSQL();
     Notification existingNotification = this.find(notification.getId());
@@ -760,7 +761,7 @@ final class NotificationDataMapper extends DataMapper<Notification> {
   }
 
   @Override
-  void delete(final UUID uuid) {
+  public void delete(final UUID uuid) {
 
     final String deleteNotificationSQL = this.deleteNotificationSQL();
     final String deleteMessagesSQL = this.deleteMessagesSQL();
@@ -795,7 +796,7 @@ final class NotificationDataMapper extends DataMapper<Notification> {
   }
 
   @Override
-  int count() {
+  public int count() {
 
     final String countNotificationsSQL = this.countNotificationsSQL();
 

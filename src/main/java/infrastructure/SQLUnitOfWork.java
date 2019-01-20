@@ -59,7 +59,7 @@ public class SQLUnitOfWork extends UnitOfWork {
   }
 
   @Override
-  Map<Class, DataMapper> dataMappers() {
+  public Map<Class, DataMapper> dataMappers() {
     return this.dataMappers;
   }
 

@@ -1,4 +1,4 @@
-package infrastructure;
+package infrastructure.query.expressions;
 
 /**
  * Terminal expression representing a floating point number.
@@ -7,7 +7,7 @@ package infrastructure;
  *
  * @author Jon Freer
  */
-public final class FloatExpression extends QueryExpression {
+public final class FloatExpression extends TerminalExpression {
 
   private final Float floatingPoint;
 

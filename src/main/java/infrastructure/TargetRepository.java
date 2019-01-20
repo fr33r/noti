@@ -2,6 +2,7 @@ package infrastructure;
 
 import domain.EntitySQLFactory;
 import domain.Target;
+import infrastructure.query.Query;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;

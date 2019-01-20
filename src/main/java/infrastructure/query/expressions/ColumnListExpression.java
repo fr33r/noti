@@ -1,4 +1,4 @@
-package infrastructure;
+package infrastructure.query.expressions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,14 +12,15 @@ import java.util.List;
  */
 public class ColumnListExpression extends QueryExpression {
 
-  public final QueryExpression[] expressions;
+  public final ColumnExpression[] expressions;
 
   /**
    * Constructs a new {@link ColumnListExpression}.
    *
    * @param expressions The collection of column expressions.
    */
-  public ColumnListExpression(QueryExpression... expressions) {
+  public ColumnListExpression(ColumnExpression... expressions) {
+    super();
     this.expressions = expressions;
   }
 

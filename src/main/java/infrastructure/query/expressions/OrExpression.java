@@ -1,24 +1,24 @@
-package infrastructure;
+package infrastructure.query.expressions;
 
 /**
- * Nonterminal expression representing the pattern matching operation.
+ * Nonterminal expression representing a logical {@code OR} operation.
  *
  * <p>See Interpreter pattern.
  *
  * @author Jon Freer
  */
-public final class LikeExpression extends QueryExpression {
+public final class OrExpression extends QueryExpression {
 
   private final QueryExpression left;
   private final QueryExpression right;
 
   /**
-   * Constructs a new {@link LikeExpression}.
+   * Constructs a new {@link OrExpression}.
    *
-   * @param left The left operand of the pattern matching operation.
-   * @param right The right operand of the pattern matching operation.
+   * @param left The left operand of the logical {@code OR} operation.
+   * @param right The right operand of the logical {@code OR} operation.
    */
-  public LikeExpression(QueryExpression left, QueryExpression right) {
+  public OrExpression(QueryExpression left, QueryExpression right) {
     super();
     this.left = left;
     this.right = right;
@@ -33,7 +33,7 @@ public final class LikeExpression extends QueryExpression {
   public String interpret() {
     return new StringBuilder()
         .append(this.left.interpret())
-        .append(" LIKE ")
+        .append(" OR ")
         .append(this.right.interpret())
         .toString();
   }

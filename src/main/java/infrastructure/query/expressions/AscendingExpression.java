@@ -1,4 +1,4 @@
-package infrastructure;
+package infrastructure.query.expressions;
 
 /**
  * Terminal expression representing the ascending sort order.
@@ -7,7 +7,7 @@ package infrastructure;
  *
  * @author Jon Freer
  */
-public class AscendingExpression extends QueryExpression {
+public class AscendingExpression extends TerminalExpression {
 
   /** Constructs a new {@link AscendingExpression}. */
   public AscendingExpression() {

@@ -1,4 +1,4 @@
-package infrastructure;
+package infrastructure.query.expressions;
 
 /**
  * Nonterminal expression representing the less-than-or-equal-to operation.

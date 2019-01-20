@@ -1,4 +1,4 @@
-package infrastructure;
+package infrastructure.query.expressions;
 
 /**
  * Terminal expression representing an integer.
@@ -7,7 +7,7 @@ package infrastructure;
  *
  * @author Jon Freer
  */
-public final class IntegerExpression extends QueryExpression {
+public final class IntegerExpression extends TerminalExpression {
 
   private final Integer integer;
 

@@ -1,24 +1,24 @@
-package infrastructure;
+package infrastructure.query.expressions;
 
 /**
- * Nonterminal expression representing a logical {@code AND} operation.
+ * Nonterminal expression representing the not-equal-to operation.
  *
  * <p>See Interpreter pattern.
  *
  * @author Jon Freer
  */
-public final class AndExpression extends QueryExpression {
+public final class NotEqualToExpression extends QueryExpression {
 
   private final QueryExpression left;
   private final QueryExpression right;
 
   /**
-   * Constructs a new {@link AndExpression}.
+   * Constructs a new {@link NotEqualToExpression}.
    *
-   * @param left The left operand of the logical {@code AND} operation.
-   * @param right The right operand of the logical {@code AND} operation.
+   * @param left The left operand of the not-equal-to operation.
+   * @param right The right operand of the not-equal-to operation.
    */
-  public AndExpression(QueryExpression left, QueryExpression right) {
+  public NotEqualToExpression(QueryExpression left, QueryExpression right) {
     super();
     this.left = left;
     this.right = right;
@@ -33,7 +33,7 @@ public final class AndExpression extends QueryExpression {
   public String interpret() {
     return new StringBuilder()
         .append(this.left.interpret())
-        .append(" AND ")
+        .append(" <> ")
         .append(this.right.interpret())
         .toString();
   }

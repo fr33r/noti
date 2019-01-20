@@ -1,4 +1,4 @@
-package infrastructure;
+package infrastructure.query.expressions;
 
 /**
  * Terminal expression representing a string.
@@ -7,7 +7,7 @@ package infrastructure;
  *
  * @author Jon Freer
  */
-public final class StringExpression extends QueryExpression {
+public final class StringExpression extends TerminalExpression {
 
   private final String string;
 

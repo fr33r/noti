@@ -1,6 +1,9 @@
-package infrastructure;
+package infrastructure.query;
 
 import domain.Notification;
+import infrastructure.DataMapper;
+import infrastructure.NotificationDataMapper;
+import infrastructure.UnitOfWork;
 import io.opentracing.Tracer;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;

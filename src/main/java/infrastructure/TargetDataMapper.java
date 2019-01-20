@@ -12,7 +12,7 @@ import java.util.Set;
 import java.util.UUID;
 import org.slf4j.Logger;
 
-final class TargetDataMapper extends DataMapper<Target> {
+public final class TargetDataMapper extends DataMapper<Target> {
 
   private final EntitySQLFactory<Target, UUID> targetFactory;
   private final TargetMetadata targetMetadata;
@@ -167,7 +167,7 @@ final class TargetDataMapper extends DataMapper<Target> {
   }
 
   @Override
-  Target find(final UUID uuid) {
+  public Target find(final UUID uuid) {
 
     final String targetSQL = this.findTargetSQL();
 
@@ -188,7 +188,7 @@ final class TargetDataMapper extends DataMapper<Target> {
   }
 
   @Override
-  void insert(final Target target) {
+  public void insert(final Target target) {
 
     final String insertTargetSQL = this.insertTargetSQL();
 
@@ -206,7 +206,7 @@ final class TargetDataMapper extends DataMapper<Target> {
   }
 
   @Override
-  void update(final Target target) {
+  public void update(final Target target) {
 
     final String updateTargetSQL = this.updateTargetSQL();
 
@@ -224,7 +224,7 @@ final class TargetDataMapper extends DataMapper<Target> {
   }
 
   @Override
-  void delete(final UUID uuid) {
+  public void delete(final UUID uuid) {
 
     final String deleteTargetSQL = this.deleteTargetSQL();
     final String disassociateFromNotificationSQL = this.disassociateFromNotificationSQL();
@@ -252,7 +252,7 @@ final class TargetDataMapper extends DataMapper<Target> {
   }
 
   @Override
-  int count() {
+  public int count() {
 
     final String countTargetsSQL = this.countTargetsSQL();
 

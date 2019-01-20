@@ -1,30 +1,21 @@
-package infrastructure;
+package infrastructure.query.expressions;
 
-/**
- * Represents an expression with a query.
- *
- * <p>Implementation is based off of the Interpreter pattern.
- *
- * @author Jon Freer
- */
-public abstract class QueryExpression {
+public abstract class TerminalExpression extends QueryExpression {
 
-  // TODO - perhaps i should create a TerminalQueryExpression
-  // class that defines the placeholder code - it only seems
-  // relevant for terminal expressions.
   private boolean usePlaceholders;
 
-  /** Constructs a new {@link QueryExpression}. */
-  public QueryExpression() {
+  /** Constructs a new {@link TerminalExpression}. */
+  public TerminalExpression() {
     this(false);
   }
 
   /**
-   * Constructs a new {@link QueryExpression}.
+   * Constructs a new {@link TerminalExpression}.
    *
    * @param usePlaceholders Indicates whether to utilize placeholders within the expression.
    */
-  public QueryExpression(boolean usePlaceholders) {
+  public TerminalExpression(boolean usePlaceholders) {
+    super();
     this.usePlaceholders(usePlaceholders);
   }
 
@@ -45,11 +36,4 @@ public abstract class QueryExpression {
   public boolean usePlaceholders() {
     return this.usePlaceholders;
   }
-
-  /**
-   * Evaluates the expression.
-   *
-   * @return The textual representation of the expression.
-   */
-  public abstract String interpret();
 }
