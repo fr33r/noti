@@ -1,5 +1,6 @@
-package infrastructure;
+package infrastructure.query;
 
+import infrastructure.UnitOfWork;
 import org.jvnet.hk2.annotations.Contract;
 
 @Contract

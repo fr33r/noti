@@ -1,5 +1,25 @@
-package infrastructure;
+package infrastructure.query;
 
+import infrastructure.DataMap;
+import infrastructure.query.expressions.AndExpression;
+import infrastructure.query.expressions.AscendingExpression;
+import infrastructure.query.expressions.BooleanLiteralExpression;
+import infrastructure.query.expressions.ColumnExpression;
+import infrastructure.query.expressions.ColumnListExpression;
+import infrastructure.query.expressions.DescendingExpression;
+import infrastructure.query.expressions.EqualToExpression;
+import infrastructure.query.expressions.FloatExpression;
+import infrastructure.query.expressions.GreaterThanExpression;
+import infrastructure.query.expressions.GreaterThanOrEqualToExpression;
+import infrastructure.query.expressions.IntegerExpression;
+import infrastructure.query.expressions.LessThanExpression;
+import infrastructure.query.expressions.LessThanOrEqualToExpression;
+import infrastructure.query.expressions.NotEqualToExpression;
+import infrastructure.query.expressions.OrExpression;
+import infrastructure.query.expressions.OrderByExpression;
+import infrastructure.query.expressions.QueryExpression;
+import infrastructure.query.expressions.StringExpression;
+import infrastructure.query.expressions.TerminalExpression;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;

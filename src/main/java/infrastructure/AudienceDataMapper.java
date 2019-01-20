@@ -15,7 +15,7 @@ import java.util.UUID;
 import javax.inject.Named;
 import org.slf4j.Logger;
 
-final class AudienceDataMapper extends DataMapper<Audience> {
+public final class AudienceDataMapper extends DataMapper<Audience> {
 
   private final EntitySQLFactory<Audience, UUID> audienceFactory;
   private final AudienceMetadata audienceMetadata;
@@ -221,7 +221,7 @@ final class AudienceDataMapper extends DataMapper<Audience> {
   }
 
   @Override
-  Audience find(final UUID uuid) {
+  public Audience find(final UUID uuid) {
 
     String audienceSQL = this.findAudienceSQL();
     String membersSQL = this.findAudienceMembersSQL();
@@ -248,7 +248,7 @@ final class AudienceDataMapper extends DataMapper<Audience> {
   }
 
   @Override
-  void update(final Audience audience) {
+  public void update(final Audience audience) {
 
     String audienceSQL = this.updateAudienceSQL();
 
@@ -324,7 +324,7 @@ final class AudienceDataMapper extends DataMapper<Audience> {
   }
 
   @Override
-  void insert(final Audience audience) {
+  public void insert(final Audience audience) {
 
     String audienceSQL = this.insertAudienceSQL();
     String associateMemberSQL = this.associateMemberSQL(audience.members().size());
@@ -353,7 +353,7 @@ final class AudienceDataMapper extends DataMapper<Audience> {
   }
 
   @Override
-  void delete(final UUID uuid) {
+  public void delete(final UUID uuid) {
 
     String disassociateMembersSQL = this.disassociateMembersSQL();
     String audienceSQL = this.deleteAudienceSQL();
@@ -374,7 +374,7 @@ final class AudienceDataMapper extends DataMapper<Audience> {
   }
 
   @Override
-  int count() {
+  public int count() {
 
     final String countAudiencesSQL = this.countAudiencesSQL();
 

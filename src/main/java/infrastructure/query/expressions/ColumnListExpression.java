@@ -1,4 +1,4 @@
-package infrastructure;
+package infrastructure.query.expressions;
 
 import java.util.ArrayList;
 import java.util.List;

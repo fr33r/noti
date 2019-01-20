@@ -1,4 +1,4 @@
-package infrastructure;
+package infrastructure.query.expressions;
 
 public abstract class TerminalExpression extends QueryExpression {
 

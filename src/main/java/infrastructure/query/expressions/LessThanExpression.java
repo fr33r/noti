@@ -1,24 +1,24 @@
-package infrastructure;
+package infrastructure.query.expressions;
 
 /**
- * Nonterminal expression representing the sort expression.
+ * Nonterminal expression representing the less-than operation.
  *
  * <p>See Interpreter pattern.
  *
  * @author Jon Freer
  */
-public class OrderByExpression extends QueryExpression {
+public final class LessThanExpression extends QueryExpression {
 
   private final QueryExpression left;
   private final QueryExpression right;
 
   /**
-   * Constructs a new {@link OrderByExpression}.
+   * Constructs a new {@link LessThanExpression}.
    *
-   * @param left The left operand of the sort expression.
-   * @param right The right operand of the sort expression.
+   * @param left The left operand of the less-than operation.
+   * @param right The right operand of the right-than operation.
    */
-  public OrderByExpression(QueryExpression left, QueryExpression right) {
+  public LessThanExpression(QueryExpression left, QueryExpression right) {
     super();
     this.left = left;
     this.right = right;
@@ -33,7 +33,7 @@ public class OrderByExpression extends QueryExpression {
   public String interpret() {
     return new StringBuilder()
         .append(this.left.interpret())
-        .append(" ")
+        .append(" < ")
         .append(this.right.interpret())
         .toString();
   }

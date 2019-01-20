@@ -1,13 +1,18 @@
-package infrastructure;
+package infrastructure.query;
 
 import domain.Notification;
+import infrastructure.DataMap;
+import infrastructure.MessageMetadata;
+import infrastructure.NotificationDataMapper;
+import infrastructure.NotificationMetadata;
+import infrastructure.query.expressions.QueryExpression;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 /**
- * Represents a {@link Query} that retrieves a {@link Notification} collection matching its
- * criteria.
+ * Represents a {@link infrastructure.query.Query} that retrieves a {@link Notification} collection
+ * matching its criteria.
  *
  * @author Jon Freer
  */
@@ -38,7 +43,7 @@ public final class NotificationQuery extends Query<Notification> {
   /**
    * {@inheritDoc}
    *
-   * @return The {@link Notification} collection matching the {@link Query}.
+   * @return The {@link Notification} collection matching the {@link infrastructure.query.Query}.
    */
   @Override
   public Set<Notification> execute() {

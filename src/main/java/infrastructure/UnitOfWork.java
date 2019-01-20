@@ -61,5 +61,5 @@ public abstract class UnitOfWork {
 
   public abstract void save();
 
-  abstract Map<Class, DataMapper> dataMappers();
+  public abstract Map<Class, DataMapper> dataMappers();
 }

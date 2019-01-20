@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-abstract class DataMapper<T extends Entity> {
+public abstract class DataMapper<T extends Entity> {
 
   private final Connection connection;
 
@@ -45,9 +45,9 @@ abstract class DataMapper<T extends Entity> {
     return sql;
   }
 
-  abstract void insert(T entity);
+  public abstract void insert(T entity);
 
-  abstract void update(T entity);
+  public abstract void update(T entity);
 
   String deleteSQL(int numOfDeletions, DataMap dataMap, String matchCriteria) {
     return this.deleteSQL(numOfDeletions, dataMap.getTableName(), matchCriteria);
@@ -64,9 +64,9 @@ abstract class DataMapper<T extends Entity> {
     return sql;
   }
 
-  abstract void delete(UUID uuid);
+  public abstract void delete(UUID uuid);
 
-  abstract int count();
+  public abstract int count();
 
-  abstract T find(UUID uuid);
+  public abstract T find(UUID uuid);
 }

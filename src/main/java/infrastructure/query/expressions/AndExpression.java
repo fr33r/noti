@@ -1,24 +1,24 @@
-package infrastructure;
+package infrastructure.query.expressions;
 
 /**
- * Nonterminal expression representing the less-than operation.
+ * Nonterminal expression representing a logical {@code AND} operation.
  *
  * <p>See Interpreter pattern.
  *
  * @author Jon Freer
  */
-public final class LessThanExpression extends QueryExpression {
+public final class AndExpression extends QueryExpression {
 
   private final QueryExpression left;
   private final QueryExpression right;
 
   /**
-   * Constructs a new {@link LessThanExpression}.
+   * Constructs a new {@link AndExpression}.
    *
-   * @param left The left operand of the less-than operation.
-   * @param right The right operand of the right-than operation.
+   * @param left The left operand of the logical {@code AND} operation.
+   * @param right The right operand of the logical {@code AND} operation.
    */
-  public LessThanExpression(QueryExpression left, QueryExpression right) {
+  public AndExpression(QueryExpression left, QueryExpression right) {
     super();
     this.left = left;
     this.right = right;
@@ -33,7 +33,7 @@ public final class LessThanExpression extends QueryExpression {
   public String interpret() {
     return new StringBuilder()
         .append(this.left.interpret())
-        .append(" < ")
+        .append(" AND ")
         .append(this.right.interpret())
         .toString();
   }

@@ -1,6 +1,7 @@
 package infrastructure;
 
 import domain.Entity;
+import infrastructure.query.Query;
 import java.util.Set;
 
 /**

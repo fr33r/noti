@@ -1,24 +1,24 @@
-package infrastructure;
+package infrastructure.query.expressions;
 
 /**
- * Nonterminal expression representing a logical {@code OR} operation.
+ * Nonterminal expression representing the equality operation.
  *
  * <p>See Interpreter pattern.
  *
  * @author Jon Freer
  */
-public final class OrExpression extends QueryExpression {
+public final class EqualToExpression extends QueryExpression {
 
   private final QueryExpression left;
   private final QueryExpression right;
 
   /**
-   * Constructs a new {@link OrExpression}.
+   * Constructs a new {@link EqualToExpression}.
    *
-   * @param left The left operand of the logical {@code OR} operation.
-   * @param right The right operand of the logical {@code OR} operation.
+   * @param left The left operand of the equality operation.
+   * @param right the right operation of the equality operation.
    */
-  public OrExpression(QueryExpression left, QueryExpression right) {
+  public EqualToExpression(QueryExpression left, QueryExpression right) {
     super();
     this.left = left;
     this.right = right;
@@ -33,7 +33,7 @@ public final class OrExpression extends QueryExpression {
   public String interpret() {
     return new StringBuilder()
         .append(this.left.interpret())
-        .append(" OR ")
+        .append(" = ")
         .append(this.right.interpret())
         .toString();
   }

@@ -1,24 +1,24 @@
-package infrastructure;
+package infrastructure.query.expressions;
 
 /**
- * Nonterminal expression representing the equality operation.
+ * Nonterminal expression representing the pattern matching operation.
  *
  * <p>See Interpreter pattern.
  *
  * @author Jon Freer
  */
-public final class EqualToExpression extends QueryExpression {
+public final class LikeExpression extends QueryExpression {
 
   private final QueryExpression left;
   private final QueryExpression right;
 
   /**
-   * Constructs a new {@link EqualToExpression}.
+   * Constructs a new {@link LikeExpression}.
    *
-   * @param left The left operand of the equality operation.
-   * @param right the right operation of the equality operation.
+   * @param left The left operand of the pattern matching operation.
+   * @param right The right operand of the pattern matching operation.
    */
-  public EqualToExpression(QueryExpression left, QueryExpression right) {
+  public LikeExpression(QueryExpression left, QueryExpression right) {
     super();
     this.left = left;
     this.right = right;
@@ -33,7 +33,7 @@ public final class EqualToExpression extends QueryExpression {
   public String interpret() {
     return new StringBuilder()
         .append(this.left.interpret())
-        .append(" = ")
+        .append(" LIKE ")
         .append(this.right.interpret())
         .toString();
   }

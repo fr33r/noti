@@ -1,24 +1,24 @@
-package infrastructure;
+package infrastructure.query.expressions;
 
 /**
- * Nonterminal expression representing the not-equal-to operation.
+ * Nonterminal expression representing the sort expression.
  *
  * <p>See Interpreter pattern.
  *
  * @author Jon Freer
  */
-public final class NotEqualToExpression extends QueryExpression {
+public class OrderByExpression extends QueryExpression {
 
   private final QueryExpression left;
   private final QueryExpression right;
 
   /**
-   * Constructs a new {@link NotEqualToExpression}.
+   * Constructs a new {@link OrderByExpression}.
    *
-   * @param left The left operand of the not-equal-to operation.
-   * @param right The right operand of the not-equal-to operation.
+   * @param left The left operand of the sort expression.
+   * @param right The right operand of the sort expression.
    */
-  public NotEqualToExpression(QueryExpression left, QueryExpression right) {
+  public OrderByExpression(QueryExpression left, QueryExpression right) {
     super();
     this.left = left;
     this.right = right;
@@ -33,7 +33,7 @@ public final class NotEqualToExpression extends QueryExpression {
   public String interpret() {
     return new StringBuilder()
         .append(this.left.interpret())
-        .append(" <> ")
+        .append(" ")
         .append(this.right.interpret())
         .toString();
   }
