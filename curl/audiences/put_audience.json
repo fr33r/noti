@@ -1,0 +1,11 @@
+{
+  "uuid": "68d01a61-8832-40c6-8b7d-f9a803d65cb2",
+  "name": "test audience",
+  "members": [
+    {
+      "uuid": "550ac1db-2243-4b39-96dc-0952b73d4d9f",
+      "name": "Jon Freer",
+      "phoneNumber": "+16146573542"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "uuid": "532f0aa1-f1e2-449f-88e5-737f64ff6059",
+  "content": "TESTING!",
+  "sentAt": null,
+  "sendAt": null,
+  "status": "PENDING",
+  "targets": [
+    {
+      "uuid": "d3efed88-1583-401d-bb89-20e2abb91d0e",
+      "name": "Jon Freer",
+      "phoneNumber": "+16146573542"
+    }
+  ],
+  "audiences": [],
+  "messages": [
+    {
+      "id": 0,
+      "content": "TESTING!",
+      "to": "+16146573542",
+      "from": "+18124871699",
+      "status": "PENDING",
+      "externalID": "SM2ed9a0e3e3124d55b2799bb9bc47bb61"
+    }
+  ]
+}
