@@ -28,22 +28,22 @@ public class Notification extends Entity<UUID> {
     super(uuid);
     this.setState(new PendingState());
     this.status = NotificationStatus.PENDING;
+    this.messages(messages);
     this.content(content);
     this.sendAt(sendAt);
     this.sentAt(sentAt);
     this.directRecipients(targets);
     this.audiences(audiences);
-    this.messages(messages);
   }
 
   public Notification(Notification notification) {
+    this.setState(notification.state());
+    this.messages(notification.messages());
     this.content(notification.content());
     this.sendAt(notification.sendAt());
     this.sentAt(notification.sentAt());
     this.directRecipients(notification.directRecipients());
-    this.messages(notification.messages());
     this.audiences(notification.audiences());
-    this.setState(notification.state());
   }
 
   @Override
@@ -175,6 +175,11 @@ public class Notification extends Entity<UUID> {
   }
 
   public Message message(Integer messageId) {
+    Message desiredMessage = this._message(messageId);
+    return new Message(desiredMessage);
+  }
+
+  private Message _message(Integer messageId) {
     if (messageId == null) {
       throw new IllegalArgumentException("The argument 'messageId' cannot be null.");
     }
@@ -191,12 +196,12 @@ public class Notification extends Entity<UUID> {
       }
     }
 
-    return new Message(desiredMessage);
+    return desiredMessage;
   }
 
   public void messageExternalID(Integer messageID, String externalID) {
     if (this.containsMessage(messageID)) {
-      Message message = this.message(messageID);
+      Message message = this._message(messageID);
       message.setExternalId(externalID);
       this.state().next(this);
     }
@@ -204,7 +209,7 @@ public class Notification extends Entity<UUID> {
 
   public void messageStatus(Integer messageID, MessageStatus status) {
     if (this.containsMessage(messageID)) {
-      Message message = this.message(messageID);
+      Message message = this._message(messageID);
       message.setStatus(status);
       this.state().next(this);
     }
@@ -212,7 +217,7 @@ public class Notification extends Entity<UUID> {
 
   public void message(Message message) {
     if (this.containsMessage(message.getId())) {
-      Message _message = this.message(message.getId());
+      Message _message = this._message(message.getId());
       _message.setExternalId(message.getExternalId());
       _message.setStatus(message.getStatus());
       this.state().next(this);
