@@ -22,6 +22,7 @@
 									"pm.test(\"Status code = 200 OK\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
+									"console.log(\"Response:\");",
 									"console.log(pm.response.text());"
 								]
 							}
@@ -76,6 +77,7 @@
 									"//set globals.",
 									"var location = postman.getResponseHeader(\"Location\");",
 									"pm.globals.set(\"audience_location\", location);",
+									"console.log(\"Response:\");",
 									"console.log(pm.response.text());"
 								]
 							}
@@ -148,6 +150,7 @@
 									"});",
 									"",
 									"//set globals.",
+									"console.log(\"Response:\");",
 									"console.log(pm.response.text());",
 									"pm.globals.set(\"audience_representation\", pm.response.text());"
 								]
@@ -204,6 +207,7 @@
 									"",
 									"//clear globals.",
 									"pm.globals.unset(\"audience_representation\");",
+									"console.log(\"Response:\");",
 									"console.log(pm.response.text());"
 								]
 							}
@@ -260,6 +264,7 @@
 									"//set globals.",
 									"var location = postman.getResponseHeader(\"Location\");",
 									"pm.globals.set(\"target_location\", location);",
+									"console.log(\"Response:\");",
 									"console.log(pm.response.text());"
 								]
 							}
@@ -336,6 +341,7 @@
 									"pm.globals.set(\"target_uuid\", \"\\\"\" + target.uuid + \"\\\"\");",
 									"pm.globals.set(\"target_name\", \"\\\"\" + target.name + \"\\\"\");",
 									"pm.globals.set(\"target_phone_number\", \"\\\"\" + target.phoneNumber + \"\\\"\");",
+									"console.log(\"Response:\");",
 									"console.log(pm.response.text());"
 								],
 								"type": "text/javascript"
@@ -391,6 +397,7 @@
 									"",
 									"//clear globals.",
 									"pm.globals.unset(\"target_representation\");",
+									"console.log(\"Response:\");",
 									"console.log(pm.response.text());"
 								],
 								"type": "text/javascript"
@@ -435,6 +442,7 @@
 									"pm.test(\"Status code = 200 OK\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
+									"console.log(\"Response:\");",
 									"console.log(pm.response.text());"
 								]
 							}
@@ -494,6 +502,7 @@
 									"pm.globals.unset(\"target_uuid\");",
 									"pm.globals.unset(\"target_name\");",
 									"pm.globals.unset(\"target_phone_number\");",
+									"console.log(\"Response:\");",
 									"console.log(pm.response.text());"
 								],
 								"type": "text/javascript"
@@ -569,6 +578,7 @@
 									"",
 									"//set globals.",
 									"pm.globals.set(\"notification_representation\", pm.response.text());",
+									"console.log(\"Response:\");",
 									"console.log(pm.response.text());"
 								],
 								"type": "text/javascript"
@@ -628,6 +638,7 @@
 									"",
 									"//clear globals.",
 									"pm.globals.unset(\"notification_representation\");",
+									"console.log(\"Response:\");",
 									"console.log(pm.response.text());"
 								],
 								"type": "text/javascript"
@@ -676,6 +687,7 @@
 									"",
 									"//clear globals.",
 									"pm.globals.unset(\"audience_location\");",
+									"console.log(\"Response:\");",
 									"console.log(pm.response.text());"
 								]
 							}
@@ -716,6 +728,7 @@
 									"",
 									"//clear globals.",
 									"pm.globals.unset(\"target_location\");",
+									"console.log(\"Response:\");",
 									"console.log(pm.response.text());"
 								]
 							}
@@ -755,6 +768,7 @@
 									"",
 									"//clear globals.",
 									"pm.globals.unset(\"notification_location\");",
+									"console.log(\"Response:\");",
 									"console.log(pm.response.text());"
 								],
 								"type": "text/javascript"
