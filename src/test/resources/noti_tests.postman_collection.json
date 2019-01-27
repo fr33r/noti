@@ -21,7 +21,9 @@
 									"//tests.",
 									"pm.test(\"Status code = 200 OK\", function () {",
 									"    pm.response.to.have.status(200);",
-									"});"
+									"});",
+									"console.log(\"Response:\");",
+									"console.log(pm.response.text());"
 								]
 							}
 						}
@@ -74,7 +76,9 @@
 									"",
 									"//set globals.",
 									"var location = postman.getResponseHeader(\"Location\");",
-									"pm.globals.set(\"audience_location\", location);"
+									"pm.globals.set(\"audience_location\", location);",
+									"console.log(\"Response:\");",
+									"console.log(pm.response.text());"
 								]
 							}
 						}
@@ -146,6 +150,8 @@
 									"});",
 									"",
 									"//set globals.",
+									"console.log(\"Response:\");",
+									"console.log(pm.response.text());",
 									"pm.globals.set(\"audience_representation\", pm.response.text());"
 								]
 							}
@@ -200,7 +206,9 @@
 									"});",
 									"",
 									"//clear globals.",
-									"pm.globals.unset(\"audience_representation\");"
+									"pm.globals.unset(\"audience_representation\");",
+									"console.log(\"Response:\");",
+									"console.log(pm.response.text());"
 								]
 							}
 						}
@@ -255,7 +263,9 @@
 									"",
 									"//set globals.",
 									"var location = postman.getResponseHeader(\"Location\");",
-									"pm.globals.set(\"target_location\", location);"
+									"pm.globals.set(\"target_location\", location);",
+									"console.log(\"Response:\");",
+									"console.log(pm.response.text());"
 								]
 							}
 						}
@@ -330,7 +340,9 @@
 									"var target = JSON.parse(pm.response.text());",
 									"pm.globals.set(\"target_uuid\", \"\\\"\" + target.uuid + \"\\\"\");",
 									"pm.globals.set(\"target_name\", \"\\\"\" + target.name + \"\\\"\");",
-									"pm.globals.set(\"target_phone_number\", \"\\\"\" + target.phoneNumber + \"\\\"\");"
+									"pm.globals.set(\"target_phone_number\", \"\\\"\" + target.phoneNumber + \"\\\"\");",
+									"console.log(\"Response:\");",
+									"console.log(pm.response.text());"
 								],
 								"type": "text/javascript"
 							}
@@ -364,6 +376,7 @@
 								"id": "83172d7c-8469-428c-a234-996a22aaa8a4",
 								"exec": [
 									"var json_text = pm.globals.get(\"target_representation\");",
+									"console.log(json_text);",
 									"var json_data = JSON.parse(json_text);",
 									"",
 									"json_data.name = \"Updated Test Target\";",
@@ -383,7 +396,9 @@
 									"});",
 									"",
 									"//clear globals.",
-									"pm.globals.unset(\"target_representation\");"
+									"pm.globals.unset(\"target_representation\");",
+									"console.log(\"Response:\");",
+									"console.log(pm.response.text());"
 								],
 								"type": "text/javascript"
 							}
@@ -426,7 +441,9 @@
 								"exec": [
 									"pm.test(\"Status code = 200 OK\", function () {",
 									"    pm.response.to.have.status(200);",
-									"});"
+									"});",
+									"console.log(\"Response:\");",
+									"console.log(pm.response.text());"
 								]
 							}
 						}
@@ -484,7 +501,9 @@
 									"//clear globals.",
 									"pm.globals.unset(\"target_uuid\");",
 									"pm.globals.unset(\"target_name\");",
-									"pm.globals.unset(\"target_phone_number\");"
+									"pm.globals.unset(\"target_phone_number\");",
+									"console.log(\"Response:\");",
+									"console.log(pm.response.text());"
 								],
 								"type": "text/javascript"
 							}
@@ -558,7 +577,9 @@
 									"});",
 									"",
 									"//set globals.",
-									"pm.globals.set(\"notification_representation\", pm.response.text());"
+									"pm.globals.set(\"notification_representation\", pm.response.text());",
+									"console.log(\"Response:\");",
+									"console.log(pm.response.text());"
 								],
 								"type": "text/javascript"
 							}
@@ -596,6 +617,7 @@
 								"id": "83172d7c-8469-428c-a234-996a22aaa8a4",
 								"exec": [
 									"var json_text = pm.globals.get(\"notification_representation\");",
+									"console.log(json_text);",
 									"var json_data = JSON.parse(json_text);",
 									"",
 									"json_data.content = \"Updated Content!\";",
@@ -615,7 +637,9 @@
 									"});",
 									"",
 									"//clear globals.",
-									"pm.globals.unset(\"notification_representation\");"
+									"pm.globals.unset(\"notification_representation\");",
+									"console.log(\"Response:\");",
+									"console.log(pm.response.text());"
 								],
 								"type": "text/javascript"
 							}
@@ -662,7 +686,9 @@
 									"});",
 									"",
 									"//clear globals.",
-									"pm.globals.unset(\"audience_location\");"
+									"pm.globals.unset(\"audience_location\");",
+									"console.log(\"Response:\");",
+									"console.log(pm.response.text());"
 								]
 							}
 						}
@@ -701,7 +727,9 @@
 									"});",
 									"",
 									"//clear globals.",
-									"pm.globals.unset(\"target_location\");"
+									"pm.globals.unset(\"target_location\");",
+									"console.log(\"Response:\");",
+									"console.log(pm.response.text());"
 								]
 							}
 						}
@@ -739,7 +767,9 @@
 									"});",
 									"",
 									"//clear globals.",
-									"pm.globals.unset(\"notification_location\");"
+									"pm.globals.unset(\"notification_location\");",
+									"console.log(\"Response:\");",
+									"console.log(pm.response.text());"
 								],
 								"type": "text/javascript"
 							}
@@ -1152,6 +1182,7 @@
 								"id": "9866b6b3-0478-49c5-8a56-a49b2275e1b6",
 								"exec": [
 									"var json_text = pm.globals.get(\"target_representation\");",
+									"console.log(json_text);",
 									"var json_data = JSON.parse(json_text);",
 									"var properties = json_data.properties;",
 									"",
@@ -1439,6 +1470,7 @@
 								"id": "83172d7c-8469-428c-a234-996a22aaa8a4",
 								"exec": [
 									"var json_text = pm.globals.get(\"notification_representation\");",
+									"console.log(json_text);",
 									"var json_data = JSON.parse(json_text);",
 									"",
 									"json_data.content = \"Updated Content!\";",
