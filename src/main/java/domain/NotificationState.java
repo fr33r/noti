@@ -5,8 +5,8 @@ public abstract class NotificationState {
 
   boolean failed(final Notification notification) {
     final int TOTAL_MESSAGE_COUNT = notification.messages().size();
+    if (TOTAL_MESSAGE_COUNT == 0) return false;
     int failedCount = 0;
-
     for (Message message : notification.messages()) {
       if (message.getStatus() == MessageStatus.FAILED) {
         failedCount++;
@@ -17,7 +17,7 @@ public abstract class NotificationState {
 
   boolean sent(final Notification notification) {
     final int TOTAL_MESSAGE_COUNT = notification.messages().size();
-
+    if (TOTAL_MESSAGE_COUNT == 0) return false;
     int sentCount = 0, deliveredCount = 0;
     for (Message message : notification.messages()) {
       if (message.getStatus() == MessageStatus.SENT) {
@@ -32,7 +32,7 @@ public abstract class NotificationState {
 
   boolean sending(final Notification notification) {
     final int TOTAL_MESSAGE_COUNT = notification.messages().size();
-
+    if (TOTAL_MESSAGE_COUNT == 0) return false;
     int sentCount = 0, deliveredCount = 0, pendingCount = 0;
     for (Message message : notification.messages()) {
       if (message.getStatus() == MessageStatus.SENT) {
