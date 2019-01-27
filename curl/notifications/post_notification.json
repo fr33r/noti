@@ -1,0 +1,13 @@
+{
+  "content": "TESTING!",
+  "sentAt": null,
+  "sendAt": null,
+  "status": "PENDING",
+  "targets": [
+    {
+      "uuid": "d3efed88-1583-401d-bb89-20e2abb91d0e",
+      "name": "Jon Freer",
+      "phoneNumber": "+16146573542"
+    }
+  ]
+}
