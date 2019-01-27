@@ -364,6 +364,7 @@
 								"id": "83172d7c-8469-428c-a234-996a22aaa8a4",
 								"exec": [
 									"var json_text = pm.globals.get(\"target_representation\");",
+									"console.log(json_text);",
 									"var json_data = JSON.parse(json_text);",
 									"",
 									"json_data.name = \"Updated Test Target\";",
@@ -596,6 +597,7 @@
 								"id": "83172d7c-8469-428c-a234-996a22aaa8a4",
 								"exec": [
 									"var json_text = pm.globals.get(\"notification_representation\");",
+									"console.log(json_text);",
 									"var json_data = JSON.parse(json_text);",
 									"",
 									"json_data.content = \"Updated Content!\";",
@@ -1152,6 +1154,7 @@
 								"id": "9866b6b3-0478-49c5-8a56-a49b2275e1b6",
 								"exec": [
 									"var json_text = pm.globals.get(\"target_representation\");",
+									"console.log(json_text);",
 									"var json_data = JSON.parse(json_text);",
 									"var properties = json_data.properties;",
 									"",
@@ -1439,6 +1442,7 @@
 								"id": "83172d7c-8469-428c-a234-996a22aaa8a4",
 								"exec": [
 									"var json_text = pm.globals.get(\"notification_representation\");",
+									"console.log(json_text);",
 									"var json_data = JSON.parse(json_text);",
 									"",
 									"json_data.content = \"Updated Content!\";",
