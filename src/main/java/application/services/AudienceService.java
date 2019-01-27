@@ -38,8 +38,8 @@ public final class AudienceService implements application.AudienceService {
 
   @Override
   public Integer getAudienceCount() {
-    UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork();
-    try {
+
+    try (UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork()) {
       Repository<Audience, UUID> audienceRepository =
           this.repositoryFactory.createAudienceRepository(unitOfWork);
       return audienceRepository.size();
@@ -53,33 +53,27 @@ public final class AudienceService implements application.AudienceService {
   @Override
   public UUID createAudience(final application.Audience audience) {
 
-    Audience _audience = this.audienceFactory.createFrom(audience);
-    UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork();
-
-    try {
+    try (UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork()) {
+      Audience _audience = this.audienceFactory.createFrom(audience);
       Repository<Audience, UUID> audienceRepository =
           this.repositoryFactory.createAudienceRepository(unitOfWork);
       audienceRepository.put(_audience);
-      unitOfWork.save();
+      return _audience.getId();
     } catch (Exception x) {
       String errorMessage = "An error occurred when creating the audience.";
       this.logger.error(errorMessage, x);
       throw new InternalErrorException(errorMessage, x.getMessage());
     }
-    return _audience.getId();
   }
 
   @Override
   public application.Audience getAudience(final UUID uuid) {
 
     Audience audience = null;
-    UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork();
-
-    try {
+    try (UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork()) {
       Repository<Audience, UUID> audienceRepository =
           this.repositoryFactory.createAudienceRepository(unitOfWork);
       audience = audienceRepository.get(uuid);
-      unitOfWork.save();
     } catch (Exception x) {
       String errorMessage = "An error occurred when retrieving the audience.";
       this.logger.error(errorMessage, x);
@@ -100,14 +94,11 @@ public final class AudienceService implements application.AudienceService {
   @Override
   public void replaceAudience(final application.Audience audience) {
 
-    Audience _audience = this.audienceFactory.createFrom(audience);
-    UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork();
-
-    try {
+    try (UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork()) {
+      Audience _audience = this.audienceFactory.createFrom(audience);
       Repository<Audience, UUID> audienceRepository =
           this.repositoryFactory.createAudienceRepository(unitOfWork);
       audienceRepository.put(_audience);
-      unitOfWork.save();
     } catch (Exception x) {
       String errorMessage = "An error occurred when updating the audience.";
       this.logger.error(errorMessage, x);
@@ -118,13 +109,10 @@ public final class AudienceService implements application.AudienceService {
   @Override
   public void deleteAudience(final UUID uuid) {
 
-    UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork();
-
-    try {
+    try (UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork()) {
       Repository<Audience, UUID> audienceRepository =
           this.repositoryFactory.createAudienceRepository(unitOfWork);
       audienceRepository.remove(uuid);
-      unitOfWork.save();
     } catch (Exception x) {
       String errorMessage = "An error occurred when deleting the audience.";
       this.logger.error(errorMessage, x);
@@ -135,9 +123,7 @@ public final class AudienceService implements application.AudienceService {
   @Override
   public void associateMemberToAudience(final UUID audienceUUID, final UUID memberUUID) {
 
-    UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork();
-
-    try {
+    try (UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork()) {
       Repository<Audience, UUID> audienceRepository =
           this.repositoryFactory.createAudienceRepository(unitOfWork);
       Repository<Target, UUID> targetRepository =
@@ -163,7 +149,6 @@ public final class AudienceService implements application.AudienceService {
       }
 
       audience.include(target);
-      unitOfWork.save();
     } catch (Exception x) {
       String errorMessage = "An error occurred when associating the member to the audience.";
       this.logger.error(errorMessage, x);
@@ -174,9 +159,7 @@ public final class AudienceService implements application.AudienceService {
   @Override
   public void disassociateMemberFromAudience(final UUID audienceUUID, final UUID memberUUID) {
 
-    UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork();
-
-    try {
+    try (UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork()) {
       Repository<Audience, UUID> audienceRepository =
           this.repositoryFactory.createAudienceRepository(unitOfWork);
       Repository<Target, UUID> targetRepository =
@@ -202,7 +185,6 @@ public final class AudienceService implements application.AudienceService {
       }
 
       audience.remove(target);
-      unitOfWork.save();
     } catch (Exception x) {
       String errorMessage = "An error occurred when disassociating the member to the audience.";
       this.logger.error(errorMessage, x);

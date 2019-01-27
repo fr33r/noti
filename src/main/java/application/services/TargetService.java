@@ -37,8 +37,8 @@ public final class TargetService implements application.TargetService {
 
   @Override
   public Integer getTargetCount() {
-    UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork();
-    try {
+
+    try (UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork()) {
       Repository<Target, UUID> targetRepository =
           this.repositoryFactory.createTargetRepository(unitOfWork);
       return targetRepository.size();
@@ -58,14 +58,11 @@ public final class TargetService implements application.TargetService {
   @Override
   public UUID createTarget(application.Target target) {
 
-    Target _target = this.targetFactory.createFrom(target);
-    UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork();
-
-    try {
+    try (UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork()) {
+      Target _target = this.targetFactory.createFrom(target);
       Repository<Target, UUID> targetRepository =
           this.repositoryFactory.createTargetRepository(unitOfWork);
       targetRepository.add(_target);
-      unitOfWork.save();
       return _target.getId();
     } catch (Exception x) {
       String errorMessage = "An error occurred when creating the target.";
@@ -84,13 +81,10 @@ public final class TargetService implements application.TargetService {
   public application.Target getTarget(UUID uuid) {
 
     Target target = null;
-    UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork();
-
-    try {
+    try (UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork()) {
       Repository<Target, UUID> targetRepository =
           this.repositoryFactory.createTargetRepository(unitOfWork);
       target = targetRepository.get(uuid);
-      unitOfWork.save();
     } catch (Exception x) {
       String errorMessage = "An error occurred when retrieving the target.";
       this.logger.error(errorMessage, x);
@@ -116,14 +110,11 @@ public final class TargetService implements application.TargetService {
   @Override
   public void replaceTarget(application.Target target) {
 
-    Target _target = this.targetFactory.createFrom(target);
-    UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork();
-
-    try {
+    try (UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork()) {
+      Target _target = this.targetFactory.createFrom(target);
       Repository<Target, UUID> targetRepository =
           this.repositoryFactory.createTargetRepository(unitOfWork);
       targetRepository.put(_target);
-      unitOfWork.save();
     } catch (Exception x) {
       String errorMessage = "An error occurred when updating the target.";
       this.logger.error(errorMessage, x);
@@ -139,13 +130,10 @@ public final class TargetService implements application.TargetService {
   @Override
   public void deleteTarget(UUID uuid) {
 
-    UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork();
-
-    try {
+    try (UnitOfWork unitOfWork = this.unitOfWorkFactory.createUnitOfWork()) {
       Repository<Target, UUID> targetRepository =
           this.repositoryFactory.createTargetRepository(unitOfWork);
       targetRepository.remove(uuid);
-      unitOfWork.save();
     } catch (Exception x) {
       String errorMessage = "An error occurred when deleting the target.";
       this.logger.error(errorMessage, x);

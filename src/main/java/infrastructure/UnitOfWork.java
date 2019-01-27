@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public abstract class UnitOfWork {
+public abstract class UnitOfWork implements AutoCloseable {
 
   private final List<Entity> added;
   private final List<Entity> removed;
@@ -57,6 +57,11 @@ public abstract class UnitOfWork {
       copy.add(entity);
     }
     return copy;
+  }
+
+  @Override
+  public void close() throws Exception {
+    this.save();
   }
 
   public abstract void save();
