@@ -1,8 +1,10 @@
 package api;
 
+import api.representations.json.TwilioMessageLog;
 import com.fasterxml.jackson.jaxrs.yaml.YAMLMediaTypes;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -138,4 +140,15 @@ public interface MessageResource {
       @Context UriInfo uriInfo,
       @PathParam("uuid") String notificationUUID,
       api.representations.xml.Message message);
+
+  @POST
+  @Path("/{id}/provider/twilio/logs")
+  @Consumes({MediaType.APPLICATION_JSON})
+  @Produces({MediaType.APPLICATION_JSON})
+  Response createAndAppend(
+      @Context HttpHeaders headers,
+      @Context UriInfo uriInfo,
+      @PathParam("uuid") String notificationUUID,
+      @PathParam("id") Integer id,
+      TwilioMessageLog messageLog);
 }
