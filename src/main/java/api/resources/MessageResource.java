@@ -2,6 +2,7 @@ package api.resources;
 
 import api.representations.Representation;
 import api.representations.RepresentationFactory;
+import application.Message;
 import application.MessageFactory;
 import application.Notification;
 import application.NotificationService;
@@ -16,8 +17,10 @@ import java.util.UUID;
 import javax.inject.Inject;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import org.slf4j.Logger;
 
 /**
  * {@inheritDoc}
@@ -28,16 +31,19 @@ public final class MessageResource extends Resource implements api.MessageResour
 
   private final NotificationService notificationService;
   private final MessageFactory messageFactory;
+  private final Logger logger;
 
   @Inject
   public MessageResource(
       NotificationService notificationService,
       Map<MediaType, RepresentationFactory> representationIndustry,
       MessageFactory messageFactory,
-      Tracer tracer) {
+      Tracer tracer,
+      Logger logger) {
     super(representationIndustry, tracer);
     this.notificationService = notificationService;
     this.messageFactory = messageFactory;
+    this.logger = logger;
   }
 
   /**
@@ -84,6 +90,7 @@ public final class MessageResource extends Resource implements api.MessageResour
    * @param id {@inheritDoc}
    * @return {@inheritDoc}
    */
+  @Override
   public Response get(HttpHeaders headers, UriInfo uriInfo, String notificationUUID, Integer id) {
     String className = this.getClass().getName();
     String spanName = String.format("%s#get", className);
@@ -119,6 +126,7 @@ public final class MessageResource extends Resource implements api.MessageResour
    * @param message {@inheritDoc}
    * @return {@inheritDoc}
    */
+  @Override
   public Response replace(
       HttpHeaders headers,
       UriInfo uriInfo,
@@ -145,6 +153,7 @@ public final class MessageResource extends Resource implements api.MessageResour
    * @param message {@inheritDoc}
    * @return {@inheritDoc}
    */
+  @Override
   public Response replace(
       HttpHeaders headers,
       UriInfo uriInfo,
@@ -156,6 +165,39 @@ public final class MessageResource extends Resource implements api.MessageResour
     try (Scope scope = this.getTracer().scopeManager().activate(span, false)) {
       this.notificationService.updateNotificationMessage(
           UUID.fromString(notificationUUID), this.messageFactory.createFrom(message));
+      return Response.noContent().build();
+    } finally {
+      span.finish();
+    }
+  }
+
+  @Override
+  public Response createAndAppend(
+      HttpHeaders headers,
+      UriInfo uriInfo,
+      String notificationUUID,
+      Integer id,
+      MultivaluedMap<String, String> messageLog) {
+
+    String className = this.getClass().getName();
+    String spanName = String.format("%s#createAndAppend", className);
+    Span span = this.getTracer().buildSpan(spanName).start();
+    try (Scope scope = this.getTracer().scopeManager().activate(span, false)) {
+      URI location = uriInfo.getRequestUri();
+      Locale language = null;
+      Integer skip = null;
+      Integer take = null;
+      UUID nUUID = UUID.fromString(notificationUUID);
+
+      Message message = this.notificationService.getNotificationMessage(nUUID, id);
+
+      if (message == null) {
+        return Response.status(Response.Status.NOT_FOUND).build();
+      }
+
+      // apply changes.
+      Message updatedMessage = this.messageFactory.createFrom(messageLog, message);
+      this.notificationService.updateNotificationMessage(nUUID, updatedMessage);
       return Response.noContent().build();
     } finally {
       span.finish();
