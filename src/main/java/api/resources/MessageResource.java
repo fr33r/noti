@@ -2,7 +2,6 @@ package api.resources;
 
 import api.representations.Representation;
 import api.representations.RepresentationFactory;
-import api.representations.json.TwilioMessageLog;
 import application.Message;
 import application.MessageFactory;
 import application.Notification;
@@ -18,8 +17,10 @@ import java.util.UUID;
 import javax.inject.Inject;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import org.slf4j.Logger;
 
 /**
  * {@inheritDoc}
@@ -30,16 +31,19 @@ public final class MessageResource extends Resource implements api.MessageResour
 
   private final NotificationService notificationService;
   private final MessageFactory messageFactory;
+  private final Logger logger;
 
   @Inject
   public MessageResource(
       NotificationService notificationService,
       Map<MediaType, RepresentationFactory> representationIndustry,
       MessageFactory messageFactory,
-      Tracer tracer) {
+      Tracer tracer,
+      Logger logger) {
     super(representationIndustry, tracer);
     this.notificationService = notificationService;
     this.messageFactory = messageFactory;
+    this.logger = logger;
   }
 
   /**
@@ -173,7 +177,8 @@ public final class MessageResource extends Resource implements api.MessageResour
       UriInfo uriInfo,
       String notificationUUID,
       Integer id,
-      TwilioMessageLog messageLog) {
+      MultivaluedMap<String, String> messageLog) {
+
     String className = this.getClass().getName();
     String spanName = String.format("%s#createAndAppend", className);
     Span span = this.getTracer().buildSpan(spanName).start();

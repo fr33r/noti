@@ -21,6 +21,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
+import org.slf4j.Logger;
 
 /**
  * {@inheritDoc}
@@ -31,6 +32,7 @@ public class NotificationResource extends Resource implements api.NotificationRe
 
   private final NotificationService notificationService;
   private final NotificationFactory notificationFactory;
+  private final Logger logger;
 
   /**
    * Construct a new {@link NotificationResource}.
@@ -45,12 +47,16 @@ public class NotificationResource extends Resource implements api.NotificationRe
   public NotificationResource(
       NotificationService notificationService,
       Map<MediaType, RepresentationFactory> representationIndustry,
-      Tracer tracer) {
+      Tracer tracer,
+      Logger logger) {
     super(representationIndustry, tracer);
+    this.logger = logger;
     this.notificationService = notificationService;
     this.notificationFactory =
         new NotificationFactory(
-            new TargetFactory(), new AudienceFactory(new TargetFactory()), new MessageFactory());
+            new TargetFactory(),
+            new AudienceFactory(new TargetFactory()),
+            new MessageFactory(this.logger));
   }
 
   /**
