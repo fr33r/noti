@@ -228,6 +228,11 @@
 			<artifactId>jackson-jaxrs-yaml-provider</artifactId>
 			<version>${jackson.yaml.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-text</artifactId>
+			<version>${apache.commons.text.version}</version>
+		</dependency>
 	</dependencies>
 
 	<properties>
@@ -244,5 +249,6 @@
 		<junit.version>4.12</junit.version>
 		<failsafe.version>1.1.0</failsafe.version>
 		<jackson.yaml.version>2.9.6</jackson.yaml.version>
+		<apache.commons.text.version>1.6</apache.commons.text.version>
 	</properties>
 </project>
