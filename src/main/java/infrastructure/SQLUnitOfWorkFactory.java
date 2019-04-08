@@ -4,6 +4,7 @@ import domain.Audience;
 import domain.EntitySQLFactory;
 import domain.Notification;
 import domain.Target;
+import domain.Template;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -16,6 +17,7 @@ public class SQLUnitOfWorkFactory extends UnitOfWorkFactory {
   private final EntitySQLFactory<Notification, UUID> notificationFactory;
   private final EntitySQLFactory<Target, UUID> targetFactory;
   private final EntitySQLFactory<Audience, UUID> audienceFactory;
+  private final EntitySQLFactory<Template, UUID> templateFactory;
   private final ConnectionFactory connectionFactory;
   private final Tracer tracer;
 
@@ -24,11 +26,13 @@ public class SQLUnitOfWorkFactory extends UnitOfWorkFactory {
       @Named("NotificationSQLFactory") EntitySQLFactory<Notification, UUID> notificationFactory,
       @Named("TargetSQLFactory") EntitySQLFactory<Target, UUID> targetFactory,
       @Named("AudienceSQLFactory") EntitySQLFactory<Audience, UUID> audienceFactory,
+      @Named("TemplateSQLFactory") EntitySQLFactory<Template, UUID> templateFactory,
       ConnectionFactory connectionFactory,
       Tracer tracer) {
     this.notificationFactory = notificationFactory;
     this.targetFactory = targetFactory;
     this.audienceFactory = audienceFactory;
+    this.templateFactory = templateFactory;
     this.connectionFactory = connectionFactory;
     this.tracer = tracer;
   }
@@ -45,6 +49,7 @@ public class SQLUnitOfWorkFactory extends UnitOfWorkFactory {
               this.notificationFactory,
               this.targetFactory,
               this.audienceFactory,
+              this.templateFactory,
               this.tracer);
       return uow;
     } finally {

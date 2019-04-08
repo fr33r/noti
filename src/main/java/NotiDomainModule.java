@@ -10,6 +10,9 @@ import domain.NotificationSQLFactory;
 import domain.Target;
 import domain.TargetFactory;
 import domain.TargetSQLFactory;
+import domain.Template;
+import domain.TemplateFactory;
+import domain.TemplateSQLFactory;
 import io.dropwizard.setup.Environment;
 import java.util.UUID;
 import org.glassfish.hk2.api.TypeLiteral;
@@ -20,6 +23,7 @@ public final class NotiDomainModule extends NotiModule {
   private static final String NOTIFICATION_SQL_FACTORY = "NotificationSQLFactory";
   private static final String TARGET_SQL_FACTORY = "TargetSQLFactory";
   private static final String AUDIENCE_SQL_FACTORY = "AudienceSQLFactory";
+  private static final String TEMPLATE_SQL_FACTORY = "TemplateSQLFactory";
 
   public NotiDomainModule(NotiConfiguration configuration, Environment environment) {
     super(configuration, environment);
@@ -41,15 +45,18 @@ public final class NotiDomainModule extends NotiModule {
                 this.bind(TargetSQLFactory.class)
                     .named(TARGET_SQL_FACTORY)
                     .to(new TypeLiteral<EntitySQLFactory<Target, UUID>>() {});
-
                 this.bind(AudienceSQLFactory.class)
                     .named(AUDIENCE_SQL_FACTORY)
                     .to(new TypeLiteral<EntitySQLFactory<Audience, UUID>>() {});
+                this.bind(TemplateSQLFactory.class)
+                    .named(TEMPLATE_SQL_FACTORY)
+                    .to(new TypeLiteral<EntitySQLFactory<Template, UUID>>() {});
 
                 this.bindAsContract(NotificationFactory.class);
                 this.bindAsContract(TargetFactory.class);
                 this.bindAsContract(AudienceFactory.class);
                 this.bindAsContract(MessageFactory.class);
+                this.bindAsContract(TemplateFactory.class);
               }
             });
   }

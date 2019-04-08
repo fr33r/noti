@@ -5,6 +5,7 @@ import api.interceptors.MetadataPutInterceptor;
 import application.services.AudienceService;
 import application.services.NotificationService;
 import application.services.TargetService;
+import application.services.TemplateService;
 import configuration.NotiConfiguration;
 import infrastructure.services.RepresentationMetadataService;
 import infrastructure.services.SMSQueueService;
@@ -41,6 +42,7 @@ public final class LoggingModule extends NotiModule {
                 loggers.add(LoggerFactory.getLogger(NotificationService.class));
                 loggers.add(LoggerFactory.getLogger(AudienceService.class));
                 loggers.add(LoggerFactory.getLogger(TargetService.class));
+                loggers.add(LoggerFactory.getLogger(TemplateService.class));
                 loggers.add(LoggerFactory.getLogger(SMSQueueService.class));
                 loggers.add(LoggerFactory.getLogger(RepresentationMetadataService.class));
 
