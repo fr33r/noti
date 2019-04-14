@@ -7,6 +7,7 @@ import application.Audience;
 import application.Message;
 import application.Notification;
 import application.Target;
+import application.Template;
 import com.fasterxml.jackson.jaxrs.yaml.YAMLMediaTypes;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -389,6 +390,26 @@ public final class YAMLRepresentationFactory extends RepresentationFactory {
           .location(location)
           .language(language)
           .build();
+    } finally {
+      span.finish();
+    }
+  }
+
+  @Override
+  public Representation createTemplateRepresentation(
+      URI location, Locale language, Template template) {
+    String className = YAMLRepresentationFactory.class.getName();
+    String spanName = String.format("%s#createTemplateRepresentation", className);
+    Span span = this.tracer.buildSpan(spanName).asChildOf(this.tracer.activeSpan()).start();
+    try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
+      Representation representation =
+          new api.representations.yaml.Template.Builder()
+              .uuid(template.getUUID())
+              .content(template.getContent())
+              .location(location)
+              .language(language)
+              .build();
+      return representation;
     } finally {
       span.finish();
     }

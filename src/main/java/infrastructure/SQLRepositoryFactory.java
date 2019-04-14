@@ -4,6 +4,7 @@ import domain.Audience;
 import domain.EntitySQLFactory;
 import domain.Notification;
 import domain.Target;
+import domain.Template;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -19,6 +20,7 @@ public class SQLRepositoryFactory extends RepositoryFactory {
   private final EntitySQLFactory<Notification, UUID> notificationFactory;
   private final EntitySQLFactory<Target, UUID> targetFactory;
   private final EntitySQLFactory<Audience, UUID> audienceFactory;
+  private final EntitySQLFactory<Template, UUID> templateFactory;
   private final Tracer tracer;
 
   @Inject
@@ -26,10 +28,12 @@ public class SQLRepositoryFactory extends RepositoryFactory {
       @Named("NotificationSQLFactory") EntitySQLFactory<Notification, UUID> notificationFactory,
       @Named("TargetSQLFactory") EntitySQLFactory<Target, UUID> targetFactory,
       @Named("AudienceSQLFactory") EntitySQLFactory<Audience, UUID> audienceFactory,
+      @Named("TemplateSQLFactory") EntitySQLFactory<Template, UUID> templateFactory,
       Tracer tracer) {
     this.notificationFactory = notificationFactory;
     this.targetFactory = targetFactory;
     this.audienceFactory = audienceFactory;
+    this.templateFactory = templateFactory;
     this.tracer = tracer;
   }
 
@@ -64,6 +68,18 @@ public class SQLRepositoryFactory extends RepositoryFactory {
     final Span span = this.tracer.buildSpan(spanName).asChildOf(this.tracer.activeSpan()).start();
     try (final Scope scope = this.tracer.scopeManager().activate(span, false)) {
       return new AudienceRepository(unitOfWork, this.audienceFactory, this.tracer);
+    } finally {
+      span.finish();
+    }
+  }
+
+  @Override
+  public Repository<Template, UUID> createTemplateRepository(UnitOfWork unitOfWork) {
+    String className = SQLRepositoryFactory.class.getName();
+    String spanName = String.format("%s#createTemplateRepository", className);
+    final Span span = this.tracer.buildSpan(spanName).asChildOf(this.tracer.activeSpan()).start();
+    try (final Scope scope = this.tracer.scopeManager().activate(span, false)) {
+      return new TemplateRepository(unitOfWork, this.templateFactory, this.tracer);
     } finally {
       span.finish();
     }

@@ -9,15 +9,11 @@ public class Target {
   private final String phoneNumber;
 
   public Target() {
-    this.uuid = null;
-    this.name = null;
-    this.phoneNumber = null;
+    this(null, null, null);
   }
 
   public Target(final String name, final String phoneNumber) {
-    this.uuid = null;
-    this.name = name;
-    this.phoneNumber = phoneNumber;
+    this(null, name, phoneNumber);
   }
 
   public Target(final UUID uuid, final String name, final String phoneNumber) {
@@ -27,14 +23,14 @@ public class Target {
   }
 
   public UUID getUUID() {
-    return uuid;
+    return this.uuid;
   }
 
   public String getName() {
-    return name;
+    return this.name;
   }
 
   public String getPhoneNumber() {
-    return phoneNumber;
+    return this.phoneNumber;
   }
 }

@@ -35,7 +35,7 @@ public final class Audience extends Representation {
 
     /** Constructs a builder of {@link Audience} instances. */
     public Builder() {
-      super(MediaType.APPLICATION_XML_TYPE);
+      super(MediaType.APPLICATION_JSON_TYPE);
       this.members = new HashSet<>();
     }
 

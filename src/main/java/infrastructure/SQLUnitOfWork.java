@@ -5,6 +5,7 @@ import domain.Entity;
 import domain.EntitySQLFactory;
 import domain.Notification;
 import domain.Target;
+import domain.Template;
 import io.opentracing.Tracer;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -18,6 +19,7 @@ public class SQLUnitOfWork extends UnitOfWork {
   private final EntitySQLFactory<Notification, UUID> notificationFactory;
   private final EntitySQLFactory<Target, UUID> targetFactory;
   private final EntitySQLFactory<Audience, UUID> audienceFactory;
+  private final EntitySQLFactory<Template, UUID> templateFactory;
   private final ConnectionFactory connectionFactory;
   private final Tracer tracer;
   private final Map<Class, DataMapper> dataMappers;
@@ -28,12 +30,14 @@ public class SQLUnitOfWork extends UnitOfWork {
       EntitySQLFactory<Notification, UUID> notificationFactory,
       EntitySQLFactory<Target, UUID> targetFactory,
       EntitySQLFactory<Audience, UUID> audienceFactory,
+      EntitySQLFactory<Template, UUID> templateFactory,
       Tracer tracer) {
     super();
     this.connectionFactory = connectionFactory;
     this.notificationFactory = notificationFactory;
     this.targetFactory = targetFactory;
     this.audienceFactory = audienceFactory;
+    this.templateFactory = templateFactory;
     this.tracer = tracer;
     this.dataMappers = new HashMap<>();
     this.connection = this.connectionFactory.createConnection();
@@ -48,6 +52,11 @@ public class SQLUnitOfWork extends UnitOfWork {
     DataMapper tdm =
         new TargetDataMapper(
             this.connection, this.targetFactory, LoggerFactory.getLogger(TargetDataMapper.class));
+    DataMapper tldm =
+        new TemplateDataMapper(
+            this.connection,
+            this.templateFactory,
+            LoggerFactory.getLogger(TemplateDataMapper.class));
     DataMapper adm =
         new AudienceDataMapper(
             this.connection,
@@ -56,6 +65,7 @@ public class SQLUnitOfWork extends UnitOfWork {
     this.dataMappers.put(Notification.class, ndm);
     this.dataMappers.put(Audience.class, adm);
     this.dataMappers.put(Target.class, tdm);
+    this.dataMappers.put(Template.class, tldm);
   }
 
   @Override

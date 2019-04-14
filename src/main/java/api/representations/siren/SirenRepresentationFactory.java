@@ -7,6 +7,7 @@ import application.Audience;
 import application.Message;
 import application.Notification;
 import application.Target;
+import application.Template;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -1031,6 +1032,47 @@ public final class SirenRepresentationFactory extends RepresentationFactory {
                   notificationCollectionSubEntity,
                   audienceCollectionSubEntity,
                   targetCollectionSubEntity)
+              .build();
+
+      Representation representation =
+          new SirenEntityRepresentation.Builder().entity(entity).language(language).build();
+      return representation;
+    } catch (URISyntaxException x) {
+      throw new RuntimeException(x);
+    } finally {
+      span.finish();
+    }
+  }
+
+  @Override
+  public Representation createTemplateRepresentation(
+      URI location, Locale language, Template template) {
+
+    String className = SirenRepresentationFactory.class.getName();
+    String spanName = String.format("%s#createTemplateRepresentation", className);
+    Span span = this.tracer.buildSpan(spanName).asChildOf(this.tracer.activeSpan()).start();
+    try (Scope scope = this.tracer.scopeManager().activate(span, false)) {
+
+      Link.Builder linkBuilder = this.linkBuilderFactory.create();
+      Link self =
+          linkBuilder
+              .rel(Relation.SELF)
+              .title("Self")
+              .type(this.getMediaType().toString())
+              .klasses("template")
+              .href(location)
+              .build();
+
+      EmbeddedLinkSubEntity.Builder embeddedLinkSubEntityBuilder =
+          this.embeddedLinkSubEntityBuilderFactory.create();
+
+      Entity.Builder entityBuilder = this.entityBuilderFactory.create();
+      Entity entity =
+          entityBuilder
+              .klasses("template")
+              .property("uuid", template.getUUID())
+              .property("content", template.getContent())
+              .links(self)
               .build();
 
       Representation representation =

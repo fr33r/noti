@@ -5,6 +5,7 @@ import application.Audience;
 import application.Message;
 import application.Notification;
 import application.Target;
+import application.Template;
 import java.net.URI;
 import java.util.Locale;
 import java.util.Set;
@@ -167,4 +168,7 @@ public abstract class RepresentationFactory {
       Integer notificationCount,
       Integer audienceCount,
       Integer targetCount);
+
+  public abstract Representation createTemplateRepresentation(
+      URI location, Locale language, Template template);
 }

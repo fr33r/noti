@@ -5,6 +5,7 @@ import api.resources.MessageResource;
 import api.resources.NotiResource;
 import api.resources.NotificationResource;
 import api.resources.TargetResource;
+import api.resources.TemplateResource;
 import configuration.NotiConfiguration;
 import io.dropwizard.setup.Environment;
 
@@ -23,6 +24,7 @@ public final class ResourceModule extends NotiModule {
     this.getEnvironment().jersey().register(TargetResource.class);
     this.getEnvironment().jersey().register(MessageResource.class);
     this.getEnvironment().jersey().register(NotiResource.class);
+    this.getEnvironment().jersey().register(TemplateResource.class);
 
     // TODO move into its own module.
     this.getEnvironment().jersey().register(ApplicationExceptionMapper.class);
